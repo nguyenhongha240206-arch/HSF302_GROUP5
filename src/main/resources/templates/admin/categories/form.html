@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<head>
+    <title th:text="${categoryDto.id == null ? 'Thêm Danh Mục Mới' : 'Cập Nhật Danh Mục'}">Quản Lý Danh Mục</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <h4 class="fw-bold mb-0 text-dark" th:text="${categoryDto.id == null ? 'Thêm Danh Mục Mới' : 'Cập Nhật Danh Mục'}"></h4>
+                    <a th:href="@{/admin/categories}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i>Quay lại
+                    </a>
+                </div>
+
+                <form th:action="@{/admin/categories/save}" th:object="${categoryDto}" method="post">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên Danh Mục <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{name}" class="form-control" th:errorclass="is-invalid" placeholder="Trái cây nhập khẩu">
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mã Danh Mục (Code) <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{code}" class="form-control" th:errorclass="is-invalid" placeholder="CAT_IMPORT">
+                            <div class="invalid-feedback" th:errors="*{code}"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Link Hình Ảnh (URL)</label>
+                        <input type="text" th:field="*{imageUrl}" class="form-control" placeholder="https://...">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mô Tả</label>
+                        <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Mô tả về nhóm sản phẩm..."></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Thứ Tự Hiển Thị</label>
+                            <input type="number" th:field="*{displayOrder}" class="form-control" min="0">
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center pt-4">
+                            <div class="form-check form-switch fs-5">
+                                <input class="form-check-input" type="checkbox" th:field="*{active}" id="activeSwitch">
+                                <label class="form-check-label fs-6 fw-semibold" for="activeSwitch">Đang kích hoạt kinh doanh</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a th:href="@{/admin/categories}" class="btn btn-outline-secondary rounded-pill px-4">Hủy</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">Lưu Danh Mục</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

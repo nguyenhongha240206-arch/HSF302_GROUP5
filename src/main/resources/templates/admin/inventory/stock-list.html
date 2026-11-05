@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<head>
+    <title>Kiểm Kê Tồn Kho Hoa Quả</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">Kiểm Kê Tồn Kho Hoa Quả</h3>
+            <p class="text-muted small mb-0">Theo dõi số lượng tồn thực tế của các loại trái cây và giỏ quà</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/admin/inventory/slips/new}" class="btn btn-outline-danger rounded-pill px-3">
+                <i class="bi bi-clipboard2-minus me-1"></i>Xuất Hủy Hàng Hỏng
+            </a>
+        </div>
+    </div>
+
+    <!-- Stock Status Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+        <form th:action="@{/admin/inventory/stock}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo tên hoặc mã sản phẩm...">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm Kiếm</button>
+                <a th:href="@{/admin/inventory/stock}" class="btn btn-outline-secondary rounded-pill px-3">Làm Mới</a>
+            </div>
+            <div class="col text-end" th:if="${lowStockCount > 0}">
+                <span class="badge bg-danger fs-6 px-3 py-2">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Có <span th:text="${lowStockCount}">0</span> mặt hàng sắp hết (≤ 10)
+                </span>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="admin-table-card p-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">Ảnh</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Danh Mục</th>
+                        <th>Đơn Giá</th>
+                        <th class="text-center">Số Lượng Tồn</th>
+                        <th>Tình Trạng Kho</th>
+                        <th class="text-end">Cập Nhật</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${products.empty}">
+                        <td colspan="7" class="text-center py-4 text-muted">Không tìm thấy sản phẩm nào</td>
+                    </tr>
+                    <tr th:each="p : ${products.content}">
+                        <td>
+                            <img th:src="${p.imageUrl}" class="rounded-3" width="50" height="50" style="object-fit: cover;">
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${p.name}">Tên quả</div>
+                            <small class="text-muted font-monospace" th:text="${p.code}">CODE</small>
+                        </td>
+                        <td><span class="badge bg-light text-dark border" th:text="${p.category.name}">Danh mục</span></td>
+                        <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                        <td class="text-center">
+                            <span class="h5 fw-bold" th:classappend="${p.stockQuantity <= 10 ? 'text-danger' : 'text-success'}"
+                                  th:text="${p.stockQuantity} + ' ' + ${p.unit}">10 kg</span>
+                        </td>
+                        <td>
+                            <span th:if="${p.stockQuantity <= 0}" class="badge bg-danger">Hết hàng</span>
+                            <span th:if="${p.stockQuantity > 0 && p.stockQuantity <= 10}" class="badge bg-warning text-dark">Sắp hết hàng</span>
+                            <span th:if="${p.stockQuantity > 10}" class="badge bg-success">Tồn kho an toàn</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                Chỉnh sửa tồn
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${products.totalPages > 1}" class="d-flex justify-content-center mt-4">
+            <ul class="pagination pagination-sm">
+                <li class="page-item" th:classappend="${products.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/inventory/stock(page=${products.number - 1}, keyword=${keyword})}">Trước</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}"
+                    th:classappend="${i == products.number} ? 'active'">
+                    <a class="page-link" th:href="@{/admin/inventory/stock(page=${i}, keyword=${keyword})}" th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${products.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/inventory/stock(page=${products.number + 1}, keyword=${keyword})}">Sau</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<head>
+    <title th:text="${productDto.id == null ? 'Thêm Sản Phẩm Mới' : 'Cập Nhật Sản Phẩm'}">Quản Lý Sản Phẩm</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <h4 class="fw-bold mb-0 text-dark" th:text="${productDto.id == null ? 'Thêm Sản Phẩm / Giỏ Quà Mới' : 'Cập Nhật Sản Phẩm'}"></h4>
+                    <a th:href="@{/admin/products}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+                    </a>
+                </div>
+
+                <form th:action="@{/admin/products/save}" th:object="${productDto}" method="post">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Tên Sản Phẩm <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{name}" class="form-control" th:errorclass="is-invalid" placeholder="Táo Envy New Zealand Size 70">
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Mã Sản Phẩm (Code) <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{code}" class="form-control" th:errorclass="is-invalid" placeholder="FRUIT_ENVY_NZ">
+                            <div class="invalid-feedback" th:errors="*{code}"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Danh Mục <span class="text-danger">*</span></label>
+                            <select th:field="*{categoryId}" class="form-select" th:errorclass="is-invalid">
+                                <option value="">-- Chọn danh mục --</option>
+                                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+                            </select>
+                            <div class="invalid-feedback" th:errors="*{categoryId}"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Loại Sản Phẩm <span class="text-danger">*</span></label>
+                            <select th:field="*{productType}" class="form-select" th:errorclass="is-invalid">
+                                <option th:each="pt : ${productTypes}" th:value="${pt}" th:text="${pt.displayName}"></option>
+                            </select>
+                            <div class="invalid-feedback" th:errors="*{productType}"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Giá Bán (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{price}" class="form-control" th:errorclass="is-invalid" placeholder="220000">
+                            <div class="invalid-feedback" th:errors="*{price}"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Giá Gốc / So Sánh (VNĐ)</label>
+                            <input type="number" th:field="*{originalPrice}" class="form-control" placeholder="250000">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Số Lượng Tồn Kho <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{stockQuantity}" class="form-control" th:errorclass="is-invalid">
+                            <div class="invalid-feedback" th:errors="*{stockQuantity}"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Đơn Vị Tính <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{unit}" class="form-control" th:errorclass="is-invalid" placeholder="kg, hộp, quả, giỏ">
+                            <div class="invalid-feedback" th:errors="*{unit}"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Xuất Xứ</label>
+                            <input type="text" th:field="*{origin}" class="form-control" placeholder="New Zealand, Việt Nam, Úc...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Link Hình Ảnh (URL)</label>
+                            <input type="text" th:field="*{imageUrl}" class="form-control" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mô Tả Chi Tiết</label>
+                        <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Mô tả hương vị, đặc điểm hoa quả, thành phần giỏ quà..."></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch fs-5">
+                                <input class="form-check-input" type="checkbox" th:field="*{featured}" id="featuredSwitch">
+                                <label class="form-check-label fs-6 fw-semibold" for="featuredSwitch">Sản phẩm nổi bật (Featured)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch fs-5">
+                                <input class="form-check-input" type="checkbox" th:field="*{active}" id="activeSwitch">
+                                <label class="form-check-label fs-6 fw-semibold" for="activeSwitch">Mở bán (Active)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a th:href="@{/admin/products}" class="btn btn-outline-secondary rounded-pill px-4">Hủy</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">Lưu Sản Phẩm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

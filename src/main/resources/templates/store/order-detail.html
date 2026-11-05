@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title th:text="'Chi Tiết Đơn Hàng ' + ${order.orderNumber}">Chi Tiết Đơn Hàng</title>
+</head>
+<body>
+<div layout:fragment="content" class="py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-success text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/orders/history}" class="text-success text-decoration-none">Đơn hàng của tôi</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${order.orderNumber}">Mã đơn</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4">
+            <div>
+                <h4 class="fw-bold mb-1 text-dark">
+                    <i class="bi bi-box2-heart-fill text-success me-2"></i>Đơn Hàng #<span th:text="${order.orderNumber}"></span>
+                </h4>
+                <div class="small text-muted" th:text="'Đặt lúc: ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></div>
+            </div>
+            <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+                <span th:class="${order.orderStatus.badgeClass} + ' fs-6 px-3 py-2'" th:text="${order.orderStatus.displayName}"></span>
+                <span class="badge bg-secondary fs-6 px-3 py-2" th:text="${order.paymentStatus.displayName}"></span>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <!-- Shipping information -->
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-lines-fill text-primary me-2"></i>Thông Tin Giao Hàng</h6>
+                    <p class="mb-1"><strong>Người nhận:</strong> <span th:text="${order.receiverName}"></span></p>
+                    <p class="mb-1"><strong>Số điện thoại:</strong> <span th:text="${order.receiverPhone}"></span></p>
+                    <p class="mb-1"><strong>Địa chỉ nhận:</strong> <span th:text="${order.shippingAddress}"></span></p>
+                    <p class="mb-0" th:if="${order.note != null && !order.note.isBlank()}"><strong>Ghi chú:</strong> <span th:text="${order.note}"></span></p>
+                </div>
+            </div>
+
+            <!-- Payment & method -->
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-wallet2 text-success me-2"></i>Thanh Toán & Vận Chuyển</h6>
+                    <p class="mb-1"><strong>Phương thức:</strong> <span th:text="${order.paymentMethod.displayName}"></span></p>
+                    <p class="mb-1"><strong>Trạng thái thanh toán:</strong> <span th:text="${order.paymentStatus.displayName}"></span></p>
+                    <p class="mb-1" th:if="${order.voucherCode != null}"><strong>Voucher áp dụng:</strong> <span class="badge bg-success font-monospace" th:text="${order.voucherCode}"></span></p>
+                    <p class="mb-0"><strong>Vận chuyển:</strong> Giao hàng tận nơi siêu tốc</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ordered Items Table -->
+        <h5 class="fw-bold mb-3">Danh Sách Mặt Hàng</h5>
+        <div class="table-responsive mb-4">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sản Phẩm</th>
+                        <th class="text-center">Đơn Giá</th>
+                        <th class="text-center">Số Lượng</th>
+                        <th class="text-end">Thành Tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="d : ${order.orderDetails}">
+                        <td>
+                            <a th:href="@{/products/{id}(id=${d.product.id})}" class="fw-semibold text-dark text-decoration-none" th:text="${d.productName}">Tên sản phẩm</a>
+                            <div class="small text-muted" th:text="'Mã SP: ' + ${d.product.code}"></div>
+                        </td>
+                        <td class="text-center" th:text="${#numbers.formatDecimal(d.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                        <td class="text-center fw-bold" th:text="${d.quantity}">1</td>
+                        <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(d.subTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end text-muted">Tổng tiền hàng:</td>
+                        <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                    <tr th:if="${order.discountAmount > 0}">
+                        <td colspan="3" class="text-end text-success">Giảm giá voucher:</td>
+                        <td class="text-end fw-semibold text-success" th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold fs-5">Tổng thanh toán:</td>
+                        <td class="text-end fw-bold text-danger fs-4" th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a th:href="@{/orders/history}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i>Quay Lại Lịch Sử Đơn
+            </a>
+            <a th:href="@{/catalog}" class="btn btn-primary rounded-pill px-4">
+                Tiếp Tục Mua Hàng
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title>500 - Lỗi Hệ Thống</title>
+</head>
+<body>
+<div layout:fragment="content" class="text-center py-5">
+    <div class="display-1 text-danger fw-bold"><i class="bi bi-exclamation-octagon"></i> 500</div>
+    <h2 class="fw-bold mt-3">Đã Xảy Ra Lỗi Hệ Thống</h2>
+    <p class="text-muted fs-5" th:text="${errorMessage != null ? errorMessage : 'Hệ thống đang gặp sự cố tạm thời. Vui lòng thử lại sau.'}"></p>
+    <div class="mt-4">
+        <a th:href="@{/}" class="btn btn-primary rounded-pill px-4">Quay Về Trang Chủ</a>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<head>
+    <title th:text="'Chi Tiết Phiếu Hao Hụt ' + ${slip.slipCode}">Chi Tiết Phiếu Hao Hụt</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">
+                Phiếu Hao Hụt #<span th:text="${slip.slipCode}" class="text-danger"></span>
+            </h3>
+            <p class="text-muted small mb-0" th:text="'Ngày lập: ' + ${#temporals.format(slip.slipDate, 'dd/MM/yyyy HH:mm:ss')}"></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/admin/inventory/slips}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <!-- Details Card -->
+    <div class="admin-table-card p-4 mb-4">
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <p class="mb-1"><strong>Mã Phiếu:</strong> <span class="font-monospace text-danger" th:text="${slip.slipCode}"></span></p>
+                <p class="mb-1"><strong>Người Lập:</strong> <span th:text="${slip.createdBy != null ? slip.createdBy : 'SYSTEM'}"></span></p>
+                <p class="mb-0"><strong>Ghi chú:</strong> <span th:text="${slip.note != null && !slip.note.isBlank() ? slip.note : 'Không ghi chú'}"></span></p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="small text-muted">Tổng Giá Trị Thiệt Hại:</div>
+                <div class="h3 fw-bold text-danger" th:text="${#numbers.formatDecimal(slip.totalLossAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</div>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3">Các Mặt Hàng Hao Hụt</h5>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Sản Phẩm</th>
+                        <th>Lý Do Hủy</th>
+                        <th class="text-center">Số Lượng Hủy</th>
+                        <th class="text-center">Đơn Giá Vốn</th>
+                        <th class="text-end">Thành Tiền Thiệt Hại</th>
+                        <th>Ghi Chú Chi Tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="d : ${slip.details}">
+                        <td>
+                            <div class="fw-semibold text-dark" th:text="${d.product.name}">Tên quả</div>
+                            <small class="text-muted" th:text="'Mã: ' + ${d.product.code}"></small>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark" th:text="${d.lossReason.displayName}">Lý do</span>
+                        </td>
+                        <td class="text-center fw-bold text-danger" th:text="${d.quantity} + ' ' + ${d.product.unit}">1</td>
+                        <td class="text-center" th:text="${#numbers.formatDecimal(d.costPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                        <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(d.subTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                        <td class="small text-muted" th:text="${d.note != null ? d.note : '-'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

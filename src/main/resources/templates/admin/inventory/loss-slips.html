@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<head>
+    <title>Phiếu Hao Hụt & Hủy Hoa Quả</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">Phiếu Hao Hụt & Xuất Hủy Hoa Quả</h3>
+            <p class="text-muted small mb-0">Ghi nhận hoa quả hư hỏng, dập nát, quá hạn và tự động trừ tồn kho</p>
+        </div>
+        <a th:href="@{/admin/inventory/slips/new}" class="btn btn-danger rounded-pill px-4">
+            <i class="bi bi-plus-lg me-1"></i>Tạo Phiếu Hao Hụt
+        </a>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-danger bg-opacity-10 border-start border-danger border-4">
+                <span class="small text-danger fw-semibold">Tổng Thiệt Hại Hao Hụt</span>
+                <h4 class="fw-bold text-danger mt-1 mb-0" th:text="${#numbers.formatDecimal(totalLossAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search box -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+        <form th:action="@{/admin/inventory/slips}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo mã phiếu hoặc ghi chú...">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm Kiếm</button>
+                <a th:href="@{/admin/inventory/slips}" class="btn btn-outline-secondary rounded-pill px-3">Làm Mới</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="admin-table-card p-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã Phiếu</th>
+                        <th>Ngày Lập Phiếu</th>
+                        <th>Số Mặt Hàng Hủy</th>
+                        <th>Tổng Giá Trị Thiệt Hại</th>
+                        <th>Ghi Chú</th>
+                        <th>Người Lập</th>
+                        <th class="text-end">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${slipPage.empty}">
+                        <td colspan="7" class="text-center py-4 text-muted">Chưa có phiếu hao hụt nào</td>
+                    </tr>
+                    <tr th:each="s : ${slipPage.content}">
+                        <td>
+                            <span class="fw-bold font-monospace text-danger" th:text="${s.slipCode}">#LS-001</span>
+                        </td>
+                        <td th:text="${#temporals.format(s.slipDate, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${#lists.size(s.details)} + ' loại hoa quả'"></span>
+                        </td>
+                        <td class="fw-bold text-danger" th:text="${#numbers.formatDecimal(s.totalLossAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                        <td class="text-muted" th:text="${s.note != null && !s.note.isBlank() ? s.note : 'Không ghi chú'}"></td>
+                        <td>
+                            <span class="badge bg-light text-secondary border" th:text="${s.createdBy != null ? s.createdBy : 'SYSTEM'}">admin</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/admin/inventory/slips/{id}(id=${s.id})}" class="btn btn-outline-primary btn-sm rounded-pill me-1">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <form th:action="@{/admin/inventory/slips/{id}/delete(id=${s.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này? Số lượng tồn kho hoa quả sẽ được tự động hoàn trả!');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${slipPage.totalPages > 1}" class="d-flex justify-content-center mt-4">
+            <ul class="pagination pagination-sm">
+                <li class="page-item" th:classappend="${slipPage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/inventory/slips(page=${slipPage.number - 1}, keyword=${keyword})}">Trước</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, slipPage.totalPages - 1)}"
+                    th:classappend="${i == slipPage.number} ? 'active'">
+                    <a class="page-link" th:href="@{/admin/inventory/slips(page=${i}, keyword=${keyword})}" th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${slipPage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/inventory/slips(page=${slipPage.number + 1}, keyword=${keyword})}">Sau</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

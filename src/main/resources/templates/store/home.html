@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title>Trang Chủ - Fruit Store</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Hero Banner -->
+    <div class="hero-section">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <span class="badge bg-success bg-opacity-75 text-white px-3 py-2 rounded-pill mb-3">
+                    <i class="bi bi-patch-check-fill me-1"></i>100% Trái Cây Tươi Ngon & Nhập Khẩu Chính Ngạch
+                </span>
+                <h1 class="display-4 fw-bold text-dark mb-3">Hoa Quả Tươi Sạch & Giỏ Quà Cao Cấp</h1>
+                <p class="lead text-muted mb-4">
+                    Thưởng thức các loại hoa quả thượng hạng nhập khẩu từ Mỹ, Úc, New Zealand, Nhật Bản cùng đặc sản Việt Nam chuẩn VietGAP. Thiết kế giỏ quà tặng tinh tế cho mọi dịp lễ.
+                </p>
+                <div class="d-flex gap-3">
+                    <a th:href="@{/catalog}" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-bag-plus me-2"></i>Khám Phá Cửa Hàng
+                    </a>
+                    <a th:href="@{/catalog(productType='GIFT_BASKET')}" class="btn btn-outline-success btn-lg rounded-pill px-4">
+                        <i class="bi bi-gift me-2"></i>Đặt Giỏ Quà
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center mt-4 mt-lg-0">
+                <img src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=80"
+                     alt="Fresh Fruit" class="img-fluid rounded-4 shadow-lg" style="max-height: 380px; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Voucher Codes Bar -->
+    <div th:if="${not #lists.isEmpty(activeVouchers)}" class="row g-3 mb-5">
+        <div class="col-12"><h5 class="fw-bold text-success mb-2"><i class="bi bi-tag-fill me-2"></i>Mã Giảm Giá Đang Diễn Ra</h5></div>
+        <div class="col-md-4" th:each="v : ${activeVouchers}">
+            <div class="voucher-card d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-success mb-1" th:text="'Giảm ' + ${v.discountPercent} + '%'">Giảm 10%</span>
+                    <h6 class="fw-bold mb-0 text-dark" th:text="${v.name}">Khuyến Mãi</h6>
+                    <small class="text-muted" th:text="'Đơn từ ' + ${#numbers.formatDecimal(v.minOrderAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-dark fs-6 px-3 py-2 font-monospace" th:text="${v.code}">CHAOBANMOI</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Section -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold text-dark mb-0">Danh Mục Nổi Bật</h3>
+            <a th:href="@{/catalog}" class="text-success text-decoration-none fw-semibold">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-3">
+            <div class="col-6 col-md-3" th:each="cat : ${categories}">
+                <a th:href="@{/catalog(categoryId=${cat.id})}" class="text-decoration-none">
+                    <div class="category-card">
+                        <img th:src="${cat.imageUrl != null ? cat.imageUrl : 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=600&q=80'}" th:alt="${cat.name}">
+                        <div class="category-overlay">
+                            <span th:text="${cat.name}">Tên Danh Mục</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Products Section -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="fw-bold text-dark mb-0">Trái Cây Bán Chạy Nhất</h3>
+                <p class="text-muted small mb-0">Được khách hàng ưa chuộng và đánh giá cao nhất</p>
+            </div>
+            <a th:href="@{/catalog}" class="btn btn-outline-success btn-sm rounded-pill px-3">Tất cả sản phẩm</a>
+        </div>
+        <div class="row g-4">
+            <div class="col-6 col-lg-3" th:each="p : ${featuredProducts}">
+                <div class="product-card">
+                    <div class="product-img-wrapper">
+                        <span class="badge-origin" th:text="${p.origin}">Xuất xứ</span>
+                        <span th:if="${p.featured}" class="badge-featured">Hot</span>
+                        <img th:src="${p.imageUrl != null ? p.imageUrl : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80'}" th:alt="${p.name}">
+                    </div>
+                    <div class="product-body">
+                        <a th:href="@{/products/{id}(id=${p.id})}" class="product-title" th:text="${p.name}">Tên Sản Phẩm</a>
+                        <div class="small text-muted mb-2">ĐVT: <span th:text="${p.unit}">kg</span> | Còn lại: <span th:text="${p.stockQuantity}">10</span></div>
+                        <div class="mt-auto">
+                            <div class="d-flex align-items-baseline mb-3">
+                                <span class="product-price" th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
+                                <span th:if="${p.originalPrice != null && p.originalPrice > p.price}"
+                                      class="product-old-price" th:text="${#numbers.formatDecimal(p.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">120,000 đ</span>
+                            </div>
+                            <form th:action="@{/cart/add}" method="post">
+                                <input type="hidden" name="productId" th:value="${p.id}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary w-100 rounded-pill btn-sm py-2" th:disabled="${p.stockQuantity <= 0}">
+                                    <i class="bi bi-cart-plus me-1"></i> <span th:text="${p.stockQuantity > 0 ? 'Thêm Vào Giỏ' : 'Hết Hàng'}"></span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Luxury Gift Baskets Section -->
+    <div class="mb-5 p-4 rounded-4" style="background-color: #fcf8e3;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span class="badge bg-warning text-dark mb-1">Thiết Kế Tinh Tế</span>
+                <h3 class="fw-bold text-dark mb-0">Giỏ Quà Trái Cây Cao Cấp</h3>
+                <p class="text-muted small mb-0">Quà tặng sức khỏe ý nghĩa dành cho đối tác, gia đình và bạn bè</p>
+            </div>
+            <a th:href="@{/catalog(productType='GIFT_BASKET')}" class="btn btn-warning rounded-pill px-3 btn-sm">Xem Bộ Sưu Tập</a>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-6" th:each="b : ${giftBaskets}">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div class="row g-0 h-100">
+                        <div class="col-sm-5">
+                            <img th:src="${b.imageUrl}" class="img-fluid h-100 w-100" style="object-fit: cover;" th:alt="${b.name}">
+                        </div>
+                        <div class="col-sm-7">
+                            <div class="card-body d-flex flex-direction-column justify-content-between h-100 p-4">
+                                <div>
+                                    <span class="badge bg-danger mb-2">Giỏ Quà VIP</span>
+                                    <h5 class="fw-bold mb-2"><a th:href="@{/products/{id}(id=${b.id})}" class="text-dark text-decoration-none" th:text="${b.name}">Tên Giỏ Quà</a></h5>
+                                    <p class="small text-muted line-clamp-3 mb-3" th:text="${b.description}">Mô tả giỏ quà...</p>
+                                </div>
+                                <div>
+                                    <div class="h5 fw-bold text-danger mb-3" th:text="${#numbers.formatDecimal(b.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">1,000,000 đ</div>
+                                    <form th:action="@{/cart/add}" method="post">
+                                        <input type="hidden" name="productId" th:value="${b.id}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-outline-success rounded-pill px-4">
+                                            <i class="bi bi-cart-plus me-1"></i>Đặt Giỏ Quà
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

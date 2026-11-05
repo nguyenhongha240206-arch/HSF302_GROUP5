@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title th:text="${product.name} + ' - Chi Tiết Sản Phẩm'">Chi Tiết Sản Phẩm</title>
+</head>
+<body>
+<div layout:fragment="content" class="py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-success text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/catalog}" class="text-success text-decoration-none">Cửa hàng</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/catalog(categoryId=${product.category.id})}" class="text-success text-decoration-none" th:text="${product.category.name}">Danh mục</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${product.name}">Tên sản phẩm</li>
+        </ol>
+    </nav>
+
+    <!-- Product Detail Section -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-5">
+        <div class="row g-4 align-items-center">
+            <!-- Product Image -->
+            <div class="col-md-5">
+                <div class="rounded-4 overflow-hidden border">
+                    <img th:src="${product.imageUrl != null ? product.imageUrl : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80'}"
+                         th:alt="${product.name}" class="img-fluid w-100" style="max-height: 450px; object-fit: cover;">
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="col-md-7">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-success" th:text="${product.productType.displayName}">Trái cây tươi</span>
+                    <span class="badge bg-light text-dark border" th:text="'Xuất xứ: ' + ${product.origin}">Xuất xứ</span>
+                    <span class="badge bg-light text-dark border" th:text="'Mã SP: ' + ${product.code}">Mã SP</span>
+                </div>
+
+                <h2 class="fw-bold mb-3 text-dark" th:text="${product.name}">Tên Sản Phẩm</h2>
+
+                <!-- Rating summary -->
+                <div class="d-flex align-items-center mb-3">
+                    <span class="text-warning me-2"><i class="bi bi-star-fill"></i></span>
+                    <span class="fw-bold me-2" th:text="${averageRating} + ' / 5.0'">5.0 / 5.0</span>
+                    <span class="text-muted small" th:text="'(' + ${totalReviews} + ' đánh giá)'">(0 đánh giá)</span>
+                </div>
+
+                <!-- Price Box -->
+                <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline">
+                    <span class="h2 fw-bold text-danger mb-0" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
+                    <span class="text-muted ms-2" th:text="'/ 1 ' + ${product.unit}">/ 1 kg</span>
+                    <span th:if="${product.originalPrice != null && product.originalPrice > product.price}"
+                          class="text-decoration-line-through text-muted ms-3 fs-5"
+                          th:text="${#numbers.formatDecimal(product.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">120,000 đ</span>
+                </div>
+
+                <!-- Stock info -->
+                <p class="mb-4">
+                    <strong>Tình trạng: </strong>
+                    <span th:if="${product.stockQuantity > 0}" class="text-success fw-bold">
+                        <i class="bi bi-check-circle-fill me-1"></i>Còn hàng (<span th:text="${product.stockQuantity}">10</span> <span th:text="${product.unit}">kg</span>)
+                    </span>
+                    <span th:unless="${product.stockQuantity > 0}" class="text-danger fw-bold">
+                        <i class="bi bi-x-circle-fill me-1"></i>Tạm hết hàng
+                    </span>
+                </p>
+
+                <!-- Add to cart form -->
+                <form th:action="@{/cart/add}" method="post" class="mb-4">
+                    <input type="hidden" name="productId" th:value="${product.id}">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-auto">
+                            <label class="form-label mb-0 fw-semibold">Số lượng:</label>
+                        </div>
+                        <div class="col-auto">
+                            <input type="number" name="quantity" value="1" min="1" th:max="${product.stockQuantity}"
+                                   class="form-control text-center" style="width: 80px;" th:disabled="${product.stockQuantity <= 0}">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2" th:disabled="${product.stockQuantity <= 0}">
+                                <i class="bi bi-cart-plus me-2"></i>Thêm Vào Giỏ Hàng
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Commitment bullets -->
+                <div class="border-top pt-3 text-muted small">
+                    <div class="row g-2">
+                        <div class="col-6"><i class="bi bi-shield-check text-success me-1"></i> Cam kết 100% tươi sạch</div>
+                        <div class="col-6"><i class="bi bi-truck text-success me-1"></i> Giao nhanh trong 2 giờ</div>
+                        <div class="col-6"><i class="bi bi-arrow-repeat text-success me-1"></i> Đổi trả 1-1 nếu dập úng</div>
+                        <div class="col-6"><i class="bi bi-gift text-success me-1"></i> Miễn phí nơ thiệp cho giỏ quà</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description Tab -->
+        <div class="mt-5 pt-4 border-top">
+            <h4 class="fw-bold mb-3">Mô Tả Sản Phẩm</h4>
+            <div class="text-muted leading-relaxed" style="white-space: pre-line;" th:text="${product.description}">
+                Mô tả chi tiết sản phẩm...
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Reviews Section -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold mb-4"><i class="bi bi-chat-heart text-danger me-2"></i>Đánh Giá Từ Khách Hàng</h4>
+
+        <div class="row g-4">
+            <!-- Review submission form (Authenticated) -->
+            <div class="col-lg-5">
+                <div class="p-3 bg-light rounded-4">
+                    <h5 class="fw-bold mb-3">Gửi đánh giá của bạn</h5>
+
+                    <div sec:authorize="isAuthenticated()">
+                        <form th:action="@{/reviews/add}" method="post">
+                            <input type="hidden" name="productId" th:value="${product.id}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Đánh giá số sao:</label>
+                                <select name="rating" class="form-select form-select-sm">
+                                    <option value="5">⭐⭐⭐⭐⭐ (5 sao - Tuyệt vời)</option>
+                                    <option value="4">⭐⭐⭐⭐ (4 sao - Rất tốt)</option>
+                                    <option value="3">⭐⭐⭐ (3 sao - Bình thường)</option>
+                                    <option value="2">⭐⭐ (2 sao - Tạm được)</option>
+                                    <option value="1">⭐ (1 sao - Không hài lòng)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Nhận xét chi tiết:</label>
+                                <textarea name="comment" class="form-control form-control-sm" rows="3" placeholder="Chất lượng quả tươi, vị ngọt, đóng gói..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-sm rounded-pill px-4">Gửi Đánh Giá</button>
+                        </form>
+                    </div>
+
+                    <div sec:authorize="isAnonymous()" class="text-center py-3">
+                        <p class="text-muted small mb-3">Vui lòng đăng nhập để có thể gửi đánh giá cho sản phẩm này.</p>
+                        <a th:href="@{/auth/login}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Đăng Nhập Ngay</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews list -->
+            <div class="col-lg-7">
+                <div th:if="${#lists.isEmpty(reviews)}" class="text-muted text-center py-4">
+                    <i class="bi bi-chat-square-text fs-2"></i>
+                    <p class="mt-2 mb-0">Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(reviews)}" class="d-flex flex-column gap-3">
+                    <div th:each="r : ${reviews}" class="border-bottom pb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person-circle fs-5 me-2 text-secondary"></i>
+                                <span class="fw-bold" th:text="${r.user.fullName}">Tên Khách Hàng</span>
+                            </div>
+                            <small class="text-muted" th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</small>
+                        </div>
+                        <div class="text-warning small mb-2">
+                            <span th:each="star : ${#numbers.sequence(1, r.rating)}">★</span>
+                        </div>
+                        <p class="text-dark small mb-0" th:text="${r.comment}">Nội dung đánh giá...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

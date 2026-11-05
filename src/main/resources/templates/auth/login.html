@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title>Đăng Nhập Tài Khoản</title>
+</head>
+<body>
+<div layout:fragment="content" class="py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="text-center mb-4">
+                    <span class="fs-1">🍎</span>
+                    <h3 class="fw-bold mt-2">Đăng Nhập</h3>
+                    <p class="text-muted small">Chào mừng bạn quay trở lại với Fruit Store</p>
+                </div>
+
+                <form th:action="@{/auth/login}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                            <input type="email" name="username" class="form-control" placeholder="name@example.com" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <label class="form-label fw-semibold">Mật khẩu</label>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                            <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng Nhập
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="small text-muted mb-0">Chưa có tài khoản? 
+                        <a th:href="@{/auth/register}" class="text-success fw-bold text-decoration-none">Đăng ký ngay</a>
+                    </p>
+                </div>
+
+                <!-- Demo Accounts Box for Grading / Testing -->
+                <div class="mt-4 p-3 bg-light rounded-3 border">
+                    <h6 class="fw-bold small text-success mb-2"><i class="bi bi-key-fill me-1"></i>Tài khoản Demo thử nghiệm:</h6>
+                    <div class="small text-muted">
+                        <div><strong>Admin:</strong> admin@fruitstore.com / <code>123456</code></div>
+                        <div><strong>Staff:</strong> staff@fruitstore.com / <code>123456</code></div>
+                        <div><strong>Khách hàng:</strong> customer@fruitstore.com / <code>123456</code></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

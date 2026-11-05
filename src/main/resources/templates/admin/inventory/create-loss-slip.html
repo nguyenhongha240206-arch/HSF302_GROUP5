@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<head>
+    <title>Tạo Phiếu Hao Hụt & Xuất Hủy</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h4 class="fw-bold mb-1 text-danger"><i class="bi bi-clipboard2-x me-2"></i>Lập Phiếu Hao Hụt / Hủy Hoa Quả Hỏng</h4>
+                        <p class="text-muted small mb-0">Hệ thống sẽ tự động trừ số lượng xuất hủy khỏi tồn kho sản phẩm</p>
+                    </div>
+                    <a th:href="@{/admin/inventory/slips}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i>Quay lại
+                    </a>
+                </div>
+
+                <form th:action="@{/admin/inventory/slips/save}" th:object="${slipDto}" method="post">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Ghi chú chung của phiếu</label>
+                        <input type="text" th:field="*{note}" class="form-control" placeholder="Ví dụ: Kiểm kho ca sáng ngày 05/11, phát hiện dập úng...">
+                    </div>
+
+                    <h5 class="fw-bold mb-3 text-dark">Danh Sách Mặt Hàng Xuất Hủy</h5>
+
+                    <div id="itemsContainer">
+                        <div class="card bg-light border-0 rounded-3 p-3 mb-3 item-row" th:each="item, itemStat : *{items}">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-semibold">Hoa Quả / Giỏ Quà <span class="text-danger">*</span></label>
+                                    <select th:field="*{items[__${itemStat.index}__].productId}" class="form-select form-select-sm" required>
+                                        <option value="">-- Chọn sản phẩm --</option>
+                                        <option th:each="p : ${products}" th:value="${p.id}"
+                                                th:text="${p.name} + ' (Tồn: ' + ${p.stockQuantity} + ' ' + ${p.unit} + ')'"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Số Lượng Hủy <span class="text-danger">*</span></label>
+                                    <input type="number" th:field="*{items[__${itemStat.index}__].quantity}" min="1" class="form-control form-control-sm" placeholder="SL" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Lý Do Hao Hụt <span class="text-danger">*</span></label>
+                                    <select th:field="*{items[__${itemStat.index}__].lossReason}" class="form-select form-select-sm" required>
+                                        <option th:each="r : ${lossReasons}" th:value="${r}" th:text="${r.displayName}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <input type="text" th:field="*{items[__${itemStat.index}__].note}" class="form-control form-control-sm" placeholder="Ghi chú cụ thể cho mặt hàng này (vết dập, mốc, vỏ héo...)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                        <a th:href="@{/admin/inventory/slips}" class="btn btn-outline-secondary rounded-pill px-4">Hủy</a>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4">
+                            <i class="bi bi-check-lg me-1"></i>Xác Nhận Xuất Hủy & Trừ Tồn Kho
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

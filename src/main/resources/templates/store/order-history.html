@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title>Lịch Sử Đơn Hàng Của Bạn</title>
+</head>
+<body>
+<div layout:fragment="content" class="py-2">
+    <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-clock-history text-success me-2"></i>Lịch Sử Đơn Hàng</h3>
+
+    <div th:if="${#lists.isEmpty(orders)}" class="card border-0 shadow-sm rounded-4 p-5 text-center">
+        <i class="bi bi-bag-x fs-1 text-muted"></i>
+        <h5 class="fw-bold mt-3">Bạn chưa có đơn hàng nào</h5>
+        <p class="text-muted small">Hãy đặt mua các loại trái cây tươi ngon ngay hôm nay!</p>
+        <div class="mt-3">
+            <a th:href="@{/catalog}" class="btn btn-primary rounded-pill px-4">Mua Sắm Ngay</a>
+        </div>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(orders)}" class="d-flex flex-column gap-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4" th:each="o : ${orders}">
+            <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
+                <div>
+                    <span class="fw-bold fs-5 text-dark" th:text="'Đơn Hàng #' + ${o.orderNumber}">#FS-12345</span>
+                    <span class="text-muted small ms-2" th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+                    <span th:class="${o.orderStatus.badgeClass}" th:text="${o.orderStatus.displayName}">Chờ xử lý</span>
+                    <span class="badge bg-secondary" th:text="${o.paymentStatus.displayName}">Chưa thanh toán</span>
+                </div>
+            </div>
+
+            <!-- Items list -->
+            <div class="row g-3 align-items-center">
+                <div class="col-md-7">
+                    <div th:each="d : ${o.orderDetails}" class="d-flex align-items-center mb-2">
+                        <i class="bi bi-dot text-success fs-4"></i>
+                        <span class="fw-semibold text-dark me-2" th:text="${d.productName}">Tên quả</span>
+                        <span class="text-muted small" th:text="'x ' + ${d.quantity} + ' (' + ${#numbers.formatDecimal(d.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ)'">x 2 (200k)</span>
+                    </div>
+                </div>
+
+                <div class="col-md-5 text-md-end">
+                    <div class="small text-muted">Tổng thanh toán:</div>
+                    <div class="h4 fw-bold text-danger mb-3" th:text="${#numbers.formatDecimal(o.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">200,000 đ</div>
+
+                    <div class="d-flex justify-content-md-end gap-2">
+                        <a th:href="@{/orders/{num}(num=${o.orderNumber})}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <i class="bi bi-eye me-1"></i>Chi Tiết
+                        </a>
+
+                        <form th:if="${o.orderStatus.name() == 'PENDING'}" th:action="@{/orders/{id}/cancel(id=${o.id})}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                <i class="bi bi-x-circle me-1"></i>Hủy Đơn
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
