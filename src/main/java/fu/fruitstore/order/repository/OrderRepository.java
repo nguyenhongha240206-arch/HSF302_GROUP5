@@ -35,5 +35,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     BigDecimal calculateTotalDeliveredRevenue();
 
     List<Order> findTop5ByOrderByCreatedAtDesc();
+
+    List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(java.time.LocalDateTime start, java.time.LocalDateTime end);
 }
 

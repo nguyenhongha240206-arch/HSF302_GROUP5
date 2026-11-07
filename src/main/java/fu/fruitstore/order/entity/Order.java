@@ -52,6 +52,15 @@ public class Order extends BaseEntity {
     @Column(length = 50)
     private String voucherCode;
 
+    @Column(length = 50)
+    private String deliveryTimeType; // EXPRESS_2H (Giao gấp 2h), SCHEDULED (Hẹn giờ)
+
+    @Column(length = 100)
+    private String deliveryTimeSlot; // Khung giờ: 08:00 - 11:30, 13:30 - 17:30, 18:00 - 21:00
+
+    @Column(length = 200)
+    private String packagingRequirement; // Tiêu chuẩn quả: Quả chín ăn ngay, Quả cứng thắp hương, Bọc lưới xốp...
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)

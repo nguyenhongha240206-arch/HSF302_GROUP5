@@ -24,11 +24,14 @@ public class OrderDetail {
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id")
     private Product product;
 
     @Column(nullable = false, length = 150)
     private String productName;
+
+    @Column(length = 1000)
+    private String itemDetails; // Kiểu dáng giỏ, phụ kiện nơ, thiệp, thành phần quả mix
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal unitPrice;

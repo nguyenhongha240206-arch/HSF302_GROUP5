@@ -42,16 +42,19 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        if (roleRepository.count() == 0) {
-            log.info(">>> Khởi tạo dữ liệu mẫu (Seeding Database)...");
+        log.info(">>> Đang kiểm tra và khởi tạo dữ liệu mẫu (Seeding Database)...");
 
-            // 1. Roles
-            Role roleAdmin = roleRepository.save(Role.builder().name("ROLE_ADMIN").description("Quản trị viên toàn quyền").build());
-            Role roleStaff = roleRepository.save(Role.builder().name("ROLE_STAFF").description("Nhân viên quản lý cửa hàng").build());
-            Role roleCustomer = roleRepository.save(Role.builder().name("ROLE_CUSTOMER").description("Khách hàng").build());
+        // 1. Roles
+        Role roleAdmin = roleRepository.findByName("ROLE_ADMIN").orElseGet(() ->
+                roleRepository.save(Role.builder().name("ROLE_ADMIN").description("Quản trị viên toàn quyền").build()));
+        Role roleStaff = roleRepository.findByName("ROLE_STAFF").orElseGet(() ->
+                roleRepository.save(Role.builder().name("ROLE_STAFF").description("Nhân viên quản lý cửa hàng").build()));
+        Role roleCustomer = roleRepository.findByName("ROLE_CUSTOMER").orElseGet(() ->
+                roleRepository.save(Role.builder().name("ROLE_CUSTOMER").description("Khách hàng").build()));
 
-            // 2. Users
-            User admin = User.builder()
+        // 2. Users
+        if (!userRepository.existsByEmail("admin@fruitstore.com")) {
+            userRepository.save(User.builder()
                     .fullName("Nguyễn Quản Trị")
                     .email("admin@fruitstore.com")
                     .password(passwordEncoder.encode("123456"))
@@ -60,10 +63,11 @@ public class DataSeeder implements CommandLineRunner {
                     .avatarUrl("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80")
                     .enabled(true)
                     .roles(new HashSet<>(Set.of(roleAdmin, roleStaff)))
-                    .build();
-            userRepository.save(admin);
+                    .build());
+        }
 
-            User staff = User.builder()
+        if (!userRepository.existsByEmail("staff@fruitstore.com")) {
+            userRepository.save(User.builder()
                     .fullName("Trần Nhân Viên")
                     .email("staff@fruitstore.com")
                     .password(passwordEncoder.encode("123456"))
@@ -72,231 +76,282 @@ public class DataSeeder implements CommandLineRunner {
                     .avatarUrl("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80")
                     .enabled(true)
                     .roles(new HashSet<>(Set.of(roleStaff)))
-                    .build();
-            userRepository.save(staff);
+                    .build());
+        }
 
-            User customer = User.builder()
-                    .fullName("Nguyễn Hồng Hà")
-                    .email("customer@fruitstore.com")
-                    .password(passwordEncoder.encode("123456"))
-                    .phoneNumber("0912345678")
-                    .address("Cầu Giấy, Hà Nội")
-                    .avatarUrl("https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80")
-                    .enabled(true)
-                    .roles(new HashSet<>(Set.of(roleCustomer)))
-                    .build();
-            userRepository.save(customer);
+        User customer = userRepository.findByEmail("customer@fruitstore.com").orElseGet(() ->
+                userRepository.save(User.builder()
+                        .fullName("Nguyễn Hồng Hà")
+                        .email("customer@fruitstore.com")
+                        .password(passwordEncoder.encode("123456"))
+                        .phoneNumber("0912345678")
+                        .address("Cầu Giấy, Hà Nội")
+                        .avatarUrl("https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80")
+                        .enabled(true)
+                        .roles(new HashSet<>(Set.of(roleCustomer)))
+                        .build())
+        );
 
-            // 3. Categories
-            Category catImport = categoryRepository.save(Category.builder()
-                    .name("Trái cây nhập khẩu")
-                    .code("CAT_IMPORT")
-                    .description("Các loại trái cây cao cấp nhập khẩu đường hàng không từ Mỹ, Úc, New Zealand, Nhật, Hàn")
-                    .imageUrl("https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=80")
-                    .displayOrder(1)
+        // 3. Categories
+        Category catImport = categoryRepository.findByCode("CAT_IMPORT").orElseGet(() ->
+                categoryRepository.save(Category.builder()
+                        .name("Trái cây nhập khẩu")
+                        .code("CAT_IMPORT")
+                        .description("Các loại trái cây cao cấp nhập khẩu đường hàng không từ Mỹ, Úc, New Zealand, Nhật, Hàn")
+                        .imageUrl("https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=80")
+                        .displayOrder(1)
+                        .active(true)
+                        .build()));
+
+        Category catLocal = categoryRepository.findByCode("CAT_LOCAL").orElseGet(() ->
+                categoryRepository.save(Category.builder()
+                        .name("Trái cây đặc sản Việt")
+                        .code("CAT_LOCAL")
+                        .description("Hoa quả đặc sản ba miền Việt Nam đạt chuẩn VietGAP, GlobalGAP tươi ngon")
+                        .imageUrl("https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=600&q=80")
+                        .displayOrder(2)
+                        .active(true)
+                        .build()));
+
+        Category catGift = categoryRepository.findByCode("CAT_GIFT").orElseGet(() ->
+                categoryRepository.save(Category.builder()
+                        .name("Giỏ quà trái cây cao cấp")
+                        .code("CAT_GIFT")
+                        .description("Giỏ quà hoa quả trang trọng kèm nơ lụa và hoa tươi thích hợp biếu tặng, chúc mừng, dạm ngõ")
+                        .imageUrl("https://images.unsplash.com/photo-1543083477-4f785aeafaa9?auto=format&fit=crop&w=600&q=80")
+                        .displayOrder(3)
+                        .active(true)
+                        .build()));
+
+        Category catDried = categoryRepository.findByCode("CAT_DRIED").orElseGet(() ->
+                categoryRepository.save(Category.builder()
+                        .name("Trái cây sấy khô & Chế biến")
+                        .code("CAT_DRIED")
+                        .description("Hoa quả sấy dẻo, sấy thăng hoa giữ nguyên hương vị và dinh dưỡng tự nhiên")
+                        .imageUrl("https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=600&q=80")
+                        .displayOrder(4)
+                        .active(true)
+                        .build()));
+
+        // 4. Products (Trái cây nhập khẩu, Đặc sản Việt, Giỏ quà, Sấy khô)
+        seedProduct("FRUIT_ENVY_NZ", "Táo Envy New Zealand Size 70",
+                "Táo Envy New Zealand nhập khẩu chính ngạch, thịt giòn tan, vị ngọt đậm đà và hương thơm ngát tự nhiên.",
+                "220000", "250000", 85, "kg", "New Zealand",
+                "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, true);
+
+        seedProduct("FRUIT_MUSCAT_JP", "Nho mẫu đơn Shine Muscat Nhật",
+                "Nho mẫu đơn Shine Muscat chuẩn hàng bay xách tay, quả to bóng mịn, không hạt, thơm hương sữa ngào ngạt.",
+                "850000", "950000", 30, "hộp", "Nhật Bản",
+                "https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, true);
+
+        seedProduct("FRUIT_FINGER_AU", "Nho ngón tay Midnight Beauty Úc",
+                "Nho đen không hạt ngón tay Úc hình dáng thon dài độc đáo, thịt quả giòn rụm, vị ngọt thanh đậm đà.",
+                "260000", "290000", 45, "kg", "Úc",
+                "https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, false);
+
+        seedProduct("FRUIT_CARA_AU", "Cam Cara Cara ruột đỏ Úc",
+                "Cam không hạt ruột đỏ Cara ruột đỏ mọng nước, hàm lượng vitamin C cực cao, ngọt thanh mát.",
+                "135000", "160000", 120, "kg", "Úc",
+                "https://images.unsplash.com/photo-1582979512210-99b6a53386f9?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, false);
+
+        seedProduct("FRUIT_NAVEL_AU", "Cam vàng Navel Úc không hạt",
+                "Cam vàng Navel vỏ mỏng dễ bóc, múi cam vàng mọng nước, thơm lừng vị ngọt tươi mát.",
+                "115000", "135000", 95, "kg", "Úc",
+                "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, false);
+
+        seedProduct("FRUIT_CHERRY_US", "Cherry đỏ Mỹ Size 8.5 chuẩn bay",
+                "Cherry Washington đỏ thẫm cuống xanh tươi rói, quả chắc nịch, thịt ngọt đậm giòn tan đẳng cấp trái cây thượng hạng.",
+                "490000", "560000", 40, "hộp", "Mỹ",
+                "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, true);
+
+        seedProduct("FRUIT_STRAW_KR", "Dâu tây Hàn Quốc Seolhyang cao cấp",
+                "Dâu giống Seolhyang nổi tiếng xứ kim chi, quả đỏ mọng hình nón hoàn hảo, vị ngọt ngào và mùi thơm quyến rũ đặc trưng.",
+                "350000", "390000", 25, "hộp", "Hàn Quốc",
+                "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, true);
+
+        seedProduct("FRUIT_KIWI_NZ", "Kiwi vàng Zespri SunGold New Zealand",
+                "Kiwi vàng Zespri ruột vàng ươm mọng nước, giàu vitamin C gấp 3 lần cam, vị chua ngọt cân bằng tinh tế.",
+                "210000", "240000", 70, "kg", "New Zealand",
+                "https://images.unsplash.com/photo-1585059895524-72359e06133a?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, true);
+
+        seedProduct("FRUIT_PEAR_KR", "Lê nâu Hàn Quốc Singold quả to giòn",
+                "Lê nâu Hàn Quốc chuẩn xuất khẩu quả to tròn đều, vỏ nâu mỏng tang, thịt trắng giòn nhiều nước ngọt thanh tao.",
+                "145000", "170000", 60, "kg", "Hàn Quốc",
+                "https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, false);
+
+        seedProduct("FRUIT_BLUEBERRY_US", "Việt quất tươi hữu cơ Driscoll's Mỹ",
+                "Việt quất quả chắc mẩy phủ phấn trắng tự nhiên, giàu chất chống oxy hóa anthocyanin tốt cho sức khỏe và sắc đẹp.",
+                "165000", "195000", 50, "hộp", "Mỹ",
+                "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catImport, false);
+
+        // Đặc sản Việt Nam
+        seedProduct("FRUIT_XOAI_HL", "Xoài Cát Hòa Lộc Tiền Giang loại 1",
+                "Xoài cát Hòa Lộc chính gốc Tiền Giang, thịt dày mịn, không xơ, hương thơm nồng nàn vị ngọt lịm.",
+                "110000", "130000", 65, "kg", "Việt Nam",
+                "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catLocal, true);
+
+        seedProduct("FRUIT_BUOI_BT", "Bưởi da xanh Bến Tre ruột hồng",
+                "Bưởi da xanh loại 1 cành lá sum suê, tép bưởi mọng nước, giòn ráo không hạt vị chua ngọt cân bằng.",
+                "85000", "95000", 50, "quả", "Việt Nam",
+                "https://images.unsplash.com/photo-1577234286642-fc512a5f8f11?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catLocal, false);
+
+        seedProduct("FRUIT_SAURIENG_RI6", "Sầu riêng Ri6 cơm vàng hạt lép Đắk Lắk",
+                "Sầu riêng Ri6 chín cây tự nhiên, cơm vàng óng ả dày cùi béo ngậy hạt lép, hương thơm quyến rũ nức mũi.",
+                "160000", "185000", 35, "kg", "Việt Nam",
+                "https://images.unsplash.com/photo-1587132137056-bfbf0166836e?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catLocal, true);
+
+        seedProduct("FRUIT_DUALUOI_HL", "Dưa lưới Huỳnh Long ruột cam ngọt mát",
+                "Dưa lưới trồng nhà màng công nghệ cao, vân lưới dày đều đẹp, ruột cam giòn ngọt lịm hương thơm mát.",
+                "95000", "115000", 55, "kg", "Việt Nam",
+                "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catLocal, false);
+
+        seedProduct("FRUIT_MANGCUT_LT", "Măng cụt Lái Thiêu chuẩn VietGAP",
+                "Nữ hoàng trái cây nhiệt đới Lái Thiêu vỏ mềm mỏng, múi trắng nõn mọng nước, vị chua ngọt thanh tao.",
+                "125000", "150000", 40, "kg", "Việt Nam",
+                "https://images.unsplash.com/photo-1546548970-71785318a17b?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catLocal, false);
+
+        seedProduct("FRUIT_THANHLONG_BT", "Thanh long ruột đỏ Bình Thuận xuất khẩu",
+                "Thanh long ruột đỏ đậm tự nhiên, ngọt đậm thơm ngon, giàu chất xơ và chất chống oxy hóa tự nhiên.",
+                "45000", "55000", 80, "kg", "Việt Nam",
+                "https://images.unsplash.com/photo-1527324688151-0e627063f2b1?auto=format&fit=crop&w=600&q=80",
+                ProductType.FRUIT, catLocal, false);
+
+        // Giỏ quà trái cây cao cấp
+        seedProduct("GIFT_NGUPHUC_01", "Giỏ Trái Cây Ngũ Phúc Đoàn Viên",
+                "Thiết kế giỏ mây tre đan cao cấp, kết hợp Táo Envy, Nho mẫu đơn, Cam Cara, Lê Hàn Quốc và Kiwi vàng. Kèm hoa lá tươi, ruy băng sang trọng.",
+                "1250000", "1500000", 15, "giỏ", "Việt Nam / Nhập khẩu",
+                "https://images.unsplash.com/photo-1543083477-4f785aeafaa9?auto=format&fit=crop&w=600&q=80",
+                ProductType.GIFT_BASKET, catGift, true);
+
+        seedProduct("GIFT_VIP_BIZ", "Hộp Quà Trái Cây Doanh Nghiệp VIP",
+                "Hộp quà nắp kính ép nhũ sang trọng, tuyển chọn Cherry Mỹ, Dâu tây Hàn Quốc, Nho xanh không hạt. Đẳng cấp quà biếu đối tác.",
+                "1850000", "2100000", 8, "hộp", "Nhập khẩu",
+                "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80",
+                ProductType.GIFT_BASKET, catGift, true);
+
+        seedProduct("GIFT_DAMNGO_02", "Giỏ Quà Hoa Quả Dạm Ngõ Thắm Duyên",
+                "Mẫu giỏ quà cưới hỏi, dạm ngõ thiết kế thắt nơ lụa đỏ song hỷ, kết hợp nho đen không hạt, táo đỏ Ruby, cam vàng và dưa lưới.",
+                "1600000", "1850000", 12, "giỏ", "Nhập khẩu & Đặc sản",
+                "https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=600&q=80",
+                ProductType.GIFT_BASKET, catGift, true);
+
+        seedProduct("GIFT_LEPHAT_03", "Giỏ Quà Trái Cây Thắp Hương Lễ Phật",
+                "Tuyển chọn các quả tươi cứng cáp đều đẹp: Bưởi da xanh cành lá, Táo đỏ, Cam vàng, Xoài cát dâng hương ban thờ, tổ tiên, lễ chùa.",
+                "750000", "880000", 20, "giỏ", "Nhập khẩu & Việt Nam",
+                "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=600&q=80",
+                ProductType.GIFT_BASKET, catGift, false);
+
+        // Trái cây sấy khô & chế biến
+        seedProduct("DRIED_XOAI_DEO", "Xoài sấy dẻo xuất khẩu loại 1",
+                "Xoài cát sấy dẻo công nghệ lạnh, không chất bảo quản, giữ nguyên vị chua ngọt tự nhiên dẻo thơm.",
+                "75000", "90000", 150, "gói", "Việt Nam",
+                "https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=600&q=80",
+                ProductType.DRIED_FRUIT, catDried, false);
+
+        seedProduct("DRIED_MIT_DALAT", "Mít sấy giòn nguyên miếng Dalat",
+                "Mít nghệ tươi sấy chân không giòn rụm, màu vàng óng tự nhiên, không đường hóa học, thơm lừng vị mít chín.",
+                "60000", "75000", 130, "gói", "Việt Nam",
+                "https://images.unsplash.com/photo-1601039641847-7857b994d704?auto=format&fit=crop&w=600&q=80",
+                ProductType.DRIED_FRUIT, catDried, false);
+
+        seedProduct("DRIED_STRAW_FREEZE", "Dâu tây sấy thăng hoa giữ trọn vitamin",
+                "Dâu tây Đà Lạt sấy thăng hoa công nghệ Nhật Bản, giữ nguyên hình dáng quả, vị chua ngọt giòn xốp tan trong miệng.",
+                "115000", "135000", 80, "hộp", "Việt Nam",
+                "https://images.unsplash.com/photo-1518492104633-130d0cc84637?auto=format&fit=crop&w=600&q=80",
+                ProductType.DRIED_FRUIT, catDried, false);
+
+        seedProduct("DRIED_MACCA_DL", "Hạt macca sấy nứt vỏ Đắk Lắk VIP",
+                "Hạt macca loại 1 nứt vỏ tự nhiên kèm dụng cụ tách, nhân trắng ngà béo ngậy ngọt bùi dinh dưỡng cho cả gia đình.",
+                "140000", "165000", 90, "hộp", "Việt Nam",
+                "https://images.unsplash.com/photo-1509358271058-acd22cc93898?auto=format&fit=crop&w=600&q=80",
+                ProductType.DRIED_FRUIT, catDried, false);
+
+        // 5. Vouchers
+        seedVoucher("CHAOBANMOI", "Chào mừng bạn mới - Giảm ngay 10%", 10,
+                new BigDecimal("100000"), new BigDecimal("200000"), 500, 12);
+        seedVoucher("FREESHIP", "Ưu đãi giảm giá 15% cho đơn từ 500k", 15,
+                new BigDecimal("150000"), new BigDecimal("500000"), 200, 5);
+        seedVoucher("TRIAN50K", "Tri ân khách hàng thân thiết - Giảm 20%", 20,
+                new BigDecimal("50000"), new BigDecimal("250000"), 300, 8);
+
+        // 6. Reviews
+        if (reviewRepository.count() == 0) {
+            productRepository.findByCode("FRUIT_ENVY_NZ").ifPresent(prod ->
+                    reviewRepository.save(Review.builder()
+                            .user(customer)
+                            .product(prod)
+                            .rating(5)
+                            .comment("Táo rất tươi và giòn ngọt, vỏ mỏng bóng đẹp! Giao hàng nhanh và đóng gói bọc xốp rất cẩn thận.")
+                            .build())
+            );
+
+            productRepository.findByCode("GIFT_NGUPHUC_01").ifPresent(prod ->
+                    reviewRepository.save(Review.builder()
+                            .user(customer)
+                            .product(prod)
+                            .rating(5)
+                            .comment("Giỏ quà rất sang trọng và đẹp mắt, trái cây đều quả và tươi rói. Đem đi biếu sinh nhật ai cũng khen!")
+                            .build())
+            );
+        }
+
+        log.info(">>> Khởi tạo dữ liệu mẫu hoàn tất thành công! Tổng số sản phẩm hiện có: {}", productRepository.count());
+    }
+
+    private void seedProduct(String code, String name, String description,
+                             String price, String originalPrice, int stock,
+                             String unit, String origin, String imageUrl,
+                             ProductType type, Category category, boolean featured) {
+        if (!productRepository.existsByCode(code)) {
+            productRepository.save(Product.builder()
+                    .code(code)
+                    .name(name)
+                    .description(description)
+                    .price(new BigDecimal(price))
+                    .originalPrice(originalPrice != null ? new BigDecimal(originalPrice) : null)
+                    .stockQuantity(stock)
+                    .unit(unit)
+                    .origin(origin)
+                    .imageUrl(imageUrl)
+                    .productType(type)
+                    .category(category)
+                    .featured(featured)
                     .active(true)
                     .build());
+        }
+    }
 
-            Category catLocal = categoryRepository.save(Category.builder()
-                    .name("Trái cây đặc sản Việt")
-                    .code("CAT_LOCAL")
-                    .description("Hoa quả đặc sản ba miền Việt Nam đạt chuẩn VietGAP, GlobalGAP tươi ngon")
-                    .imageUrl("https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=600&q=80")
-                    .displayOrder(2)
-                    .active(true)
-                    .build());
-
-            Category catGift = categoryRepository.save(Category.builder()
-                    .name("Giỏ quà trái cây cao cấp")
-                    .code("CAT_GIFT")
-                    .description("Giỏ quà hoa quả trang trọng kèm nơ lụa và hoa tươi thích hợp biếu tặng, chúc mừng, dạm ngõ")
-                    .imageUrl("https://images.unsplash.com/photo-1543083477-4f785aeafaa9?auto=format&fit=crop&w=600&q=80")
-                    .displayOrder(3)
-                    .active(true)
-                    .build());
-
-            Category catDried = categoryRepository.save(Category.builder()
-                    .name("Trái cây sấy khô & Chế biến")
-                    .code("CAT_DRIED")
-                    .description("Hoa quả sấy dẻo, sấy thăng hoa giữ nguyên hương vị và dinh dưỡng tự nhiên")
-                    .imageUrl("https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=600&q=80")
-                    .displayOrder(4)
-                    .active(true)
-                    .build());
-
-            // 4. Products
-            Product p1 = productRepository.save(Product.builder()
-                    .name("Táo Envy New Zealand Size 70")
-                    .code("FRUIT_ENVY_NZ")
-                    .description("Táo Envy New Zealand nhập khẩu chính ngạch, thịt giòn tan, vị ngọt đậm đà và hương thơm ngát tự nhiên.")
-                    .price(new BigDecimal("220000"))
-                    .originalPrice(new BigDecimal("250000"))
-                    .stockQuantity(85)
-                    .unit("kg")
-                    .origin("New Zealand")
-                    .imageUrl("https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80")
-                    .productType(ProductType.FRUIT)
-                    .category(catImport)
-                    .featured(true)
-                    .active(true)
-                    .build());
-
-            Product p2 = productRepository.save(Product.builder()
-                    .name("Nho mẫu đơn Shine Muscat Nhật")
-                    .code("FRUIT_MUSCAT_JP")
-                    .description("Nho mẫu đơn Shine Muscat chuẩn hàng bay xách tay, quả to bóng mịn, không hạt, thơm hương sữa ngào ngạt.")
-                    .price(new BigDecimal("850000"))
-                    .originalPrice(new BigDecimal("950000"))
-                    .stockQuantity(30)
-                    .unit("hộp")
-                    .origin("Nhật Bản")
-                    .imageUrl("https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=600&q=80")
-                    .productType(ProductType.FRUIT)
-                    .category(catImport)
-                    .featured(true)
-                    .active(true)
-                    .build());
-
-            Product p3 = productRepository.save(Product.builder()
-                    .name("Cam Cara Cara ruột đỏ Úc")
-                    .code("FRUIT_CARA_AU")
-                    .description("Cam không hạt ruột đỏ Cara ruột đỏ mọng nước, hàm lượng vitamin C cực cao, ngọt thanh mát.")
-                    .price(new BigDecimal("135000"))
-                    .originalPrice(new BigDecimal("160000"))
-                    .stockQuantity(120)
-                    .unit("kg")
-                    .origin("Úc")
-                    .imageUrl("https://images.unsplash.com/photo-1582979512210-99b6a53386f9?auto=format&fit=crop&w=600&q=80")
-                    .productType(ProductType.FRUIT)
-                    .category(catImport)
-                    .featured(false)
-                    .active(true)
-                    .build());
-
-            Product p4 = productRepository.save(Product.builder()
-                    .name("Xoài Cát Hòa Lộc Tiền Giang")
-                    .code("FRUIT_XOAI_HL")
-                    .description("Xoài cát Hòa Lộc chính gốc Tiền Giang, thịt dày mịn, không xơ, hương thơm nồng nàn vị ngọt lịm.")
-                    .price(new BigDecimal("110000"))
-                    .originalPrice(new BigDecimal("130000"))
-                    .stockQuantity(65)
-                    .unit("kg")
-                    .origin("Việt Nam")
-                    .imageUrl("https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=600&q=80")
-                    .productType(ProductType.FRUIT)
-                    .category(catLocal)
-                    .featured(true)
-                    .active(true)
-                    .build());
-
-            Product p5 = productRepository.save(Product.builder()
-                    .name("Bưởi da xanh Bến Tre ruột hồng")
-                    .code("FRUIT_BUOI_BT")
-                    .description("Bưởi da xanh loại 1 cành lá sum suê, tép bưởi mọng nước, giòn ráo không hạt vị chua ngọt cân bằng.")
-                    .price(new BigDecimal("85000"))
-                    .originalPrice(new BigDecimal("95000"))
-                    .stockQuantity(50)
-                    .unit("quả")
-                    .origin("Việt Nam")
-                    .imageUrl("https://images.unsplash.com/photo-1577234286642-fc512a5f8f11?auto=format&fit=crop&w=600&q=80")
-                    .productType(ProductType.FRUIT)
-                    .category(catLocal)
-                    .featured(false)
-                    .active(true)
-                    .build());
-
-            Product p6 = productRepository.save(Product.builder()
-                    .name("Giỏ Trái Cây Ngũ Phúc Đoàn Viên")
-                    .code("GIFT_NGUPHUC_01")
-                    .description("Thiết kế giỏ mây tre đan cao cấp, kết hợp Táo Envy, Nho mẫu đơn, Cam Cara, Lê Hàn Quốc và Kiwi vàng. Kèm hoa lá tươi, ruy băng sang trọng.")
-                    .price(new BigDecimal("1250000"))
-                    .originalPrice(new BigDecimal("1500000"))
-                    .stockQuantity(15)
-                    .unit("giỏ")
-                    .origin("Việt Nam / Nhập khẩu")
-                    .imageUrl("https://images.unsplash.com/photo-1543083477-4f785aeafaa9?auto=format&fit=crop&w=600&q=80")
-                    .productType(ProductType.GIFT_BASKET)
-                    .category(catGift)
-                    .featured(true)
-                    .active(true)
-                    .build());
-
-            Product p7 = productRepository.save(Product.builder()
-                    .name("Hộp Quà Trái Cây Doanh Nghiệp VIP")
-                    .code("GIFT_VIP_BIZ")
-                    .description("Hộp quà nắp kính ép nhũ sang trọng, tuyển chọn Cherry Mỹ, Dâu tây Hàn Quốc, Nho xanh không hạt. Đẳng cấp quà biếu đối tác.")
-                    .price(new BigDecimal("1850000"))
-                    .originalPrice(new BigDecimal("2100000"))
-                    .stockQuantity(8) // Low stock example (< 10)
-                    .unit("hộp")
-                    .origin("Nhập khẩu")
-                    .imageUrl("https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80")
-                    .productType(ProductType.GIFT_BASKET)
-                    .category(catGift)
-                    .featured(true)
-                    .active(true)
-                    .build());
-
-            Product p8 = productRepository.save(Product.builder()
-                    .name("Xoài sấy dẻo xuất khẩu loại 1")
-                    .code("DRIED_XOAI_DEO")
-                    .description("Xoài cát sấy dẻo công nghệ lạnh, không chất bảo quản, giữ nguyên vị chua ngọt tự nhiên dẻo thơm.")
-                    .price(new BigDecimal("75000"))
-                    .originalPrice(new BigDecimal("90000"))
-                    .stockQuantity(150)
-                    .unit("gói")
-                    .origin("Việt Nam")
-                    .imageUrl("https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=600&q=80")
-                    .productType(ProductType.DRIED_FRUIT)
-                    .category(catDried)
-                    .featured(false)
-                    .active(true)
-                    .build());
-
-            // 5. Vouchers
+    private void seedVoucher(String code, String name, int discountPercent,
+                             BigDecimal maxDiscount, BigDecimal minOrderAmount,
+                             int usageLimit, int usedCount) {
+        if (!voucherRepository.existsByCodeIgnoreCase(code)) {
             voucherRepository.save(Voucher.builder()
-                    .code("CHAOBANMOI")
-                    .name("Chào mừng bạn mới - Giảm ngay 10%")
-                    .discountPercent(10)
-                    .maxDiscountAmount(new BigDecimal("100000"))
-                    .minOrderAmount(new BigDecimal("200000"))
+                    .code(code)
+                    .name(name)
+                    .discountPercent(discountPercent)
+                    .maxDiscountAmount(maxDiscount)
+                    .minOrderAmount(minOrderAmount)
                     .startDate(LocalDate.now().minusDays(5))
                     .endDate(LocalDate.now().plusMonths(2))
-                    .usageLimit(500)
-                    .usedCount(12)
+                    .usageLimit(usageLimit)
+                    .usedCount(usedCount)
                     .active(true)
                     .build());
-
-            voucherRepository.save(Voucher.builder()
-                    .code("FREESHIP")
-                    .name("Ưu đãi giảm giá 15% cho đơn từ 500k")
-                    .discountPercent(15)
-                    .maxDiscountAmount(new BigDecimal("150000"))
-                    .minOrderAmount(new BigDecimal("500000"))
-                    .startDate(LocalDate.now().minusDays(2))
-                    .endDate(LocalDate.now().plusMonths(1))
-                    .usageLimit(200)
-                    .usedCount(5)
-                    .active(true)
-                    .build());
-
-            // 6. Reviews
-            reviewRepository.save(Review.builder()
-                    .user(customer)
-                    .product(p1)
-                    .rating(5)
-                    .comment("Táo rất tươi và giòn ngọt, vỏ mỏng bóng đẹp! Giao hàng nhanh và đóng gói bọc xốp rất cẩn thận.")
-                    .build());
-
-            reviewRepository.save(Review.builder()
-                    .user(customer)
-                    .product(p6)
-                    .rating(5)
-                    .comment("Giỏ quà rất sang trọng và đẹp mắt, trái cây đều quả và tươi rói. Đem đi biếu sinh nhật ai cũng khen!")
-                    .build());
-
-            log.info(">>> Khởi tạo dữ liệu mẫu hoàn tất thành công!");
         }
     }
 }
-

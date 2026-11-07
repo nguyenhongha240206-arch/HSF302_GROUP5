@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title>Tự Thiết Kế Giỏ Quà Hoa Quả Theo Yêu Cầu</title>
+    <style>
+        .style-card {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .style-card:hover {
+            border-color: #2e7d32;
+            transform: translateY(-3px);
+        }
+        .style-card.selected {
+            border-color: #2e7d32;
+            background-color: #f1f8e9;
+        }
+        .fruit-row {
+            transition: background-color 0.2s;
+        }
+        .fruit-row:hover {
+            background-color: #f8fafc;
+        }
+        .sticky-summary {
+            position: sticky;
+            top: 90px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content" class="py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-success text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/catalog(productType='GIFT_BASKET')}" class="text-success text-decoration-none">Giỏ quà</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tự thiết kế giỏ quà theo yêu cầu (UC-09)</li>
+        </ol>
+    </nav>
+
+    <!-- Header Banner -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: linear-gradient(135deg, #fef9e7 0%, #edf7ed 100%);">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2">
+                    <i class="bi bi-gift-fill me-1"></i>Dịch Vụ Tùy Biến Quà Tặng Độc Quyền
+                </span>
+                <h2 class="fw-bold text-dark mb-2">Tự Thiết Kế Giỏ Quà Hoa Quả Theo Yêu Cầu</h2>
+                <p class="text-muted mb-0">
+                    Tự do lựa chọn mẫu giỏ/hộp mây tre đan, hộp da sang trọng, mix các loại quả tươi nhập khẩu & đặc sản theo ngân sách, chọn màu nơ phong thủy và đính kèm thiệp chúc mừng ý nghĩa.
+                </p>
+            </div>
+            <div class="col-md-4 text-end d-none d-md-block">
+                <span class="fs-1">🎁 🍎 🍇</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Customization Form -->
+    <form th:action="@{/custom-basket/add-to-cart}" th:object="${customBasketDto}" method="post" id="customBasketForm">
+        <input type="hidden" th:field="*{packagingStyleId}" id="selectedStyleId">
+
+        <div class="row g-4">
+            <!-- Left: Customization Steps -->
+            <div class="col-lg-8">
+                <!-- STEP 1: Chọn Kiểu Dáng Giỏ / Hộp -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success rounded-circle me-2 p-2 px-3 fs-6">1</span>
+                        <h5 class="fw-bold mb-0 text-dark">Chọn Kiểu Dáng Giỏ / Hộp Đựng Quà</h5>
+                    </div>
+                    <p class="text-muted small mb-3">Mỗi kiểu dáng bao gồm màng co bọc định hình, lót rơm lụa cao cấp chống va đập quả.</p>
+
+                    <div class="row g-3">
+                        <div class="col-md-6" th:each="style : ${styles}">
+                            <div class="card h-100 rounded-3 p-3 style-card"
+                                 th:classappend="${style.id == 1L ? 'selected' : ''}"
+                                 th:data-id="${style.id}"
+                                 th:data-name="${style.name}"
+                                 th:data-price="${style.price}">
+                                <div class="d-flex align-items-center mb-2">
+                                    <img th:src="${style.imageUrl}" class="rounded-3 me-3" width="70" height="70" style="object-fit: cover;">
+                                    <div>
+                                        <h6 class="fw-bold mb-1 text-dark" th:text="${style.name}">Tên giỏ</h6>
+                                        <div class="text-danger fw-bold fs-6" th:text="${#numbers.formatDecimal(style.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
+                                    </div>
+                                </div>
+                                <div class="small text-muted mb-1" th:text="${style.description}"></div>
+                                <span class="badge bg-light text-secondary border align-self-start small" th:text="${style.capacity}">Sức chứa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Chọn Phụ Kiện Nơ & Thiệp Mừng -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success rounded-circle me-2 p-2 px-3 fs-6">2</span>
+                        <h5 class="fw-bold mb-0 text-dark">Chọn Nơ Lụa & Thiệp Chúc Mừng</h5>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Tên Gọi Giỏ Quà</label>
+                            <input type="text" th:field="*{basketName}" class="form-control" placeholder="Ví dụ: Giỏ Quà Biếu Sếp / Mừng Sinh Nhật">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Màu Nơ Ruy Băng Phong Thủy</label>
+                            <select th:field="*{ribbonColor}" class="form-select" id="ribbonSelect">
+                                <option th:each="color : ${ribbonColors}" th:value="${color}" th:text="${color}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Chọn Mẫu Lời Chúc Có Sẵn (Hoặc tự nhập bên dưới)</label>
+                        <select class="form-select mb-2" id="cardTemplateSelect">
+                            <option value="">-- Chọn lời chúc gợi ý --</option>
+                            <option th:each="tpl : ${cardTemplates}" th:value="${tpl}" th:text="${tpl}"></option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label small fw-semibold">Nội Dung Thiệp Kèm Giỏ Quà</label>
+                        <textarea th:field="*{greetingCardMessage}" class="form-control" id="cardMessageInput" rows="2"
+                                  placeholder="Nhập lời chúc muốn in trên thiệp mừng..."></textarea>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Tự Mix Hoa Quả Theo Ngân Sách -->
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-success rounded-circle me-2 p-2 px-3 fs-6">3</span>
+                            <h5 class="fw-bold mb-0 text-dark">Tự Chọn Hoa Quả Tươi Đặt Vào Giỏ</h5>
+                        </div>
+                        <span class="text-muted small">Chọn ít nhất 1 loại quả</span>
+                    </div>
+                    <p class="text-muted small mb-3">Điều chỉnh số lượng từng loại hoa quả tươi bạn muốn mix vào giỏ quà theo ngân sách mong muốn.</p>
+
+                    <!-- Fruit Items Table -->
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Hoa Quả Tươi</th>
+                                    <th>Xuất Xứ</th>
+                                    <th>Đơn Giá</th>
+                                    <th class="text-center" style="width: 150px;">Số Lượng</th>
+                                    <th class="text-end" style="width: 120px;">Tạm Tính</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="f, stat : ${fruits}" class="fruit-row">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img th:src="${f.imageUrl}" class="rounded-3 me-2" width="45" height="45" style="object-fit: cover;">
+                                            <div>
+                                                <div class="fw-semibold text-dark" th:text="${f.name}">Tên quả</div>
+                                                <small class="text-muted" th:text="'Còn lại: ' + ${f.stockQuantity} + ' ' + ${f.unit}"></small>
+                                            </div>
+                                        </div>
+                                        <!-- Hidden inputs for mapping -->
+                                        <input type="hidden" th:name="'selectedFruits[' + ${stat.index} + '].productId'" th:value="${f.id}">
+                                        <input type="hidden" th:name="'selectedFruits[' + ${stat.index} + '].productName'" th:value="${f.name}">
+                                        <input type="hidden" th:name="'selectedFruits[' + ${stat.index} + '].unitPrice'" th:value="${f.price}" class="fruit-price">
+                                        <input type="hidden" th:name="'selectedFruits[' + ${stat.index} + '].unit'" th:value="${f.unit}">
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border" th:text="${f.origin}">Xuất xứ</span></td>
+                                    <td class="fw-semibold text-danger" th:text="${#numbers.formatDecimal(f.price, 0, 'COMMA', 0, 'POINT')} + ' đ/' + ${f.unit}"></td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <button type="button" class="btn btn-outline-secondary btn-minus" th:data-index="${stat.index}">-</button>
+                                            <input type="number" min="0" th:max="${f.stockQuantity}"
+                                                   th:name="'selectedFruits[' + ${stat.index} + '].quantity'"
+                                                   value="0" class="form-control text-center fruit-qty"
+                                                   th:data-price="${f.price}"
+                                                   th:data-index="${stat.index}">
+                                            <button type="button" class="btn btn-outline-secondary btn-plus" th:data-index="${stat.index}">+</button>
+                                        </div>
+                                    </td>
+                                    <td class="text-end fw-bold text-dark fruit-subtotal" th:id="'subtotal_' + ${stat.index}">0 đ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Sticky Live Budget Calculator -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow rounded-4 p-4 sticky-summary">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-calculator-fill text-success me-2"></i>Dự Toán Chi Phí Giỏ Quà</h5>
+
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="small text-muted">Kiểu dáng giỏ/hộp:</div>
+                        <div class="fw-bold text-dark" id="summaryStyleName">Giỏ Mây Tre Đan Truyền Thống</div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span class="small text-muted">Tiền giỏ & đóng gói:</span>
+                            <span class="fw-semibold" id="summaryStylePrice">80,000 đ</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small text-muted">Màu nơ:</span>
+                            <span class="small fw-semibold" id="summaryRibbon">Đỏ Nhung May Mắn</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="small text-muted">Thiệp chúc mừng:</span>
+                            <span class="badge bg-success">Miễn phí</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small text-muted">Số loại quả đã chọn:</span>
+                            <span class="fw-bold text-success" id="summaryFruitCount">0 loại</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="small text-muted">Tiền hoa quả mix:</span>
+                            <span class="fw-semibold text-danger" id="summaryFruitsPrice">0 đ</span>
+                        </div>
+                    </div>
+
+                    <!-- Total Live Budget -->
+                    <div class="p-3 bg-light rounded-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Tổng Chi Phí Dự Toán:</small>
+                                <div class="h3 fw-bold text-danger mb-0" id="summaryGrandTotal">80,000 đ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold shadow-sm" id="btnSubmitCustomBasket">
+                            <i class="bi bi-cart-plus-fill me-2"></i>Thêm Giỏ Quà Vào Giỏ Hàng
+                        </button>
+                    </div>
+
+                    <div class="small text-muted text-center mt-3">
+                        <i class="bi bi-shield-check text-success me-1"></i> Cam kết 100% quả tươi ngon tuyển chọn, đóng gói thẩm mỹ đúng yêu cầu.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<th:block layout:fragment="scripts">
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let currentStylePrice = 80000;
+        let currentStyleName = "Giỏ Mây Tre Đan Truyền Thống";
+
+        // Style Card Selection
+        const styleCards = document.querySelectorAll('.style-card');
+        const selectedStyleInput = document.getElementById('selectedStyleId');
+
+        styleCards.forEach(card => {
+            card.addEventListener('click', function () {
+                styleCards.forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                const id = this.getAttribute('data-id');
+                currentStylePrice = parseFloat(this.getAttribute('data-price')) || 0;
+                currentStyleName = this.getAttribute('data-name');
+                selectedStyleInput.value = id;
+
+                document.getElementById('summaryStyleName').textContent = currentStyleName;
+                document.getElementById('summaryStylePrice').textContent = currentStylePrice.toLocaleString('vi-VN') + ' đ';
+                calculateGrandTotal();
+            });
+        });
+
+        // Ribbon & Card Message Binding
+        const ribbonSelect = document.getElementById('ribbonSelect');
+        ribbonSelect.addEventListener('change', function () {
+            document.getElementById('summaryRibbon').textContent = this.value;
+        });
+
+        const cardTemplateSelect = document.getElementById('cardTemplateSelect');
+        const cardMessageInput = document.getElementById('cardMessageInput');
+        cardTemplateSelect.addEventListener('change', function () {
+            if (this.value) {
+                cardMessageInput.value = this.value;
+            }
+        });
+
+        // Quantity Plus / Minus
+        document.querySelectorAll('.btn-plus').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const idx = this.getAttribute('data-index');
+                const input = document.querySelector(`input.fruit-qty[data-index="${idx}"]`);
+                const max = parseInt(input.getAttribute('max')) || 999;
+                let val = parseInt(input.value) || 0;
+                if (val < max) {
+                    input.value = val + 1;
+                    updateFruitSubtotal(input, idx);
+                    calculateGrandTotal();
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-minus').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const idx = this.getAttribute('data-index');
+                const input = document.querySelector(`input.fruit-qty[data-index="${idx}"]`);
+                let val = parseInt(input.value) || 0;
+                if (val > 0) {
+                    input.value = val - 1;
+                    updateFruitSubtotal(input, idx);
+                    calculateGrandTotal();
+                }
+            });
+        });
+
+        document.querySelectorAll('.fruit-qty').forEach(input => {
+            input.addEventListener('change', function () {
+                const idx = this.getAttribute('data-index');
+                let val = parseInt(this.value) || 0;
+                if (val < 0) val = 0;
+                this.value = val;
+                updateFruitSubtotal(this, idx);
+                calculateGrandTotal();
+            });
+        });
+
+        function updateFruitSubtotal(input, idx) {
+            const price = parseFloat(input.getAttribute('data-price')) || 0;
+            const qty = parseInt(input.value) || 0;
+            const sub = price * qty;
+            document.getElementById('subtotal_' + idx).textContent = sub.toLocaleString('vi-VN') + ' đ';
+        }
+
+        function calculateGrandTotal() {
+            let totalFruits = 0;
+            let fruitCount = 0;
+
+            document.querySelectorAll('.fruit-qty').forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                const price = parseFloat(input.getAttribute('data-price')) || 0;
+                if (qty > 0) {
+                    totalFruits += (qty * price);
+                    fruitCount++;
+                }
+            });
+
+            document.getElementById('summaryFruitCount').textContent = fruitCount + ' loại quả';
+            document.getElementById('summaryFruitsPrice').textContent = totalFruits.toLocaleString('vi-VN') + ' đ';
+
+            const grand = currentStylePrice + totalFruits;
+            document.getElementById('summaryGrandTotal').textContent = grand.toLocaleString('vi-VN') + ' đ';
+        }
+
+        // Form validation
+        document.getElementById('customBasketForm').addEventListener('submit', function (e) {
+            let hasFruit = false;
+            document.querySelectorAll('.fruit-qty').forEach(input => {
+                if ((parseInt(input.value) || 0) > 0) {
+                    hasFruit = true;
+                }
+            });
+            if (!hasFruit) {
+                e.preventDefault();
+                alert('Vui lòng chọn ít nhất 1 loại hoa quả tươi (số lượng > 0) để mix vào giỏ quà!');
+            }
+        });
+    });
+</script>
+</th:block>
+</body>
+</html>
+
