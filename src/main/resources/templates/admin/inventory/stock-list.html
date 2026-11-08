@@ -7,6 +7,8 @@
 </head>
 <body>
 <div layout:fragment="content">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-1 text-dark">Kiểm Kê Tồn Kho Hoa Quả</h3>
@@ -76,9 +78,11 @@
                             <span th:if="${p.stockQuantity > 10}" class="badge bg-success">Tồn kho an toàn</span>
                         </td>
                         <td class="text-end">
-                            <a th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                                Chỉnh sửa tồn
-                            </a>
+                            <form th:action="@{/admin/inventory/stock/{id}(id=${p.id})}" method="post" class="d-flex justify-content-end gap-2">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="number" name="quantity" min="0" th:value="${p.stockQuantity}" class="form-control form-control-sm" style="max-width: 100px" required aria-label="Số lượng tồn mới">
+                                <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-3">Cập nhật</button>
+                            </form>
                         </td>
                     </tr>
                 </tbody>

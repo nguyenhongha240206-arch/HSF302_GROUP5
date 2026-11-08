@@ -107,6 +107,12 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
+    public void updateStock(Long productId, int quantity) {
+        productService.updateStock(productId, quantity);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public BigDecimal getTotalLossAmount() {
         return lossSlipRepository.calculateTotalLossAmount();

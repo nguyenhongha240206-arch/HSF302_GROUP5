@@ -8,11 +8,13 @@ import fu.fruitstore.inventory.services.InventoryService;
 import fu.fruitstore.product.entity.Product;
 import fu.fruitstore.product.services.ProductService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -93,11 +95,36 @@ public class AdminInventoryController {
         return "redirect:/admin/inventory/slips";
     }
 
+    @PostMapping("/stock/{id}")
+    public String updateStock(@PathVariable("id") Long id,
+                              @RequestParam("quantity") int quantity,
+                              @RequestParam(value = "keyword", required = false) String keyword,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            inventoryService.updateStock(id, quantity);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật tồn kho thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            return "redirect:/admin/inventory/stock?keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return "redirect:/admin/inventory/stock";
+    }
+
     @GetMapping("/stock")
     public String stockMonitoring(@RequestParam(value = "keyword", required = false) String keyword,
                                  @RequestParam(value = "page", defaultValue = "0") int page,
                                  @RequestParam(value = "size", defaultValue = "15") int size,
+                                 HttpServletRequest request,
                                  Model model) {
+        // Resolve the lazily-created CSRF token before Thymeleaf starts writing
+        // the page, because each row below contains a POST form.
+        Object csrfAttribute = request.getAttribute(CsrfToken.class.getName());
+        if (csrfAttribute instanceof CsrfToken csrfToken) {
+            csrfToken.getToken();
+        }
+
         Page<Product> products = productService.searchForAdmin(keyword,
                 PageRequest.of(page, size, Sort.by("stockQuantity").ascending()));
         model.addAttribute("products", products);

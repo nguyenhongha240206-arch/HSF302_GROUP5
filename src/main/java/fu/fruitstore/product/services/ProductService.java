@@ -21,6 +21,7 @@ public interface ProductService {
     Product update(Long id, ProductDto dto);
     void delete(Long id);
     void adjustStock(Long id, int quantityChange);
+    void updateStock(Long id, int quantity);
     long countLowStock(int threshold);
     List<Product> getLowStockProducts(int threshold);
 }
