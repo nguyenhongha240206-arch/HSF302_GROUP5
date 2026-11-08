@@ -4,6 +4,7 @@ import fu.fruitstore.category.entity.Category;
 import fu.fruitstore.shared.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Nationalized;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
@@ -39,6 +40,7 @@ public class Product extends BaseEntity {
     private Integer stockQuantity = 0;
 
     @Column(nullable = false, length = 30)
+    @Nationalized
     private String unit; // kg, hộp, giỏ, combo
 
     @Column(length = 100)

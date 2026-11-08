@@ -1,9 +1,8 @@
 package fu.fruitstore.review.repository;
 
 import fu.fruitstore.review.entity.Review;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,8 +12,11 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    @Query("SELECT r FROM Review r JOIN FETCH r.user WHERE r.product.id = :productId ORDER BY r.createdAt DESC")
-    List<Review> findByProductIdOrderByCreatedAtDesc(@Param("productId") Long productId);
+    @EntityGraph(attributePaths = "user")
+    List<Review> findByProductIdOrderByCreatedAtDesc(Long productId);
+
+    @EntityGraph(attributePaths = {"user", "product"})
+    List<Review> findByUserEmailOrderByCreatedAtDesc(String email);
 
     long countByProductId(Long productId);
 
@@ -23,4 +25,3 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     boolean existsByUserIdAndProductId(Long userId, Long productId);
 }
-

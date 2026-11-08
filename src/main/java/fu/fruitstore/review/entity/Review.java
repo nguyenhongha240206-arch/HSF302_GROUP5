@@ -30,5 +30,8 @@ public class Review extends BaseEntity {
 
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String comment;
-}
 
+    // BỔ SUNG CHO UC-15: Lưu đường dẫn hình ảnh báo cáo quả dập nát / hư hỏng
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+}

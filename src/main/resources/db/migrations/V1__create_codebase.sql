@@ -75,7 +75,7 @@ CREATE TABLE products (
                           origin NVARCHAR(100) NULL,
                           price DECIMAL(18,2) NOT NULL,
                           stock_quantity INT NOT NULL DEFAULT 0,
-                          unit NVARCHAR(50) NOT NULL DEFAULT N'kg',
+                          unit NVARCHAR(30) NOT NULL CONSTRAINT DF_products_unit DEFAULT N'kg',
                           description NVARCHAR(MAX) NULL,
                           image_url NVARCHAR(500) NULL,
                           status NVARCHAR(50) NOT NULL DEFAULT 'AVAILABLE',
@@ -133,17 +133,81 @@ CREATE TABLE orders (
                         customer_phone NVARCHAR(20) NOT NULL,
                         shipping_address NVARCHAR(255) NOT NULL,
                         total_amount DECIMAL(18,2) NOT NULL,
-                        discount_amount DECIMAL(18,2) NOT NULL DEFAULT 0.0,
+                        discount_amount DECIMAL(15,2) NULL CONSTRAINT DF_orders_discount_amount DEFAULT 0.0,
                         final_amount DECIMAL(18,2) NOT NULL,
-                        order_status NVARCHAR(50) NOT NULL DEFAULT 'PENDING',
-                        payment_status NVARCHAR(50) NOT NULL DEFAULT 'UNPAID',
-                        payment_method NVARCHAR(50) NOT NULL DEFAULT 'COD',
+                        order_status VARCHAR(30) NOT NULL CONSTRAINT DF_orders_order_status DEFAULT 'PENDING',
+                        payment_status VARCHAR(30) NOT NULL CONSTRAINT DF_orders_payment_status DEFAULT 'UNPAID',
+                        payment_method VARCHAR(30) NOT NULL CONSTRAINT DF_orders_payment_method DEFAULT 'COD',
                         note NVARCHAR(500) NULL,
                         created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
                         updated_at DATETIME2 NULL,
                         FOREIGN KEY (user_id) REFERENCES users(id)
 );
 END
+GO
+
+-- Existing databases may have SQL Server-generated default constraint names.
+-- Replace them before altering the columns so the type matches the JPA entities.
+DECLARE @column_name SYSNAME;
+DECLARE @existing_constraint SYSNAME;
+DECLARE @table_name SYSNAME;
+DECLARE @column_type NVARCHAR(100);
+DECLARE @target_constraint SYSNAME;
+DECLARE @default_value NVARCHAR(100);
+DECLARE @alter_sql NVARCHAR(MAX);
+DECLARE @column_fixes TABLE (
+    table_name SYSNAME NOT NULL,
+    column_name SYSNAME NOT NULL,
+    column_type NVARCHAR(100) NOT NULL,
+    constraint_name SYSNAME NOT NULL,
+    default_value NVARCHAR(100) NOT NULL
+);
+
+INSERT INTO @column_fixes (table_name, column_name, column_type, constraint_name, default_value)
+VALUES
+    ('orders', 'discount_amount', 'DECIMAL(15,2) NULL', 'DF_orders_discount_amount', '0.0'),
+    ('orders', 'order_status', 'VARCHAR(30) NOT NULL', 'DF_orders_order_status', '''PENDING'''),
+    ('orders', 'payment_status', 'VARCHAR(30) NOT NULL', 'DF_orders_payment_status', '''UNPAID'''),
+    ('orders', 'payment_method', 'VARCHAR(30) NOT NULL', 'DF_orders_payment_method', '''COD'''),
+    ('products', 'unit', 'NVARCHAR(30) NOT NULL', 'DF_products_unit', 'N''kg''');
+
+DECLARE column_fix_cursor CURSOR LOCAL FAST_FORWARD FOR
+    SELECT table_name, column_name, column_type, constraint_name, default_value
+    FROM @column_fixes;
+
+OPEN column_fix_cursor;
+FETCH NEXT FROM column_fix_cursor INTO @table_name, @column_name, @column_type, @target_constraint, @default_value;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    IF OBJECT_ID(@table_name, 'U') IS NOT NULL
+       AND COL_LENGTH(@table_name, @column_name) IS NOT NULL
+    BEGIN
+        SET @existing_constraint = NULL;
+        SELECT @existing_constraint = dc.name
+        FROM sys.default_constraints dc
+        INNER JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id
+        WHERE dc.parent_object_id = OBJECT_ID(@table_name) AND c.name = @column_name;
+
+        IF @existing_constraint IS NOT NULL
+        BEGIN
+            SET @alter_sql = N'ALTER TABLE ' + QUOTENAME(@table_name) + N' DROP CONSTRAINT ' + QUOTENAME(@existing_constraint);
+            EXEC sys.sp_executesql @alter_sql;
+        END;
+
+        SET @alter_sql = N'ALTER TABLE ' + QUOTENAME(@table_name) + N' ALTER COLUMN ' + QUOTENAME(@column_name) + N' ' + @column_type;
+        EXEC sys.sp_executesql @alter_sql;
+
+        SET @alter_sql = N'ALTER TABLE ' + QUOTENAME(@table_name) + N' ADD CONSTRAINT ' + QUOTENAME(@target_constraint)
+            + N' DEFAULT ' + @default_value + N' FOR ' + QUOTENAME(@column_name);
+        EXEC sys.sp_executesql @alter_sql;
+    END;
+
+    FETCH NEXT FROM column_fix_cursor INTO @table_name, @column_name, @column_type, @target_constraint, @default_value;
+END;
+
+CLOSE column_fix_cursor;
+DEALLOCATE column_fix_cursor;
 GO
 
 -- 9. ORDER_ITEMS TABLE
