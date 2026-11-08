@@ -25,7 +25,12 @@
                     <a class="nav-link" th:href="@{/catalog}">Cửa hàng</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/catalog(productType='GIFT_BASKET')}">Giỏ quà tặng</a>
+                    <a class="nav-link text-danger fw-bold" th:href="@{/custom-basket}">
+                        <i class="bi bi-gift-fill me-1"></i>Tự Tạo Giỏ Quà
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/catalog(productType='GIFT_BASKET')}">Giỏ quà mẫu</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/about}">Giới thiệu</a>

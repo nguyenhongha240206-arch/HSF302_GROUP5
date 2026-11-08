@@ -4,6 +4,7 @@ import fu.fruitstore.auth.entity.User;
 import fu.fruitstore.auth.services.UserService;
 import fu.fruitstore.cart.dto.CartDto;
 import fu.fruitstore.cart.dto.CartItemDto;
+import fu.fruitstore.cart.dto.CustomFruitSelectionDto;
 import fu.fruitstore.cart.services.CartService;
 import fu.fruitstore.order.dto.CheckoutDto;
 import fu.fruitstore.order.entity.*;
@@ -54,12 +55,21 @@ public class OrderServiceImpl implements OrderService {
         int randomPart = 1000 + new Random().nextInt(9000);
         String orderNumber = "FS-" + datePart + "-" + randomPart;
 
+        // Delivery time slot formatting
+        String fullTimeSlot = checkoutDto.getDeliveryTimeSlot();
+        if (checkoutDto.getDeliveryDate() != null && !checkoutDto.getDeliveryDate().isBlank()) {
+            fullTimeSlot = fullTimeSlot + " (" + checkoutDto.getDeliveryDate() + ")";
+        }
+
         Order order = Order.builder()
                 .orderNumber(orderNumber)
                 .user(user)
                 .receiverName(checkoutDto.getReceiverName())
                 .receiverPhone(checkoutDto.getReceiverPhone())
                 .shippingAddress(checkoutDto.getShippingAddress())
+                .deliveryTimeType(checkoutDto.getDeliveryTimeType())
+                .deliveryTimeSlot(fullTimeSlot)
+                .packagingRequirement(checkoutDto.getPackagingRequirement())
                 .note(checkoutDto.getNote())
                 .totalAmount(cart.getTotalAmount())
                 .discountAmount(cart.getDiscountAmount())
@@ -72,23 +82,48 @@ public class OrderServiceImpl implements OrderService {
 
         // Process details and deduct stock
         for (CartItemDto item : cart.getItems()) {
-            Product product = productService.getById(item.getProductId());
-            if (product.getStockQuantity() < item.getQuantity()) {
-                throw new BadRequestException("Sản phẩm '" + product.getName() + "' không đủ số lượng tồn kho!");
+            if (item.isCustomBasket()) {
+                // UC-09: Deduct inventory for all fruits mixed in the custom basket
+                for (CustomFruitSelectionDto fruit : item.getCustomFruitItems()) {
+                    Product fruitProduct = productService.getById(fruit.getProductId());
+                    int requiredQty = fruit.getQuantity() * item.getQuantity();
+                    if (fruitProduct.getStockQuantity() < requiredQty) {
+                        throw new BadRequestException("Hoa quả '" + fruitProduct.getName() + "' trong giỏ quà không đủ số lượng tồn kho!");
+                    }
+                    productService.adjustStock(fruitProduct.getId(), -requiredQty);
+                }
+
+                OrderDetail detail = OrderDetail.builder()
+                        .product(null) // Custom composite basket
+                        .productName(item.getProductName())
+                        .itemDetails(item.getCustomBasketSummary())
+                        .unitPrice(item.getUnitPrice())
+                        .quantity(item.getQuantity())
+                        .subTotal(item.getSubTotal())
+                        .build();
+
+                order.addOrderDetail(detail);
+            } else {
+                // Regular fruit product
+                Product product = productService.getById(item.getProductId());
+                if (product.getStockQuantity() < item.getQuantity()) {
+                    throw new BadRequestException("Sản phẩm '" + product.getName() + "' không đủ số lượng tồn kho!");
+                }
+
+                OrderDetail detail = OrderDetail.builder()
+                        .product(product)
+                        .productName(product.getName())
+                        .itemDetails("ĐVT: " + product.getUnit() + " | Xuất xứ: " + product.getOrigin())
+                        .unitPrice(product.getPrice())
+                        .quantity(item.getQuantity())
+                        .subTotal(item.getSubTotal())
+                        .build();
+
+                order.addOrderDetail(detail);
+
+                // Deduct inventory
+                productService.adjustStock(product.getId(), -item.getQuantity());
             }
-
-            OrderDetail detail = OrderDetail.builder()
-                    .product(product)
-                    .productName(product.getName())
-                    .unitPrice(product.getPrice())
-                    .quantity(item.getQuantity())
-                    .subTotal(item.getSubTotal())
-                    .build();
-
-            order.addOrderDetail(detail);
-
-            // Deduct inventory
-            productService.adjustStock(product.getId(), -item.getQuantity());
         }
 
         Order savedOrder = orderRepository.save(order);
@@ -142,7 +177,9 @@ public class OrderServiceImpl implements OrderService {
         if (newStatus == OrderStatus.CANCELLED) {
             // Restore inventory when cancelled by admin
             for (OrderDetail detail : order.getOrderDetails()) {
-                productService.adjustStock(detail.getProduct().getId(), detail.getQuantity());
+                if (detail.getProduct() != null) {
+                    productService.adjustStock(detail.getProduct().getId(), detail.getQuantity());
+                }
             }
         }
 
@@ -178,7 +215,9 @@ public class OrderServiceImpl implements OrderService {
 
         // Return stock
         for (OrderDetail detail : order.getOrderDetails()) {
-            productService.adjustStock(detail.getProduct().getId(), detail.getQuantity());
+            if (detail.getProduct() != null) {
+                productService.adjustStock(detail.getProduct().getId(), detail.getQuantity());
+            }
         }
 
         order.setOrderStatus(OrderStatus.CANCELLED);

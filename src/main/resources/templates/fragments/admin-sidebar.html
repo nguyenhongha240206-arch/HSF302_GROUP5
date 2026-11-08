@@ -55,6 +55,14 @@
             </a>
         </li>
 
+        <li class="nav-heading text-uppercase small text-muted px-3 mt-3 mb-1 font-weight-bold">Báo Cáo & Thống Kê</li>
+        <li>
+            <a th:href="@{/admin/reports}">
+                <i class="bi bi-bar-chart-line"></i>
+                <span>Báo cáo doanh thu & Top bán</span>
+            </a>
+        </li>
+
         <li sec:authorize="hasRole('ADMIN')" class="nav-heading text-uppercase small text-muted px-3 mt-3 mb-1 font-weight-bold">Hệ Thống</li>
         <li sec:authorize="hasRole('ADMIN')">
             <a th:href="@{/admin/users}">

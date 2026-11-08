@@ -20,8 +20,13 @@ import java.util.List;
 @SQLRestriction("is_deleted = 0")
 public class Order extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "order_code", nullable = false, unique = true, length = 50)
     private String orderNumber;
+
+    // The current database has both the legacy order_code and order_number columns.
+    // Keep both populated until the schema is consolidated.
+    @Column(name = "order_number", nullable = false, unique = true, length = 50)
+    private String orderNumberCompat;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -52,6 +57,15 @@ public class Order extends BaseEntity {
     @Column(length = 50)
     private String voucherCode;
 
+    @Column(length = 50)
+    private String deliveryTimeType; // EXPRESS_2H (Giao gấp 2h), SCHEDULED (Hẹn giờ)
+
+    @Column(length = 100)
+    private String deliveryTimeSlot; // Khung giờ: 08:00 - 11:30, 13:30 - 17:30, 18:00 - 21:00
+
+    @Column(length = 200)
+    private String packagingRequirement; // Tiêu chuẩn quả: Quả chín ăn ngay, Quả cứng thắp hương, Bọc lưới xốp...
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -74,5 +88,11 @@ public class Order extends BaseEntity {
     public void addOrderDetail(OrderDetail detail) {
         orderDetails.add(detail);
         detail.setOrder(this);
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void syncOrderNumberColumns() {
+        orderNumberCompat = orderNumber;
     }
 }

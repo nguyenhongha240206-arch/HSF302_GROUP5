@@ -125,14 +125,14 @@
                 </div>
 
                 <div class="detail-step"
-                     th:classappend="${(stName == 'CONFIRMED' or stName == 'SHIPPING' or stName == 'DELIVERED') ? 'active' : ''}">
+                     th:classappend="${(stName == 'CONFIRMED' or stName == 'SHIPPING' or stName == 'DELIVERED' or stName == 'COMPLETED') ? 'active' : ''}">
                     <div class="detail-step-icon"><i class="bi bi-truck"></i></div>
                     <div class="small">2. Đang giao hàng</div>
                 </div>
 
                 <div class="detail-step"
                      th:if="${stName != 'CANCELLED'}"
-                     th:classappend="${stName == 'DELIVERED' ? 'active' : ''}">
+                     th:classappend="${(stName == 'DELIVERED' or stName == 'COMPLETED') ? 'active' : ''}">
                     <div class="detail-step-icon"><i class="bi bi-patch-check-fill"></i></div>
                     <div class="small">3. Hoàn thành</div>
                 </div>
@@ -144,7 +144,7 @@
             </div>
         </div>
 
-        <!-- UC-12: Khung quét mã VietQR tự động điền số tiền & mã đơn (Chỉ hiện khi chọn BANK_TRANSFER và đơn chưa hủy/chưa thanh toán) -->
+        <!-- UC-12: Khung quét mã VietQR tự động điền số tiền & mã đơn -->
         <div th:if="${order.paymentMethod != null and order.paymentMethod.name() == 'BANK_TRANSFER' and order.orderStatus.name() != 'CANCELLED' and order.paymentStatus.name() != 'PAID'}"
              class="vietqr-detail-box rounded-4 p-4 mb-4"
              th:with="amount=${order.finalAmount != null ? order.finalAmount.longValue() : 0}">
@@ -202,6 +202,8 @@
                     <p class="mb-1"><strong>Người nhận:</strong> <span th:text="${order.receiverName}"></span></p>
                     <p class="mb-1"><strong>Số điện thoại:</strong> <span th:text="${order.receiverPhone}"></span></p>
                     <p class="mb-1"><strong>Địa chỉ nhận:</strong> <span th:text="${order.shippingAddress}"></span></p>
+                    <p class="mb-1" th:if="${order.deliveryTimeSlot != null}"><strong>Khung giờ giao (UC-11):</strong> <span class="badge bg-primary" th:text="${order.deliveryTimeSlot}"></span></p>
+                    <p class="mb-1" th:if="${order.packagingRequirement != null}"><strong>Yêu cầu đóng gói (UC-11):</strong> <span class="text-success fw-semibold" th:text="${order.packagingRequirement}"></span></p>
                     <p class="mb-0" th:if="${order.note != null && !order.note.isBlank()}"><strong>Ghi chú:</strong> <span th:text="${order.note}"></span></p>
                 </div>
             </div>
@@ -219,75 +221,81 @@
         </div>
 
         <!-- Ordered Items Table -->
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0">Danh Sách Mặt Hàng</h5>
-            <span th:if="${order.orderStatus.name() == 'DELIVERED'}" class="badge bg-warning text-dark px-3 py-2 rounded-pill">
-                <i class="bi bi-chat-heart-fill text-danger me-1"></i>Đơn hàng đã hoàn tất! Bạn có thể đánh giá hoặc gửi ảnh báo cáo nếu quả bị dập hỏng.
-            </span>
-        </div>
+        <div th:with="isFinished=${order.orderStatus.name() == 'DELIVERED' or order.orderStatus.name() == 'COMPLETED'}">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Danh Sách Mặt Hàng</h5>
+                <span th:if="${isFinished}" class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                    <i class="bi bi-chat-heart-fill text-danger me-1"></i>Đơn hàng đã hoàn tất! Bạn có thể đánh giá hoặc gửi ảnh báo cáo nếu quả bị dập hỏng.
+                </span>
+            </div>
 
-        <div class="table-responsive mb-4">
-            <table class="table align-middle">
-                <thead class="table-light">
-                <tr>
-                    <th>Sản Phẩm</th>
-                    <th class="text-center">Đơn Giá</th>
-                    <th class="text-center">Số Lượng</th>
-                    <th class="text-end">Thành Tiền</th>
-                    <!-- UC-15: Cột Đánh giá & Khiếu nại quả hỏng (Chỉ hiện khi đơn đã DELIVERED) -->
-                    <th th:if="${order.orderStatus.name() == 'DELIVERED'}" class="text-center">Đánh Giá / Khiếu Nại</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="d : ${order.orderDetails}">
-                    <td>
-                        <a th:href="@{/products/{id}(id=${d.product.id})}" class="fw-semibold text-dark text-decoration-none" th:text="${d.productName}">Tên sản phẩm</a>
-                        <div class="small text-muted" th:text="'Mã SP: ' + ${d.product.code}"></div>
-                    </td>
-                    <td class="text-center" th:text="${#numbers.formatDecimal(d.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                    <td class="text-center fw-bold" th:text="${d.quantity}">1</td>
-                    <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(d.subTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+            <div class="table-responsive mb-4">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Sản Phẩm</th>
+                        <th class="text-center">Đơn Giá</th>
+                        <th class="text-center">Số Lượng</th>
+                        <th class="text-end">Thành Tiền</th>
+                        <!-- UC-15: Cột Đánh giá & Khiếu nại quả hỏng (Chỉ hiện khi đơn đã hoàn thành) -->
+                        <th th:if="${isFinished}" class="text-center">Đánh Giá / Khiếu Nại</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="d : ${order.orderDetails}">
+                        <!-- SỬA LỖI GIỎ QUÀ: Kiểm tra d.product != null -->
+                        <td>
+                            <a th:if="${d.product != null}" th:href="@{/products/{id}(id=${d.product.id})}" class="fw-semibold text-dark text-decoration-none" th:text="${d.productName}">Tên sản phẩm</a>
+                            <span th:unless="${d.product != null}" class="fw-bold text-dark" th:text="${d.productName}">Tên giỏ quà</span>
 
-                    <!-- UC-15: Nút mở Modal Đánh giá sao hoặc Khiếu nại quả hỏng cho từng sản phẩm -->
-                    <td th:if="${order.orderStatus.name() == 'DELIVERED'}" class="text-center">
-                        <div class="d-flex flex-wrap justify-content-center gap-1">
-                            <button type="button"
-                                    class="btn btn-outline-success btn-sm rounded-pill px-3 open-review-modal"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#reviewComplaintModal"
-                                    th:data-product-id="${d.product.id}"
-                                    th:data-product-name="${d.productName}"
-                                    data-mode="REVIEW">
-                                <i class="bi bi-star-fill text-warning me-1"></i>Đánh giá
-                            </button>
-                            <button type="button"
-                                    class="btn btn-outline-danger btn-sm rounded-pill px-3 open-review-modal"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#reviewComplaintModal"
-                                    th:data-product-id="${d.product.id}"
-                                    th:data-product-name="${d.productName}"
-                                    data-mode="COMPLAINT">
-                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Báo quả hỏng
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-                <tfoot>
-                <tr>
-                    <td th:colspan="${order.orderStatus.name() == 'DELIVERED' ? 4 : 3}" class="text-end text-muted">Tổng tiền hàng:</td>
-                    <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                </tr>
-                <tr th:if="${order.discountAmount > 0}">
-                    <td th:colspan="${order.orderStatus.name() == 'DELIVERED' ? 4 : 3}" class="text-end text-success">Giảm giá voucher:</td>
-                    <td class="text-end fw-semibold text-success" th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                </tr>
-                <tr>
-                    <td th:colspan="${order.orderStatus.name() == 'DELIVERED' ? 4 : 3}" class="text-end fw-bold fs-5">Tổng thanh toán:</td>
-                    <td class="text-end fw-bold text-danger fs-4" th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                </tr>
-                </tfoot>
-            </table>
+                            <div th:if="${d.product != null}" class="small text-muted" th:text="'Mã SP: ' + ${d.product.code}"></div>
+                            <div th:if="${d.itemDetails != null}" class="small text-muted mt-1 p-1 bg-light rounded" th:text="${d.itemDetails}"></div>
+                        </td>
+                        <td class="text-center" th:text="${#numbers.formatDecimal(d.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                        <td class="text-center fw-bold" th:text="${d.quantity}">1</td>
+                        <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(d.subTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+
+                        <!-- UC-15: Nút mở Modal Đánh giá sao hoặc Khiếu nại (Lưu ý: Chỉ cho đánh giá sản phẩm lẻ d.product != null) -->
+                        <td th:if="${isFinished}" class="text-center">
+                            <div th:if="${d.product != null}" class="d-flex flex-wrap justify-content-center gap-1">
+                                <button type="button"
+                                        class="btn btn-outline-success btn-sm rounded-pill px-3 open-review-modal"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reviewComplaintModal"
+                                        th:data-product-id="${d.product.id}"
+                                        th:data-product-name="${d.productName}"
+                                        data-mode="REVIEW">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>Đánh giá
+                                </button>
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm rounded-pill px-3 open-review-modal"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reviewComplaintModal"
+                                        th:data-product-id="${d.product.id}"
+                                        th:data-product-name="${d.productName}"
+                                        data-mode="COMPLAINT">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Báo quả hỏng
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td th:colspan="${isFinished ? 4 : 3}" class="text-end text-muted">Tổng tiền hàng:</td>
+                        <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                    <tr th:if="${order.discountAmount > 0}">
+                        <td th:colspan="${isFinished ? 4 : 3}" class="text-end text-success">Giảm giá voucher:</td>
+                        <td class="text-end fw-semibold text-success" th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                    <tr>
+                        <td th:colspan="${isFinished ? 4 : 3}" class="text-end fw-bold fs-5">Tổng thanh toán:</td>
+                        <td class="text-end fw-bold text-danger fs-4" th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
 
         <!-- Footer Actions -->
@@ -318,7 +326,7 @@
     <!-- ========================================================================= -->
     <!-- UC-15: MODAL ĐÁNH GIÁ SAO & KHIẾU NẠI QUẢ DẬP HỎNG (Có đính kèm hình ảnh) -->
     <!-- ========================================================================= -->
-    <div th:if="${order.orderStatus.name() == 'DELIVERED'}"
+    <div th:if="${order.orderStatus.name() == 'DELIVERED' or order.orderStatus.name() == 'COMPLETED'}"
          class="modal fade" id="reviewComplaintModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
