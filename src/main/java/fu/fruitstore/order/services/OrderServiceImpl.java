@@ -144,14 +144,6 @@ public class OrderServiceImpl implements OrderService {
     public Order getById(Long id) {
         return orderRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + id));
-
-        if (order.getUser() != null) {
-            order.getUser().getFullName();
-            order.getUser().getEmail();
-            order.getUser().getPhoneNumber();
-        }
-        order.getOrderDetails().forEach(detail -> detail.getProduct().getCode());
-        return order;
     }
 
     @Override
