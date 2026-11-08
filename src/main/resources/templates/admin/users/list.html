@@ -39,7 +39,7 @@
                         <th>Số Điện Thoại</th>
                         <th>Vai Trò (Roles)</th>
                         <th>Trạng Thái</th>
-                        <th class="text-end" style="width: 180px;">Thao Tác</th>
+                        <th class="text-center" style="width: 250px;">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,19 +64,23 @@
                             <span th:if="${u.enabled}" class="badge bg-success">Hoạt động</span>
                             <span th:unless="${u.enabled}" class="badge bg-danger">Bị khóa</span>
                         </td>
-                        <td class="text-end">
-                            <form th:action="@{/admin/users/{id}/toggle-status(id=${u.id})}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill me-1"
-                                        th:title="${u.enabled ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}">
-                                    <i th:class="${u.enabled ? 'bi bi-lock' : 'bi bi-unlock'}"></i>
-                                </button>
-                            </form>
-                            <form th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post" class="d-inline"
-                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này? (Soft Delete)');">
-                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" title="Xóa">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                        <td class="text-center">
+                            <div class="d-inline-flex align-items-center justify-content-center gap-1 flex-nowrap">
+                                <a th:href="@{/admin/users/{id}/orders(id=${u.id})}" class="btn btn-outline-primary btn-sm rounded-pill text-nowrap">
+                                    Lịch sử
+                                </a>
+                                <th:block th:if="${u.email != currentUserEmail}">
+                                    <form th:action="@{/admin/users/{id}/toggle-status(id=${u.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill text-nowrap"
+                                                th:text="${u.enabled ? 'Khóa' : 'Mở khóa'}"></button>
+                                    </form>
+                                    <form th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này? (Soft Delete)');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">Xóa</button>
+                                    </form>
+                                </th:block>
+                                <span th:if="${u.email == currentUserEmail}" class="small text-muted">Tài khoản của bạn</span>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
