@@ -89,7 +89,6 @@ public class ProductServiceImpl implements ProductService {
                 .unit(dto.getUnit())
                 .origin(dto.getOrigin())
                 .imageUrl(dto.getImageUrl())
-                .sweetnessBrix(dto.getSweetnessBrix())
                 .receivedDate(dto.getReceivedDate())
                 .productType(dto.getProductType())
                 .category(category)
@@ -121,7 +120,6 @@ public class ProductServiceImpl implements ProductService {
         product.setUnit(dto.getUnit());
         product.setOrigin(dto.getOrigin());
         product.setImageUrl(dto.getImageUrl());
-        product.setSweetnessBrix(dto.getSweetnessBrix());
         product.setReceivedDate(dto.getReceivedDate());
         product.setProductType(dto.getProductType());
         product.setCategory(category);

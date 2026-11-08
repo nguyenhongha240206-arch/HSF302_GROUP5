@@ -2,7 +2,7 @@ package fu.fruitstore.product.dto;
 
 import fu.fruitstore.product.entity.ProductType;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.DecimalMax;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -41,11 +41,6 @@ public class ProductDto {
 
     private String origin;
     private String imageUrl;
-
-    @DecimalMin(value = "0.0", message = "Độ Brix không thể âm")
-    @DecimalMax(value = "100.0", message = "Độ Brix không hợp lệ")
-    private BigDecimal sweetnessBrix;
-
     private LocalDate receivedDate;
 
     @NotNull(message = "Vui lòng chọn loại sản phẩm")
