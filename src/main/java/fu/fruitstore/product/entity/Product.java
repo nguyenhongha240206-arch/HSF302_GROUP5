@@ -49,9 +49,6 @@ public class Product extends BaseEntity {
     @Column(length = 500)
     private String imageUrl;
 
-    @Column(precision = 4, scale = 1)
-    private BigDecimal sweetnessBrix;
-
     private LocalDate receivedDate;
 
     @Builder.Default

@@ -35,7 +35,6 @@
                     <span class="badge bg-success" th:text="${product.productType.displayName}">Trái cây tươi</span>
                     <span class="badge bg-light text-dark border" th:text="'Xuất xứ: ' + ${product.origin}">Xuất xứ</span>
                     <span class="badge bg-light text-dark border" th:text="'Mã SP: ' + ${product.code}">Mã SP</span>
-                    <span class="badge bg-light text-dark border" th:if="${product.sweetnessBrix != null}" th:text="'Độ ngọt: ' + ${product.sweetnessBrix} + '° Brix'"></span>
                     <span class="badge bg-light text-dark border" th:if="${product.receivedDate != null}" th:text="'Ngày nhập: ' + ${#temporals.format(product.receivedDate, 'dd/MM/yyyy')}"></span>
                 </div>
 
