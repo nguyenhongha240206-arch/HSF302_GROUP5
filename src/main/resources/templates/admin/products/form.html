@@ -84,6 +84,18 @@
                         </div>
                     </div>
 
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Độ ngọt (Brix)</label>
+                            <input type="number" min="0" max="100" step="0.1" th:field="*{sweetnessBrix}" class="form-control">
+                            <div class="invalid-feedback" th:errors="*{sweetnessBrix}"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày nhập kho</label>
+                            <input type="date" th:field="*{receivedDate}" class="form-control">
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Mô Tả Chi Tiết</label>
                         <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Mô tả hương vị, đặc điểm hoa quả, thành phần giỏ quà..."></textarea>

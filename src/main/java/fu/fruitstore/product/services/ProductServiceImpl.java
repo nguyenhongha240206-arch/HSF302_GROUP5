@@ -27,9 +27,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Product> filterProducts(Long categoryId, ProductType productType, String keyword,
+    public Page<Product> filterProducts(Long categoryId, ProductType productType, String keyword, String origin,
                                         BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
-        return productRepository.filterProducts(categoryId, productType, keyword, minPrice, maxPrice, pageable);
+        return productRepository.filterProducts(categoryId, productType, keyword, origin, minPrice, maxPrice, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getOrigins() {
+        return productRepository.findActiveOrigins();
     }
 
     @Override
@@ -59,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public Product getById(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findWithCategoryById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID: " + id));
     }
 
@@ -83,6 +89,8 @@ public class ProductServiceImpl implements ProductService {
                 .unit(dto.getUnit())
                 .origin(dto.getOrigin())
                 .imageUrl(dto.getImageUrl())
+                .sweetnessBrix(dto.getSweetnessBrix())
+                .receivedDate(dto.getReceivedDate())
                 .productType(dto.getProductType())
                 .category(category)
                 .featured(dto.isFeatured())
@@ -113,6 +121,8 @@ public class ProductServiceImpl implements ProductService {
         product.setUnit(dto.getUnit());
         product.setOrigin(dto.getOrigin());
         product.setImageUrl(dto.getImageUrl());
+        product.setSweetnessBrix(dto.getSweetnessBrix());
+        product.setReceivedDate(dto.getReceivedDate());
         product.setProductType(dto.getProductType());
         product.setCategory(category);
         product.setFeatured(dto.isFeatured());

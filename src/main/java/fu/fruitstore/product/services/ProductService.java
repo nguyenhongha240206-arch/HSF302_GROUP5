@@ -10,12 +10,13 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface ProductService {
-    Page<Product> filterProducts(Long categoryId, ProductType productType, String keyword,
+    Page<Product> filterProducts(Long categoryId, ProductType productType, String keyword, String origin,
                                  BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
     Page<Product> searchForAdmin(String keyword, Pageable pageable);
     List<Product> getFeaturedProducts();
     List<Product> getNewestProducts();
     List<Product> getGiftBaskets();
+    List<String> getOrigins();
     Product getById(Long id);
     Product create(ProductDto dto);
     Product update(Long id, ProductDto dto);
@@ -24,4 +25,3 @@ public interface ProductService {
     long countLowStock(int threshold);
     List<Product> getLowStockProducts(int threshold);
 }
-

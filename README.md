@@ -18,7 +18,7 @@ Hệ thống **Quản lý Cửa hàng Hoa quả Tươi & Giỏ Quà Tặng Cao C
 ---
 
 ## 🛠 Công Nghệ Sử Dụng
-- **Java**: 21 (LTS)
+- **Java**: 17+
 - **Framework**: Spring Boot 4.1.1 / 3.x
 - **Bảo Mật**: Spring Security 6 (Form Login, RBAC, BCryptPasswordEncoder)
 - **Dữ Liệu & ORM**: Spring Data JPA, Hibernate 6

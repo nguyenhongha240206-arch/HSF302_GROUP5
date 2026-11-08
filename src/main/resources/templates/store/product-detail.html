@@ -35,6 +35,8 @@
                     <span class="badge bg-success" th:text="${product.productType.displayName}">Trái cây tươi</span>
                     <span class="badge bg-light text-dark border" th:text="'Xuất xứ: ' + ${product.origin}">Xuất xứ</span>
                     <span class="badge bg-light text-dark border" th:text="'Mã SP: ' + ${product.code}">Mã SP</span>
+                    <span class="badge bg-light text-dark border" th:if="${product.sweetnessBrix != null}" th:text="'Độ ngọt: ' + ${product.sweetnessBrix} + '° Brix'"></span>
+                    <span class="badge bg-light text-dark border" th:if="${product.receivedDate != null}" th:text="'Ngày nhập: ' + ${#temporals.format(product.receivedDate, 'dd/MM/yyyy')}"></span>
                 </div>
 
                 <h2 class="fw-bold mb-3 text-dark" th:text="${product.name}">Tên Sản Phẩm</h2>
@@ -65,6 +67,21 @@
                         <i class="bi bi-x-circle-fill me-1"></i>Tạm hết hàng
                     </span>
                 </p>
+
+                <!-- UC-06: Wishlist toggle -->
+                <div class="mb-3 d-flex gap-2">
+                    <form th:action="@{/wishlist/toggle/{id}(id=${product.id})}" method="post" sec:authorize="isAuthenticated()">
+                        <input type="hidden" name="redirectUrl" th:value="'/products/' + ${product.id}">
+                        <button type="submit" class="btn btn-sm rounded-pill px-3"
+                                th:classappend="${isWishlisted} ? 'btn-danger' : 'btn-outline-secondary'">
+                            <i class="bi me-1" th:classappend="${isWishlisted} ? 'bi-heart-fill' : 'bi-heart'"></i>
+                            <span th:text="${isWishlisted} ? 'Đã Yêu Thích' : 'Thêm Yêu Thích'">Thêm Yêu Thích</span>
+                        </button>
+                    </form>
+                    <a th:href="@{/wishlist}" sec:authorize="isAuthenticated()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                        <i class="bi bi-heart me-1"></i>Xem Yêu Thích
+                    </a>
+                </div>
 
                 <!-- Add to cart form -->
                 <form th:action="@{/cart/add}" method="post" class="mb-4">

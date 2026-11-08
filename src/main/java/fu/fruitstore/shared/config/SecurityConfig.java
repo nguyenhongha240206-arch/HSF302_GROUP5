@@ -8,6 +8,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfToken;
+import jakarta.servlet.Filter;
 
 @Configuration
 @EnableWebSecurity
@@ -30,7 +33,7 @@ public class SecurityConfig {
                 // Admin and Staff management
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")
                 // Customer actions
-                .requestMatchers("/checkout/**", "/orders/**", "/profile/**", "/reviews/add/**").authenticated()
+                .requestMatchers("/checkout/**", "/orders/**", "/profile/**", "/reviews/add/**", "/wishlist/**").authenticated()
                 .anyRequest().permitAll()
             )
             .formLogin(form -> form
@@ -52,6 +55,15 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .accessDeniedPage("/error/403")
             );
+
+        Filter csrfTokenInitializationFilter = (request, response, chain) -> {
+            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+            if (csrfToken != null) {
+                csrfToken.getToken();
+            }
+            chain.doFilter(request, response);
+        };
+        http.addFilterAfter(csrfTokenInitializationFilter, CsrfFilter.class);
 
         return http.build();
     }
