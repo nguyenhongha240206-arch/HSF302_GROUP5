@@ -21,6 +21,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
 
+
     @EntityGraph(attributePaths = {"user", "orderDetails", "orderDetails.product"})
     Optional<Order> findWithDetailsById(Long id);
 
@@ -29,6 +30,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @EntityGraph(attributePaths = {"orderDetails", "orderDetails.product"})
     List<Order> findWithDetailsByUserIdOrderByCreatedAtDesc(Long userId);
+
+    Page<Order> findByUserId(Long userId, Pageable pageable);
+
 
     @Query("SELECT o FROM Order o WHERE " +
            "(:status IS NULL OR o.orderStatus = :status) AND " +

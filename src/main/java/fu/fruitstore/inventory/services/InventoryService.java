@@ -13,5 +13,6 @@ public interface InventoryService {
     LossSlip getById(Long id);
     void deleteLossSlip(Long id);
     BigDecimal getTotalLossAmount();
+    void updateStock(Long productId, int quantity);
 }
 

@@ -144,6 +144,14 @@ public class OrderServiceImpl implements OrderService {
     public Order getById(Long id) {
         return orderRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + id));
+
+        if (order.getUser() != null) {
+            order.getUser().getFullName();
+            order.getUser().getEmail();
+            order.getUser().getPhoneNumber();
+        }
+        order.getOrderDetails().forEach(detail -> detail.getProduct().getCode());
+        return order;
     }
 
     @Override
@@ -164,6 +172,12 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public Page<Order> getAllOrders(OrderStatus status, String keyword, Pageable pageable) {
         return orderRepository.searchOrders(status, keyword, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Order> getOrdersByUser(Long userId, Pageable pageable) {
+        return orderRepository.findByUserId(userId, pageable);
     }
 
     @Override

@@ -142,12 +142,25 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void adjustStock(Long id, int quantityChange) {
-        Product product = getById(id);
+        Product product = productRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID: " + id));
         int newQuantity = product.getStockQuantity() + quantityChange;
         if (newQuantity < 0) {
             throw new BadRequestException("Số lượng tồn kho không đủ để thực hiện (còn lại: " + product.getStockQuantity() + ")");
         }
         product.setStockQuantity(newQuantity);
+        productRepository.save(product);
+    }
+
+    @Override
+    @Transactional
+    public void updateStock(Long id, int quantity) {
+        if (quantity < 0) {
+            throw new BadRequestException("Số lượng tồn kho không được nhỏ hơn 0");
+        }
+        Product product = productRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID: " + id));
+        product.setStockQuantity(quantity);
         productRepository.save(product);
     }
 
