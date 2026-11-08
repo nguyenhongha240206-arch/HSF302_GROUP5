@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface ReviewService {
     List<Review> getReviewsByProduct(Long productId);
+    List<Review> getReviewsByUser(String email);
     Double getAverageRating(Long productId);
     long countReviewsByProduct(Long productId);
     Review addReview(String userEmail, ReviewDto dto);

@@ -1,6 +1,7 @@
 package fu.fruitstore.review.repository;
 
 import fu.fruitstore.review.entity.Review;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,11 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
+    @EntityGraph(attributePaths = "user")
     List<Review> findByProductIdOrderByCreatedAtDesc(Long productId);
+
+    @EntityGraph(attributePaths = {"user", "product"})
+    List<Review> findByUserEmailOrderByCreatedAtDesc(String email);
 
     long countByProductId(Long productId);
 

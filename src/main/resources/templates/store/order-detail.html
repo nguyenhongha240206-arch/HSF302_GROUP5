@@ -4,6 +4,79 @@
       layout:decorate="~{layouts/main-layout}">
 <head>
     <title th:text="'Chi Tiết Đơn Hàng ' + ${order.orderNumber}">Chi Tiết Đơn Hàng</title>
+    <style>
+        /* Stepper tiến trình đơn hàng (UC-13) */
+        .detail-stepper {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 20px 0 30px 0;
+        }
+        .detail-stepper::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 12%;
+            right: 12%;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        .detail-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+            color: #6c757d;
+        }
+        .detail-step-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .detail-step.active .detail-step-icon {
+            background-color: #198754;
+            color: #fff;
+        }
+        .detail-step.active {
+            color: #198754;
+            font-weight: 600;
+        }
+        .detail-step.cancelled .detail-step-icon {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .detail-step.cancelled {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        /* VietQR Box (UC-12) */
+        .vietqr-detail-box {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
+            border: 2px dashed #0d6efd;
+        }
+        /* Star Rating (UC-15) */
+        .star-rating-group .star-btn {
+            font-size: 1.8rem;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color 0.15s ease, transform 0.15s ease;
+        }
+        .star-rating-group .star-btn.selected,
+        .star-rating-group .star-btn:hover {
+            color: #ffc107;
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content" class="py-2">
@@ -17,19 +90,110 @@
     </nav>
 
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <!-- Header đơn hàng -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
             <div>
                 <h4 class="fw-bold mb-1 text-dark">
                     <i class="bi bi-box2-heart-fill text-success me-2"></i>Đơn Hàng #<span th:text="${order.orderNumber}"></span>
                 </h4>
                 <div class="small text-muted" th:text="'Đặt lúc: ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></div>
             </div>
-            <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+            <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
                 <span th:class="${order.orderStatus.badgeClass} + ' fs-6 px-3 py-2'" th:text="${order.orderStatus.displayName}"></span>
                 <span class="badge bg-secondary fs-6 px-3 py-2" th:text="${order.paymentStatus.displayName}"></span>
+
+                <!-- UC-14: Nút Hủy đơn nhanh trên góc nếu đơn đang Chờ xác nhận (PENDING) -->
+                <form th:if="${order.orderStatus.name() == 'PENDING'}"
+                      th:action="@{/orders/{id}/cancel(id=${order.id})}"
+                      method="post"
+                      class="ms-1"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được hoàn lại kho.');">
+                    <input type="hidden" name="redirectUrl" th:value="'/orders/' + ${order.orderNumber}">
+                    <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-x-circle me-1"></i>Hủy Đơn Hàng
+                    </button>
+                </form>
             </div>
         </div>
 
+        <!-- UC-13: Thanh tiến trình trạng thái đơn hàng (Chờ duyệt ➔ Đang giao ➔ Hoàn thành / Hủy) -->
+        <div class="bg-light rounded-4 p-3 mb-4" th:with="stName=${order.orderStatus.name()}">
+            <div class="detail-stepper">
+                <div class="detail-step active">
+                    <div class="detail-step-icon"><i class="bi bi-clipboard-check"></i></div>
+                    <div class="small">1. Chờ xác nhận</div>
+                </div>
+
+                <div class="detail-step"
+                     th:classappend="${(stName == 'CONFIRMED' or stName == 'SHIPPING' or stName == 'DELIVERED') ? 'active' : ''}">
+                    <div class="detail-step-icon"><i class="bi bi-truck"></i></div>
+                    <div class="small">2. Đang giao hàng</div>
+                </div>
+
+                <div class="detail-step"
+                     th:if="${stName != 'CANCELLED'}"
+                     th:classappend="${stName == 'DELIVERED' ? 'active' : ''}">
+                    <div class="detail-step-icon"><i class="bi bi-patch-check-fill"></i></div>
+                    <div class="small">3. Hoàn thành</div>
+                </div>
+
+                <div class="detail-step cancelled" th:if="${stName == 'CANCELLED'}">
+                    <div class="detail-step-icon"><i class="bi bi-x-octagon-fill"></i></div>
+                    <div class="small">3. Đã hủy đơn</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UC-12: Khung quét mã VietQR tự động điền số tiền & mã đơn (Chỉ hiện khi chọn BANK_TRANSFER và đơn chưa hủy/chưa thanh toán) -->
+        <div th:if="${order.paymentMethod != null and order.paymentMethod.name() == 'BANK_TRANSFER' and order.orderStatus.name() != 'CANCELLED' and order.paymentStatus.name() != 'PAID'}"
+             class="vietqr-detail-box rounded-4 p-4 mb-4"
+             th:with="amount=${order.finalAmount != null ? order.finalAmount.longValue() : 0}">
+            <div class="row align-items-center g-4">
+                <div class="col-md-4 text-center">
+                    <div class="bg-white p-3 rounded-4 shadow-sm d-inline-block">
+                        <img th:src="${vietQrUrl != null ? vietQrUrl : 'https://img.vietqr.io/image/MB-0388888888-compact2.png?amount=' + amount + '&addInfo=THANHTOAN%20' + order.orderNumber + '&accountName=FRUIT%20STORE%20VIET%20NAM'}"
+                             alt="VietQR Code"
+                             class="img-fluid rounded-2"
+                             style="max-width: 220px;">
+                    </div>
+                    <div class="small text-primary fw-semibold mt-2">
+                        <i class="bi bi-qr-code-scan me-1"></i>Quét mã bằng App Ngân hàng bất kỳ
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <h5 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-bank2 me-2"></i>Thanh Toán Chuyển Khoản Qua Mã VietQR
+                    </h5>
+                    <p class="text-muted small mb-3">
+                        Mã QR bên cạnh đã được <strong>tự động điền sẵn chính xác số tiền và mã đơn hàng</strong> của bạn. Bạn chỉ cần mở ứng dụng ngân hàng và quét mã.
+                    </p>
+                    <div class="row g-2 small bg-white rounded-3 p-3 border mb-3">
+                        <div class="col-sm-6">
+                            <span class="text-muted">Ngân hàng:</span> <strong class="text-dark">MB Bank (Quân Đội)</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted">Số tài khoản:</span> <strong class="text-primary fs-6">0388888888</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted">Chủ tài khoản:</span> <strong class="text-dark">FRUIT STORE VIET NAM</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted">Số tiền:</span>
+                            <strong class="text-danger fs-6" th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
+                        </div>
+                        <div class="col-12 border-top pt-2 mt-2">
+                            <span class="text-muted">Nội dung chuyển khoản tự động:</span>
+                            <span class="badge bg-success ms-1 fs-6 font-monospace" th:text="'THANHTOAN ' + ${order.orderNumber}"></span>
+                        </div>
+                    </div>
+                    <div class="small text-muted">
+                        <i class="bi bi-shield-check text-success me-1"></i>Sau khi bạn chuyển khoản thành công, cửa hàng sẽ xác nhận và giao hoa quả tươi ngay trong 2 giờ.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin giao hàng & Thanh toán -->
         <div class="row g-4 mb-4">
             <!-- Shipping information -->
             <div class="col-md-6">
@@ -55,55 +219,303 @@
         </div>
 
         <!-- Ordered Items Table -->
-        <h5 class="fw-bold mb-3">Danh Sách Mặt Hàng</h5>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Danh Sách Mặt Hàng</h5>
+            <span th:if="${order.orderStatus.name() == 'DELIVERED'}" class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                <i class="bi bi-chat-heart-fill text-danger me-1"></i>Đơn hàng đã hoàn tất! Bạn có thể đánh giá hoặc gửi ảnh báo cáo nếu quả bị dập hỏng.
+            </span>
+        </div>
+
         <div class="table-responsive mb-4">
             <table class="table align-middle">
                 <thead class="table-light">
-                    <tr>
-                        <th>Sản Phẩm</th>
-                        <th class="text-center">Đơn Giá</th>
-                        <th class="text-center">Số Lượng</th>
-                        <th class="text-end">Thành Tiền</th>
-                    </tr>
+                <tr>
+                    <th>Sản Phẩm</th>
+                    <th class="text-center">Đơn Giá</th>
+                    <th class="text-center">Số Lượng</th>
+                    <th class="text-end">Thành Tiền</th>
+                    <!-- UC-15: Cột Đánh giá & Khiếu nại quả hỏng (Chỉ hiện khi đơn đã DELIVERED) -->
+                    <th th:if="${order.orderStatus.name() == 'DELIVERED'}" class="text-center">Đánh Giá / Khiếu Nại</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="d : ${order.orderDetails}">
-                        <td>
-                            <a th:href="@{/products/{id}(id=${d.product.id})}" class="fw-semibold text-dark text-decoration-none" th:text="${d.productName}">Tên sản phẩm</a>
-                            <div class="small text-muted" th:text="'Mã SP: ' + ${d.product.code}"></div>
-                        </td>
-                        <td class="text-center" th:text="${#numbers.formatDecimal(d.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                        <td class="text-center fw-bold" th:text="${d.quantity}">1</td>
-                        <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(d.subTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                    </tr>
+                <tr th:each="d : ${order.orderDetails}">
+                    <td>
+                        <a th:href="@{/products/{id}(id=${d.product.id})}" class="fw-semibold text-dark text-decoration-none" th:text="${d.productName}">Tên sản phẩm</a>
+                        <div class="small text-muted" th:text="'Mã SP: ' + ${d.product.code}"></div>
+                    </td>
+                    <td class="text-center" th:text="${#numbers.formatDecimal(d.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    <td class="text-center fw-bold" th:text="${d.quantity}">1</td>
+                    <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(d.subTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+
+                    <!-- UC-15: Nút mở Modal Đánh giá sao hoặc Khiếu nại quả hỏng cho từng sản phẩm -->
+                    <td th:if="${order.orderStatus.name() == 'DELIVERED'}" class="text-center">
+                        <div class="d-flex flex-wrap justify-content-center gap-1">
+                            <button type="button"
+                                    class="btn btn-outline-success btn-sm rounded-pill px-3 open-review-modal"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reviewComplaintModal"
+                                    th:data-product-id="${d.product.id}"
+                                    th:data-product-name="${d.productName}"
+                                    data-mode="REVIEW">
+                                <i class="bi bi-star-fill text-warning me-1"></i>Đánh giá
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-sm rounded-pill px-3 open-review-modal"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reviewComplaintModal"
+                                    th:data-product-id="${d.product.id}"
+                                    th:data-product-name="${d.productName}"
+                                    data-mode="COMPLAINT">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Báo quả hỏng
+                            </button>
+                        </div>
+                    </td>
+                </tr>
                 </tbody>
                 <tfoot>
-                    <tr>
-                        <td colspan="3" class="text-end text-muted">Tổng tiền hàng:</td>
-                        <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                    </tr>
-                    <tr th:if="${order.discountAmount > 0}">
-                        <td colspan="3" class="text-end text-success">Giảm giá voucher:</td>
-                        <td class="text-end fw-semibold text-success" th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="text-end fw-bold fs-5">Tổng thanh toán:</td>
-                        <td class="text-end fw-bold text-danger fs-4" th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                    </tr>
+                <tr>
+                    <td th:colspan="${order.orderStatus.name() == 'DELIVERED' ? 4 : 3}" class="text-end text-muted">Tổng tiền hàng:</td>
+                    <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                </tr>
+                <tr th:if="${order.discountAmount > 0}">
+                    <td th:colspan="${order.orderStatus.name() == 'DELIVERED' ? 4 : 3}" class="text-end text-success">Giảm giá voucher:</td>
+                    <td class="text-end fw-semibold text-success" th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                </tr>
+                <tr>
+                    <td th:colspan="${order.orderStatus.name() == 'DELIVERED' ? 4 : 3}" class="text-end fw-bold fs-5">Tổng thanh toán:</td>
+                    <td class="text-end fw-bold text-danger fs-4" th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                </tr>
                 </tfoot>
             </table>
         </div>
 
-        <div class="d-flex justify-content-between">
+        <!-- Footer Actions -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <a th:href="@{/orders/history}" class="btn btn-outline-secondary rounded-pill px-4">
                 <i class="bi bi-arrow-left me-1"></i>Quay Lại Lịch Sử Đơn
             </a>
-            <a th:href="@{/catalog}" class="btn btn-primary rounded-pill px-4">
-                Tiếp Tục Mua Hàng
-            </a>
+
+            <div class="d-flex gap-2">
+                <!-- UC-14: Nút Hủy đơn ở cuối trang (Chỉ hiện khi đang PENDING) -->
+                <form th:if="${order.orderStatus.name() == 'PENDING'}"
+                      th:action="@{/orders/{id}/cancel(id=${order.id})}"
+                      method="post"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                    <input type="hidden" name="redirectUrl" th:value="'/orders/' + ${order.orderNumber}">
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                        <i class="bi bi-x-circle me-1"></i>Hủy Đơn Hàng
+                    </button>
+                </form>
+
+                <a th:href="@{/catalog}" class="btn btn-primary rounded-pill px-4">
+                    Tiếp Tục Mua Hàng
+                </a>
+            </div>
         </div>
     </div>
+
+    <!-- ========================================================================= -->
+    <!-- UC-15: MODAL ĐÁNH GIÁ SAO & KHIẾU NẠI QUẢ DẬP HỎNG (Có đính kèm hình ảnh) -->
+    <!-- ========================================================================= -->
+    <div th:if="${order.orderStatus.name() == 'DELIVERED'}"
+         class="modal fade" id="reviewComplaintModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <form th:action="@{/reviews/submit}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="modalTitleText">
+                            <i class="bi bi-star-fill text-warning me-2"></i>Đánh Giá & Khiếu Nại Sản Phẩm
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body pt-3">
+                        <!-- Các biến ẩn truyền về ReviewController -->
+                        <input type="hidden" name="orderId" th:value="${order.id}">
+                        <input type="hidden" name="orderNumber" th:value="${order.orderNumber}">
+                        <input type="hidden" name="productId" id="modalProductId" value="">
+                        <input type="hidden" name="rating" id="modalRatingInput" value="5">
+
+                        <div class="p-3 bg-light rounded-3 mb-3">
+                            <div class="small text-muted">Sản phẩm đang chọn:</div>
+                            <div class="fw-bold text-success fs-6" id="modalProductName">Tên trái cây</div>
+                            <div class="small text-muted" th:text="'Thuộc đơn hàng #' + ${order.orderNumber}"></div>
+                        </div>
+
+                        <!-- Chế độ chọn nhanh: Đánh giá tốt vs Khiếu nại quả hỏng -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Loại phản hồi:</label>
+                            <div class="d-flex gap-2">
+                                <button type="button" id="btnModeReview" class="btn btn-sm btn-success rounded-pill px-3">
+                                    <i class="bi bi-emoji-smile me-1"></i>Đánh giá chất lượng
+                                </button>
+                                <button type="button" id="btnModeComplaint" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                    <i class="bi bi-shield-exclamation me-1"></i>Khiếu nại quả dập/hỏng (Đổi bù/Hoàn tiền)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chọn số sao (1 - 5 sao) -->
+                        <div class="mb-3 text-center py-2 border rounded-3">
+                            <div class="small fw-semibold mb-1">Mức độ hài lòng của bạn</div>
+                            <div class="star-rating-group d-inline-flex gap-2" id="starContainer">
+                                <i class="bi bi-star-fill star-btn selected" data-value="1"></i>
+                                <i class="bi bi-star-fill star-btn selected" data-value="2"></i>
+                                <i class="bi bi-star-fill star-btn selected" data-value="3"></i>
+                                <i class="bi bi-star-fill star-btn selected" data-value="4"></i>
+                                <i class="bi bi-star-fill star-btn selected" data-value="5"></i>
+                            </div>
+                            <div class="small text-warning fw-semibold mt-1" id="ratingLabel">5 Sao - Tuyệt vời (Quả tươi ngon)</div>
+                        </div>
+
+                        <!-- Nội dung nhận xét / Mô tả tình trạng quả hỏng -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Nhận xét hoặc mô tả tình trạng quả <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="comment" id="modalCommentInput" class="form-control" rows="3"
+                                      placeholder="Chia sẻ cảm nhận về độ tươi ngon hoặc mô tả chi tiết tình trạng quả bị dập nát, hư hỏng để shop hỗ trợ đổi bù/hoàn tiền..."
+                                      required></textarea>
+                        </div>
+
+                        <!-- Upload hình ảnh báo cáo quả hỏng -->
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-camera-fill text-primary me-1"></i>Hình ảnh thực tế / Minh chứng quả hỏng (Tùy chọn)
+                            </label>
+                            <input type="file" name="imageFile" id="modalImageInput" class="form-control" accept="image/*">
+                            <div class="form-text small">
+                                Nếu quả bị dập nát hoặc hư hỏng khi vận chuyển, vui lòng đính kèm ảnh chụp để cửa hàng xử lý đổi bù/hoàn tiền nhanh nhất.
+                            </div>
+                            <!-- Khung xem trước ảnh -->
+                            <div id="imagePreviewWrapper" class="mt-2 d-none text-center">
+                                <img id="imagePreview" src="#" alt="Preview" class="img-thumbnail rounded-3" style="max-height: 150px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold" id="modalSubmitBtn">
+                            <i class="bi bi-send-fill me-1"></i>Gửi Phản Hồi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script điều khiển Modal Đánh giá & Khiếu nại quả hỏng (UC-15) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalProductId = document.getElementById('modalProductId');
+            const modalProductName = document.getElementById('modalProductName');
+            const modalRatingInput = document.getElementById('modalRatingInput');
+            const modalCommentInput = document.getElementById('modalCommentInput');
+            const modalTitleText = document.getElementById('modalTitleText');
+            const modalSubmitBtn = document.getElementById('modalSubmitBtn');
+            const ratingLabel = document.getElementById('ratingLabel');
+            const btnModeReview = document.getElementById('btnModeReview');
+            const btnModeComplaint = document.getElementById('btnModeComplaint');
+            const stars = document.querySelectorAll('#starContainer .star-btn');
+            const imageInput = document.getElementById('modalImageInput');
+            const previewWrapper = document.getElementById('imagePreviewWrapper');
+            const imagePreview = document.getElementById('imagePreview');
+
+            const ratingTexts = {
+                1: '1 Sao - Quả bị dập nát / Hư hỏng nặng (Yêu cầu đổi bù/hoàn tiền)',
+                2: '2 Sao - Chất lượng kém / Không tươi',
+                3: '3 Sao - Tạm ổn',
+                4: '4 Sao - Tươi ngon, đóng gói cẩn thận',
+                5: '5 Sao - Tuyệt vời (Hoa quả rất tươi ngon)'
+            };
+
+            function setRating(val) {
+                if (!modalRatingInput) return;
+                modalRatingInput.value = val;
+                stars.forEach(st => {
+                    const stVal = parseInt(st.getAttribute('data-value'));
+                    if (stVal <= val) {
+                        st.classList.add('selected');
+                    } else {
+                        st.classList.remove('selected');
+                    }
+                });
+                if (ratingLabel) {
+                    ratingLabel.textContent = ratingTexts[val] || (val + ' Sao');
+                }
+            }
+
+            function switchMode(mode) {
+                if (!btnModeReview || !btnModeComplaint) return;
+                if (mode === 'COMPLAINT') {
+                    btnModeComplaint.className = 'btn btn-sm btn-danger rounded-pill px-3';
+                    btnModeReview.className = 'btn btn-sm btn-outline-success rounded-pill px-3';
+                    modalTitleText.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Khiếu Nại Quả Dập / Hỏng';
+                    modalSubmitBtn.className = 'btn btn-danger rounded-pill px-4 fw-semibold';
+                    modalSubmitBtn.innerHTML = '<i class="bi bi-send-exclamation-fill me-1"></i>Gửi Yêu Cầu Đổi Bù / Hoàn Tiền';
+                    setRating(1);
+                    if (modalCommentInput && !modalCommentInput.value.startsWith('[KHIẾU NẠI QUẢ HỎNG]')) {
+                        modalCommentInput.value = '[KHIẾU NẠI QUẢ HỎNG - YÊU CẦU ĐỔI BÙ/HOÀN TIỀN]: ';
+                    }
+                } else {
+                    btnModeReview.className = 'btn btn-sm btn-success rounded-pill px-3';
+                    btnModeComplaint.className = 'btn btn-sm btn-outline-danger rounded-pill px-3';
+                    modalTitleText.innerHTML = '<i class="bi bi-star-fill text-warning me-2"></i>Đánh Giá Chất Lượng Sản Phẩm';
+                    modalSubmitBtn.className = 'btn btn-success rounded-pill px-4 fw-semibold';
+                    modalSubmitBtn.innerHTML = '<i class="bi bi-send-fill me-1"></i>Gửi Đánh Giá';
+                    setRating(5);
+                    if (modalCommentInput && modalCommentInput.value.startsWith('[KHIẾU NẠI QUẢ HỎNG')) {
+                        modalCommentInput.value = '';
+                    }
+                }
+            }
+
+            // Gán sự kiện mở modal từ từng dòng sản phẩm
+            document.querySelectorAll('.open-review-modal').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const prodId = this.getAttribute('data-product-id');
+                    const prodName = this.getAttribute('data-product-name');
+                    const mode = this.getAttribute('data-mode') || 'REVIEW';
+
+                    if (modalProductId) modalProductId.value = prodId;
+                    if (modalProductName) modalProductName.textContent = prodName;
+                    if (modalCommentInput) modalCommentInput.value = '';
+                    if (imageInput) imageInput.value = '';
+                    if (previewWrapper) previewWrapper.classList.add('d-none');
+
+                    switchMode(mode);
+                });
+            });
+
+            if (btnModeReview) btnModeReview.addEventListener('click', () => switchMode('REVIEW'));
+            if (btnModeComplaint) btnModeComplaint.addEventListener('click', () => switchMode('COMPLAINT'));
+
+            stars.forEach(st => {
+                st.addEventListener('click', function () {
+                    setRating(parseInt(this.getAttribute('data-value')));
+                });
+            });
+
+            // Xem trước ảnh khiếu nại quả hỏng
+            if (imageInput) {
+                imageInput.addEventListener('change', function () {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            imagePreview.src = e.target.result;
+                            previewWrapper.classList.remove('d-none');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        previewWrapper.classList.add('d-none');
+                    }
+                });
+            }
+        });
+    </script>
 </div>
 </body>
 </html>
-

@@ -66,7 +66,7 @@ public class OrderServiceImpl implements OrderService {
                 .finalAmount(cart.getFinalAmount())
                 .voucherCode(cart.getVoucherCode())
                 .orderStatus(OrderStatus.PENDING)
-                .paymentMethod(checkoutDto.getPaymentMethod())
+                .paymentMethod(checkoutDto.getPaymentMethod() != null ? checkoutDto.getPaymentMethod() : PaymentMethod.COD)
                 .paymentStatus(PaymentStatus.UNPAID)
                 .build();
 
@@ -107,14 +107,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public Order getById(Long id) {
-        return orderRepository.findById(id)
+        return orderRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID: " + id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Order getByOrderNumber(String orderNumber) {
-        return orderRepository.findByOrderNumber(orderNumber)
+        return orderRepository.findWithDetailsByOrderNumber(orderNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mã đơn hàng: " + orderNumber));
     }
 
@@ -122,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public List<Order> getOrdersByUser(String userEmail) {
         User user = userService.findByEmail(userEmail);
-        return orderRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        return orderRepository.findWithDetailsByUserIdOrderByCreatedAtDesc(user.getId());
     }
 
     @Override
@@ -203,4 +203,3 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findTop5ByOrderByCreatedAtDesc();
     }
 }
-
