@@ -64,6 +64,14 @@ public class DataSeeder implements CommandLineRunner {
                     .enabled(true)
                     .roles(new HashSet<>(Set.of(roleAdmin, roleStaff)))
                     .build());
+        } else {
+            userRepository.findByEmail("admin@fruitstore.com").ifPresent(u -> {
+                if (u.getFullName().contains("?") || (u.getAddress() != null && u.getAddress().contains("?"))) {
+                    u.setFullName("Nguyễn Quản Trị");
+                    u.setAddress("FPT University, Khu CNC Hòa Lạc, Hà Nội");
+                    userRepository.save(u);
+                }
+            });
         }
 
         if (!userRepository.existsByEmail("staff@fruitstore.com")) {
@@ -77,6 +85,14 @@ public class DataSeeder implements CommandLineRunner {
                     .enabled(true)
                     .roles(new HashSet<>(Set.of(roleStaff)))
                     .build());
+        } else {
+            userRepository.findByEmail("staff@fruitstore.com").ifPresent(u -> {
+                if (u.getFullName().contains("?") || (u.getAddress() != null && u.getAddress().contains("?"))) {
+                    u.setFullName("Trần Nhân Viên");
+                    u.setAddress("Thạch Thất, Hà Nội");
+                    userRepository.save(u);
+                }
+            });
         }
 
         User customer = userRepository.findByEmail("customer@fruitstore.com").orElseGet(() ->
@@ -91,6 +107,11 @@ public class DataSeeder implements CommandLineRunner {
                         .roles(new HashSet<>(Set.of(roleCustomer)))
                         .build())
         );
+        if (customer.getFullName().contains("?") || (customer.getAddress() != null && customer.getAddress().contains("?"))) {
+            customer.setFullName("Nguyễn Hồng Hà");
+            customer.setAddress("Cầu Giấy, Hà Nội");
+            userRepository.save(customer);
+        }
 
         // 3. Categories
         Category catImport = categoryRepository.findByCode("CAT_IMPORT").orElseGet(() ->

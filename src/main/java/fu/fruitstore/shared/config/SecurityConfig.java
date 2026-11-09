@@ -74,15 +74,6 @@ public class SecurityConfig {
                 .accessDeniedPage("/error/403")
             );
 
-        Filter csrfTokenInitializationFilter = (request, response, chain) -> {
-            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
-            if (csrfToken != null) {
-                csrfToken.getToken();
-            }
-            chain.doFilter(request, response);
-        };
-        http.addFilterAfter(csrfTokenInitializationFilter, CsrfFilter.class);
-
         return http.build();
     }
 }

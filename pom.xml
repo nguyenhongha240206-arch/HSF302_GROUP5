@@ -15,6 +15,9 @@
     <description>Fruit Store &amp; Gift Basket Management System - HSF302 Group 5</description>
     <properties>
         <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
     </properties>
     <dependencies>
         <!-- Spring Boot Starter Data JPA -->
@@ -129,6 +132,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <encoding>UTF-8</encoding>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
