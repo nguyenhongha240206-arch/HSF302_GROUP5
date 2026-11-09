@@ -20,8 +20,13 @@ import java.util.List;
 @SQLRestriction("is_deleted = 0")
 public class Order extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "order_code", nullable = false, unique = true, length = 50)
     private String orderNumber;
+
+    // The current database has both the legacy order_code and order_number columns.
+    // Keep both populated until the schema is consolidated.
+    @Column(name = "order_number", nullable = false, unique = true, length = 50)
+    private String orderNumberCompat;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -83,5 +88,11 @@ public class Order extends BaseEntity {
     public void addOrderDetail(OrderDetail detail) {
         orderDetails.add(detail);
         detail.setOrder(this);
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void syncOrderNumberColumns() {
+        orderNumberCompat = orderNumber;
     }
 }

@@ -258,11 +258,11 @@ IF NOT EXISTS (SELECT 1 FROM roles WHERE name = 'ROLE_CUSTOMER')
 GO
 
 -- 12.2 USERS (Mật khẩu mặc định: 123456 - mã hóa BCrypt)
--- Hash BCrypt của 123456: $2a$10$7EqJtq98hPqEX7fNZaFWoO.K.yPZ0o1u1F1q2c2yq7eYx.aI4q5cK
+-- Hash BCrypt của 123456: $2a$10$eofwoEwf2sr85ecHKeMDt.P.IjoDeOPi2REA7aHdpzyyxqlgRmhZC
 IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@fruitstore.com')
 BEGIN
     INSERT INTO users (full_name, email, password, phone_number, address, avatar_url, enabled, created_at, is_deleted)
-    VALUES (N'Nguyễn Quản Trị', 'admin@fruitstore.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoO.K.yPZ0o1u1F1q2c2yq7eYx.aI4q5cK', '0988111222', N'FPT University, Khu CNC Hòa Lạc, Hà Nội', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80', 1, GETDATE(), 0);
+    VALUES (N'Nguyễn Quản Trị', 'admin@fruitstore.com', '$2a$10$eofwoEwf2sr85ecHKeMDt.P.IjoDeOPi2REA7aHdpzyyxqlgRmhZC', '0988111222', N'FPT University, Khu CNC Hòa Lạc, Hà Nội', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80', 1, GETDATE(), 0);
     
     DECLARE @adminId BIGINT = SCOPE_IDENTITY();
     DECLARE @adminRoleId BIGINT = (SELECT id FROM roles WHERE name = 'ROLE_ADMIN');
@@ -274,7 +274,7 @@ GO
 IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'staff@fruitstore.com')
 BEGIN
     INSERT INTO users (full_name, email, password, phone_number, address, avatar_url, enabled, created_at, is_deleted)
-    VALUES (N'Trần Nhân Viên', 'staff@fruitstore.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoO.K.yPZ0o1u1F1q2c2yq7eYx.aI4q5cK', '0977222333', N'Thạch Thất, Hà Nội', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80', 1, GETDATE(), 0);
+    VALUES (N'Trần Nhân Viên', 'staff@fruitstore.com', '$2a$10$eofwoEwf2sr85ecHKeMDt.P.IjoDeOPi2REA7aHdpzyyxqlgRmhZC', '0977222333', N'Thạch Thất, Hà Nội', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80', 1, GETDATE(), 0);
     
     DECLARE @staffUserId BIGINT = SCOPE_IDENTITY();
     DECLARE @staffRoleId2 BIGINT = (SELECT id FROM roles WHERE name = 'ROLE_STAFF');
@@ -285,7 +285,7 @@ GO
 IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'customer@fruitstore.com')
 BEGIN
     INSERT INTO users (full_name, email, password, phone_number, address, avatar_url, enabled, created_at, is_deleted)
-    VALUES (N'Nguyễn Hồng Hà', 'customer@fruitstore.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoO.K.yPZ0o1u1F1q2c2yq7eYx.aI4q5cK', '0912345678', N'Cầu Giấy, Hà Nội', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80', 1, GETDATE(), 0);
+    VALUES (N'Nguyễn Hồng Hà', 'customer@fruitstore.com', '$2a$10$eofwoEwf2sr85ecHKeMDt.P.IjoDeOPi2REA7aHdpzyyxqlgRmhZC', '0912345678', N'Cầu Giấy, Hà Nội', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80', 1, GETDATE(), 0);
     
     DECLARE @custUserId BIGINT = SCOPE_IDENTITY();
     DECLARE @custRoleId BIGINT = (SELECT id FROM roles WHERE name = 'ROLE_CUSTOMER');

@@ -68,7 +68,7 @@
                         <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
                         <td class="text-center">
                             <span class="h5 fw-bold" th:classappend="${p.stockQuantity <= 10 ? 'text-danger' : 'text-success'}"
-                                  th:text="${p.stockQuantity} + ' ' + ${p.unit}">10 kg</span>
+                                  th:text="${p.stockQuantity + ' ' + p.unit}">10 kg</span>
                         </td>
                         <td>
                             <span th:if="${p.stockQuantity <= 0}" class="badge bg-danger">Hết hàng</span>
@@ -76,9 +76,11 @@
                             <span th:if="${p.stockQuantity > 10}" class="badge bg-success">Tồn kho an toàn</span>
                         </td>
                         <td class="text-end">
-                            <a th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                                Chỉnh sửa tồn
-                            </a>
+                            <form th:action="@{/admin/inventory/stock/{id}(id=${p.id})}" method="post" class="d-flex justify-content-end gap-2">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="number" name="quantity" min="0" th:value="${p.stockQuantity}" class="form-control form-control-sm" style="max-width: 100px" required aria-label="Số lượng tồn mới">
+                                <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-3">Cập nhật</button>
+                            </form>
                         </td>
                     </tr>
                 </tbody>

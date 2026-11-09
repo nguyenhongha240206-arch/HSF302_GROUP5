@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Resolve the CSRF token before the response body can be committed. -->
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Fruit Store - Hệ Thống Hoa Quả Tươi Cao Cấp</title>
     
     <!-- Bootstrap 5 CSS -->

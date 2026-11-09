@@ -51,7 +51,7 @@ public class SecurityConfig {
                 // Admin and Staff management
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")
                 // Customer actions
-                .requestMatchers("/checkout/**", "/orders/**", "/profile/**", "/reviews/add/**").authenticated()
+                .requestMatchers("/checkout/**", "/orders/**", "/profile/**", "/reviews/add/**", "/wishlist/**").authenticated()
                 .anyRequest().permitAll()
             )
             .formLogin(form -> form
@@ -73,6 +73,15 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .accessDeniedPage("/error/403")
             );
+
+        Filter csrfTokenInitializationFilter = (request, response, chain) -> {
+            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+            if (csrfToken != null) {
+                csrfToken.getToken();
+            }
+            chain.doFilter(request, response);
+        };
+        http.addFilterAfter(csrfTokenInitializationFilter, CsrfFilter.class);
 
         return http.build();
     }
