@@ -16,23 +16,43 @@
                     <p class="text-muted small">Chào mừng bạn quay trở lại với Fruit Store</p>
                 </div>
 
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
                 <form th:action="@{/auth/login}" method="post">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Email</label>
+                        <label class="form-label fw-semibold">Email hoặc Số điện thoại</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                            <input type="email" name="username" class="form-control" placeholder="name@example.com" required autofocus>
+                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                            <input type="text" name="username" class="form-control" placeholder="name@example.com hoặc 09xxxxxxxx" required autofocus>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <div class="d-flex justify-content-between">
-                            <label class="form-label fw-semibold">Mật khẩu</label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label fw-semibold mb-0">Mật khẩu</label>
+                            <a th:href="@{/auth/forgot-password}" class="text-success small fw-semibold text-decoration-none">
+                                Quên mật khẩu?
+                            </a>
                         </div>
                         <div class="input-group">
                             <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
                             <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
                         </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="remember-me" class="form-check-input" id="rememberMe">
+                        <label class="form-check-label small text-muted" for="rememberMe">Ghi nhớ đăng nhập</label>
                     </div>
 
                     <div class="d-grid mt-4">
@@ -50,11 +70,14 @@
 
                 <!-- Demo Accounts Box for Grading / Testing -->
                 <div class="mt-4 p-3 bg-light rounded-3 border">
-                    <h6 class="fw-bold small text-success mb-2"><i class="bi bi-key-fill me-1"></i>Tài khoản Demo thử nghiệm:</h6>
+                    <h6 class="fw-bold small text-success mb-2"><i class="bi bi-key-fill me-1"></i>Tài khoản thử nghiệm:</h6>
                     <div class="small text-muted">
-                        <div><strong>Admin:</strong> admin@fruitstore.com / <code>123456</code></div>
-                        <div><strong>Staff:</strong> staff@fruitstore.com / <code>123456</code></div>
-                        <div><strong>Khách hàng:</strong> customer@fruitstore.com / <code>123456</code></div>
+                        <div class="mb-1">
+                            <strong>👑 Admin:</strong> <code>admin@fruitstore.com</code> (hoặc <code>0988111222</code>) / Pass: <code>123456</code>
+                        </div>
+                        <div>
+                            <strong>👤 Customer:</strong> <code>customer@fruitstore.com</code> (hoặc <code>0933444555</code>) / Pass: <code>123456</code>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,4 +86,3 @@
 </div>
 </body>
 </html>
-

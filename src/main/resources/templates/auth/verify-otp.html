@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title>Xác Thực Mã OTP</title>
+</head>
+<body>
+<div layout:fragment="content" class="py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="text-center mb-4">
+                    <span class="fs-1">📩</span>
+                    <h3 class="fw-bold mt-2">Nhập Mã OTP</h3>
+                    <p class="text-muted small">
+                        Mã xác thực gồm 6 số đã được gửi đến: <br>
+                        <strong class="text-dark" th:text="${verifyOtpDto.email}">email@example.com</strong>
+                    </p>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <form th:action="@{/auth/verify-otp}" th:object="${verifyOtpDto}" method="post">
+                    <input type="hidden" th:field="*{email}">
+
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-semibold">Mã OTP (6 chữ số)</label>
+                        <input type="text" th:field="*{otpCode}" class="form-control form-control-lg text-center fw-bold fs-3 letter-spacing-lg"
+                               th:errorclass="is-invalid" placeholder="••••••" maxlength="6" autofocus required
+                               style="letter-spacing: 12px; font-family: monospace;">
+                        <div class="invalid-feedback d-block" th:errors="*{otpCode}"></div>
+                        <small class="text-muted mt-2 d-block">Mã có hiệu lực trong vòng 5 phút</small>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold">
+                            <i class="bi bi-shield-check me-2"></i>Xác Nhận OTP
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="small text-muted mb-0">Chưa nhận được mã hoặc mã hết hạn? 
+                        <a th:href="@{/auth/forgot-password}" class="text-success fw-bold text-decoration-none">Gửi lại mã</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

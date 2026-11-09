@@ -2,6 +2,7 @@ package fu.fruitstore.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,6 @@ public class RegisterDto {
     @NotBlank(message = "Vui lòng xác nhận lại mật khẩu")
     private String confirmPassword;
 
+    @Pattern(regexp = "^$|^(0[35789])[0-9]{8}$", message = "Số điện thoại không đúng định dạng (VD: 0912345678)")
     private String phoneNumber;
-    private String address;
 }
-

@@ -29,15 +29,10 @@
                         <div class="invalid-feedback" th:errors="*{email}"></div>
                     </div>
 
-                    <div class="row g-2 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Số điện thoại</label>
-                            <input type="text" th:field="*{phoneNumber}" class="form-control" placeholder="09xxxxxxxx">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Địa chỉ giao hàng</label>
-                            <input type="text" th:field="*{address}" class="form-control" placeholder="Số nhà, đường, quận...">
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Số điện thoại</label>
+                        <input type="text" th:field="*{phoneNumber}" class="form-control" th:errorclass="is-invalid" placeholder="09xxxxxxxx">
+                        <div class="invalid-feedback" th:errors="*{phoneNumber}"></div>
                     </div>
 
                     <div class="row g-2 mb-3">
@@ -71,4 +66,3 @@
 </div>
 </body>
 </html>
-

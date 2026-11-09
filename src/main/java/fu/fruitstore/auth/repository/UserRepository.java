@@ -15,10 +15,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByPhoneNumber(String phoneNumber);
+
+    @Query("SELECT u FROM User u WHERE u.email = :identifier OR u.phoneNumber = :identifier")
+    Optional<User> findByIdentifier(@Param("identifier") String identifier);
+
     boolean existsByEmail(String email);
+
+    boolean existsByPhoneNumber(String phoneNumber);
 
     @Query("SELECT u FROM User u WHERE " +
            "(:keyword IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<User> searchUsers(@Param("keyword") String keyword, Pageable pageable);
 }
-
