@@ -79,12 +79,12 @@
                         <span sec:authentication="name" class="fw-semibold">Tài khoản</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenu">
-                        <li sec:authorize="hasAnyRole('ADMIN', 'STAFF')">
+                        <li sec:authorize="hasRole('ADMIN')">
                             <a class="dropdown-item text-danger fw-bold" th:href="@{/admin}">
-                                <i class="bi bi-speedometer2 me-2"></i>Trang Quản Trị
+                                <i class="bi bi-shop me-2"></i>Kênh Quản Trị Shop
                             </a>
                         </li>
-                        <li sec:authorize="hasAnyRole('ADMIN', 'STAFF')"><hr class="dropdown-divider"></li>
+                        <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" th:href="@{/profile}">
                                 <i class="bi bi-person me-2"></i>Thông tin cá nhân

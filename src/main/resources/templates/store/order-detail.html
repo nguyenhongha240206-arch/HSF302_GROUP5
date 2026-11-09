@@ -43,11 +43,13 @@
             border: 3px solid #fff;
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
-        .detail-step.active .detail-step-icon {
+        .detail-step.active .detail-step-icon,
+        .detail-step.done .detail-step-icon {
             background-color: #198754;
             color: #fff;
         }
-        .detail-step.active {
+        .detail-step.active,
+        .detail-step.done {
             color: #198754;
             font-weight: 600;
         }
@@ -102,44 +104,72 @@
                 <span th:class="${order.orderStatus.badgeClass} + ' fs-6 px-3 py-2'" th:text="${order.orderStatus.displayName}"></span>
                 <span class="badge bg-secondary fs-6 px-3 py-2" th:text="${order.paymentStatus.displayName}"></span>
 
-                <!-- UC-14: Nút Hủy đơn nhanh trên góc nếu đơn đang Chờ xác nhận (PENDING) -->
+                <!-- Nút Hủy đơn nhanh nếu đơn đang Chờ xác nhận (PENDING) -->
                 <form th:if="${order.orderStatus.name() == 'PENDING'}"
                       th:action="@{/orders/{id}/cancel(id=${order.id})}"
                       method="post"
                       class="ms-1"
                       onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được hoàn lại kho.');">
                     <input type="hidden" name="redirectUrl" th:value="'/orders/' + ${order.orderNumber}">
-                    <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3 py-2 fw-semibold shadow-sm">
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 fw-semibold">
                         <i class="bi bi-x-circle me-1"></i>Hủy Đơn Hàng
+                    </button>
+                </form>
+
+                <!-- Shopee Feature: Nút 'Đã Nhận Được Hàng' khi shipper đang giao -->
+                <form th:if="${order.orderStatus.name() == 'SHIPPING'}"
+                      th:action="@{/orders/{id}/confirm-received(id=${order.id})}"
+                      method="post"
+                      class="ms-1"
+                      onsubmit="return confirm('Bạn xác nhận đã nhận được đầy đủ hoa quả và hài lòng với chất lượng?');">
+                    <input type="hidden" name="redirectUrl" th:value="'/orders/' + ${order.orderNumber}">
+                    <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i>Đã Nhận Được Hàng
+                    </button>
+                </form>
+
+                <!-- Shopee Feature: Nút 'Mua Lại' khi đơn đã giao hoặc đã hủy -->
+                <form th:if="${order.orderStatus.name() == 'DELIVERED' or order.orderStatus.name() == 'CANCELLED'}"
+                      th:action="@{/orders/{id}/reorder(id=${order.id})}"
+                      method="post"
+                      class="ms-1">
+                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-arrow-repeat me-1"></i>Mua Lại
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- UC-13: Thanh tiến trình trạng thái đơn hàng (Chờ duyệt ➔ Đang giao ➔ Hoàn thành / Hủy) -->
+        <!-- Thanh tiến trình trạng thái đơn hàng (Luồng Shopee 4 bước) -->
         <div class="bg-light rounded-4 p-3 mb-4" th:with="stName=${order.orderStatus.name()}">
             <div class="detail-stepper">
-                <div class="detail-step active">
+                <div class="detail-step done">
                     <div class="detail-step-icon"><i class="bi bi-clipboard-check"></i></div>
-                    <div class="small">1. Chờ xác nhận</div>
+                    <div class="small">1. Đã đặt đơn</div>
                 </div>
 
                 <div class="detail-step"
-                     th:classappend="${(stName == 'CONFIRMED' or stName == 'SHIPPING' or stName == 'DELIVERED' or stName == 'COMPLETED') ? 'active' : ''}">
+                     th:classappend="${(stName == 'CONFIRMED' or stName == 'SHIPPING' or stName == 'DELIVERED') ? 'active' : ''}">
+                    <div class="detail-step-icon"><i class="bi bi-box-seam"></i></div>
+                    <div class="small">2. Chuẩn bị hàng</div>
+                </div>
+
+                <div class="detail-step"
+                     th:classappend="${(stName == 'SHIPPING' or stName == 'DELIVERED') ? 'active' : ''}">
                     <div class="detail-step-icon"><i class="bi bi-truck"></i></div>
-                    <div class="small">2. Đang giao hàng</div>
+                    <div class="small">3. Đang giao hàng</div>
                 </div>
 
                 <div class="detail-step"
                      th:if="${stName != 'CANCELLED'}"
-                     th:classappend="${(stName == 'DELIVERED' or stName == 'COMPLETED') ? 'active' : ''}">
+                     th:classappend="${stName == 'DELIVERED' ? 'active' : ''}">
                     <div class="detail-step-icon"><i class="bi bi-patch-check-fill"></i></div>
-                    <div class="small">3. Hoàn thành</div>
+                    <div class="small">4. Hoàn thành</div>
                 </div>
 
                 <div class="detail-step cancelled" th:if="${stName == 'CANCELLED'}">
                     <div class="detail-step-icon"><i class="bi bi-x-octagon-fill"></i></div>
-                    <div class="small">3. Đã hủy đơn</div>
+                    <div class="small">Đã hủy đơn</div>
                 </div>
             </div>
         </div>

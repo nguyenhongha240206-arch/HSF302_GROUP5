@@ -48,8 +48,8 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico", "/error/**").permitAll()
                 // Public store pages & auth
                 .requestMatchers("/", "/home", "/about", "/contact", "/catalog/**", "/products/**", "/cart/**", "/auth/**", "/custom-basket/**").permitAll()
-                // Admin and Staff management
-                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")
+                // Admin (Chủ shop) management
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 // Customer actions
                 .requestMatchers("/checkout/**", "/orders/**", "/profile/**", "/reviews/add/**", "/wishlist/**").authenticated()
                 .anyRequest().permitAll()

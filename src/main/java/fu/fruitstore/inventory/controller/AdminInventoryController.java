@@ -27,7 +27,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin/inventory")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminInventoryController {
 
     private final InventoryService inventoryService;

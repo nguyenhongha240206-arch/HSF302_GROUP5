@@ -44,11 +44,9 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info(">>> Đang kiểm tra và khởi tạo dữ liệu mẫu (Seeding Database)...");
 
-        // 1. Roles
+        // 1. Roles (Chỉ 2 vai trò: Chủ shop / Admin và Khách hàng)
         Role roleAdmin = roleRepository.findByName("ROLE_ADMIN").orElseGet(() ->
-                roleRepository.save(Role.builder().name("ROLE_ADMIN").description("Quản trị viên toàn quyền").build()));
-        Role roleStaff = roleRepository.findByName("ROLE_STAFF").orElseGet(() ->
-                roleRepository.save(Role.builder().name("ROLE_STAFF").description("Nhân viên quản lý cửa hàng").build()));
+                roleRepository.save(Role.builder().name("ROLE_ADMIN").description("Chủ shop (Quản trị viên)").build()));
         Role roleCustomer = roleRepository.findByName("ROLE_CUSTOMER").orElseGet(() ->
                 roleRepository.save(Role.builder().name("ROLE_CUSTOMER").description("Khách hàng").build()));
 
@@ -62,38 +60,23 @@ public class DataSeeder implements CommandLineRunner {
                     .address("FPT University, Khu CNC Hòa Lạc, Hà Nội")
                     .avatarUrl("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80")
                     .enabled(true)
-                    .roles(new HashSet<>(Set.of(roleAdmin, roleStaff)))
+                    .roles(new HashSet<>(Set.of(roleAdmin)))
                     .build());
         } else {
             userRepository.findByEmail("admin@fruitstore.com").ifPresent(u -> {
+                u.getRoles().clear();
+                u.getRoles().add(roleAdmin);
                 if (u.getFullName().contains("?") || (u.getAddress() != null && u.getAddress().contains("?"))) {
                     u.setFullName("Nguyễn Quản Trị");
                     u.setAddress("FPT University, Khu CNC Hòa Lạc, Hà Nội");
-                    userRepository.save(u);
                 }
+                userRepository.save(u);
             });
         }
 
-        if (!userRepository.existsByEmail("staff@fruitstore.com")) {
-            userRepository.save(User.builder()
-                    .fullName("Trần Nhân Viên")
-                    .email("staff@fruitstore.com")
-                    .password(passwordEncoder.encode("123456"))
-                    .phoneNumber("0977222333")
-                    .address("Thạch Thất, Hà Nội")
-                    .avatarUrl("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80")
-                    .enabled(true)
-                    .roles(new HashSet<>(Set.of(roleStaff)))
-                    .build());
-        } else {
-            userRepository.findByEmail("staff@fruitstore.com").ifPresent(u -> {
-                if (u.getFullName().contains("?") || (u.getAddress() != null && u.getAddress().contains("?"))) {
-                    u.setFullName("Trần Nhân Viên");
-                    u.setAddress("Thạch Thất, Hà Nội");
-                    userRepository.save(u);
-                }
-            });
-        }
+        // Clean up legacy staff accounts if present
+        userRepository.findByEmail("staff@fruitstore.com").ifPresent(userRepository::delete);
+        userRepository.findByEmail("staff.demo@fruitstore.com").ifPresent(userRepository::delete);
 
         User customer = userRepository.findByEmail("customer@fruitstore.com").orElseGet(() ->
                 userRepository.save(User.builder()

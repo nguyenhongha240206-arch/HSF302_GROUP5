@@ -179,23 +179,30 @@
                 </div>
             </div>
 
-            <!-- Thanh tiến trình trạng thái đơn hàng trực quan (UC-13: Chờ duyệt ➔ Đang giao ➔ Hoàn thành / Hủy) -->
+            <!-- Thanh tiến trình trạng thái đơn hàng trực quan (Luồng Shopee 4 bước) -->
             <div class="bg-light rounded-3 px-3 py-2 mb-3">
                 <div class="order-stepper" th:with="stName=${o.orderStatus.name()}">
                     <!-- Bước 1: Chờ xác nhận -->
                     <div class="step-item done">
                         <div class="step-circle"><i class="bi bi-receipt"></i></div>
-                        <div>Chờ duyệt</div>
+                        <div>Chờ xác nhận</div>
                     </div>
 
-                    <!-- Bước 2: Đang xử lý / Đang giao -->
+                    <!-- Bước 2: Chuẩn bị hàng (Shop xác nhận & đóng gói) -->
                     <div class="step-item"
                          th:classappend="${(stName == 'CONFIRMED' or stName == 'SHIPPING' or stName == 'DELIVERED') ? 'done' : ''}">
+                        <div class="step-circle"><i class="bi bi-box-seam"></i></div>
+                        <div>Chuẩn bị hàng</div>
+                    </div>
+
+                    <!-- Bước 3: Đang giao hàng -->
+                    <div class="step-item"
+                         th:classappend="${(stName == 'SHIPPING' or stName == 'DELIVERED') ? 'done' : ''}">
                         <div class="step-circle"><i class="bi bi-truck"></i></div>
                         <div>Đang giao</div>
                     </div>
 
-                    <!-- Bước 3: Hoàn thành hoặc Đã hủy -->
+                    <!-- Bước 4: Hoàn thành hoặc Đã hủy -->
                     <div class="step-item"
                          th:if="${stName != 'CANCELLED'}"
                          th:classappend="${stName == 'DELIVERED' ? 'done' : ''}">
@@ -232,30 +239,49 @@
                     <div class="h4 fw-bold text-danger mb-3" th:text="${#numbers.formatDecimal(o.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">200,000 đ</div>
 
                     <div class="d-flex flex-wrap justify-content-md-end gap-2">
-                        <!-- Nút Xem chi tiết / Quét mã VietQR -->
+                        <!-- Nút Xem chi tiết -->
                         <a th:href="@{/orders/{num}(num=${o.orderNumber})}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
                             <i class="bi bi-eye me-1"></i>Chi Tiết
                         </a>
 
-                        <!-- UC-12: Nếu chọn VietQR và đơn đang chờ xử lý thì hiện nút Quét QR nhanh -->
+                        <!-- Nếu chọn VietQR và đơn đang chờ thanh toán thì hiện nút Quét QR nhanh -->
                         <a th:if="${o.paymentMethod != null and o.paymentMethod.name() == 'BANK_TRANSFER' and o.orderStatus.name() != 'CANCELLED' and o.paymentStatus.name() != 'PAID'}"
                            th:href="@{/orders/{num}(num=${o.orderNumber})}"
                            class="btn btn-primary btn-sm rounded-pill px-3">
-                            <i class="bi bi-qr-code-scan me-1"></i>Thanh toán / Thử lại
+                            <i class="bi bi-qr-code-scan me-1"></i>Thanh toán QR
                         </a>
 
-                        <!-- UC-15: Nút Đánh giá & Khiếu nại quả hỏng (Hiện khi đơn đã DELIVERED) -->
+                        <!-- Shopee Feature: Nút 'Đã Nhận Được Hàng' khi đơn đang giao -->
+                        <form th:if="${o.orderStatus.name() == 'SHIPPING'}"
+                              th:action="@{/orders/{id}/confirm-received(id=${o.id})}"
+                              method="post"
+                              onsubmit="return confirm('Bạn xác nhận đã nhận được đầy đủ hoa quả và hài lòng với đơn hàng?');">
+                            <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm fw-bold">
+                                <i class="bi bi-check2-circle me-1"></i>Đã Nhận Được Hàng
+                            </button>
+                        </form>
+
+                        <!-- Nút Đánh giá sản phẩm (Hiện khi đơn đã DELIVERED) -->
                         <a th:if="${o.orderStatus.name() == 'DELIVERED'}"
                            th:href="@{/orders/{num}(num=${o.orderNumber}, action='review')}"
                            class="btn btn-warning btn-sm rounded-pill px-3 text-dark fw-semibold">
-                            <i class="bi bi-star-fill text-danger me-1"></i>Đánh Giá / Khiếu Nại Quả Hỏng
+                            <i class="bi bi-star-fill text-danger me-1"></i>Đánh Giá
                         </a>
 
-                        <!-- UC-14: Nút Hủy đơn hàng (Chỉ hiện khi đơn đang PENDING - Chờ xác nhận) -->
+                        <!-- Shopee Feature: Nút 'Mua Lại' khi đơn đã hoàn thành hoặc đã hủy -->
+                        <form th:if="${o.orderStatus.name() == 'DELIVERED' or o.orderStatus.name() == 'CANCELLED'}"
+                              th:action="@{/orders/{id}/reorder(id=${o.id})}"
+                              method="post">
+                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                                <i class="bi bi-arrow-repeat me-1"></i>Mua Lại
+                            </button>
+                        </form>
+
+                        <!-- Nút Hủy đơn hàng (Chỉ hiện khi đơn đang PENDING - Chờ xác nhận) -->
                         <form th:if="${o.orderStatus.name() == 'PENDING'}"
                               th:action="@{/orders/{id}/cancel(id=${o.id})}"
                               method="post"
-                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sẽ được hoàn lại kho.');">
                             <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
                                 <i class="bi bi-x-circle me-1"></i>Hủy Đơn
                             </button>

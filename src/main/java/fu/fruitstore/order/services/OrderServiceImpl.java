@@ -24,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -228,6 +230,53 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public void confirmDelivery(Long orderId, String userEmail) {
+        Order order = getById(orderId);
+        User user = userService.findByEmail(userEmail);
+
+        if (order.getUser() == null || !order.getUser().getId().equals(user.getId())) {
+            throw new BadRequestException("Bạn không có quyền thao tác trên đơn hàng này!");
+        }
+
+        if (order.getOrderStatus() != OrderStatus.SHIPPING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
+            throw new BadRequestException("Chỉ có thể xác nhận khi đơn hàng đang được giao!");
+        }
+
+        order.setOrderStatus(OrderStatus.DELIVERED);
+        if (order.getPaymentMethod() == PaymentMethod.COD) {
+            order.setPaymentStatus(PaymentStatus.PAID);
+        }
+        orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public void reorder(Long orderId, HttpSession session) {
+        Order order = getById(orderId);
+        int addedItemsCount = 0;
+        for (OrderDetail detail : order.getOrderDetails()) {
+            if (detail.getProduct() != null && !detail.getProduct().isDeleted() && detail.getProduct().isActive()) {
+                cartService.addToCart(session, detail.getProduct().getId(), detail.getQuantity());
+                addedItemsCount++;
+            }
+        }
+        if (addedItemsCount == 0) {
+            throw new BadRequestException("Các sản phẩm trong đơn hàng này hiện không còn khả dụng để mua lại!");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<OrderStatus, Long> getOrderStatusCounts() {
+        Map<OrderStatus, Long> counts = new EnumMap<>(OrderStatus.class);
+        for (OrderStatus st : OrderStatus.values()) {
+            counts.put(st, orderRepository.countByOrderStatus(st));
+        }
+        return counts;
     }
 
     @Override
