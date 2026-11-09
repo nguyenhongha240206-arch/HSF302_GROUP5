@@ -25,7 +25,12 @@
                     <a class="nav-link" th:href="@{/catalog}">Cửa hàng</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/catalog(productType='GIFT_BASKET')}">Giỏ quà tặng</a>
+                    <a class="nav-link text-danger fw-bold" th:href="@{/custom-basket}">
+                        <i class="bi bi-gift-fill me-1"></i>Tự Tạo Giỏ Quà
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/catalog(productType='GIFT_BASKET')}">Giỏ quà mẫu</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
@@ -82,6 +87,11 @@
                         <li>
                             <a class="dropdown-item" th:href="@{/orders/history}">
                                 <i class="bi bi-bag-check me-2"></i>Lịch sử đơn hàng
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/reviews/mine}">
+                                <i class="bi bi-chat-heart me-2"></i>My reviews
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>

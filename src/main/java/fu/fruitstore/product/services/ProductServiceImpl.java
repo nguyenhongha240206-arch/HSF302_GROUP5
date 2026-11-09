@@ -27,9 +27,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Product> filterProducts(Long categoryId, ProductType productType, String keyword,
+    public Page<Product> filterProducts(Long categoryId, ProductType productType, String keyword, String origin,
                                         BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
-        return productRepository.filterProducts(categoryId, productType, keyword, minPrice, maxPrice, pageable);
+        return productRepository.filterProducts(categoryId, productType, keyword, origin, minPrice, maxPrice, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getOrigins() {
+        return productRepository.findActiveOrigins();
     }
 
     @Override
@@ -59,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public Product getById(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findWithCategoryById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID: " + id));
     }
 
@@ -83,6 +89,7 @@ public class ProductServiceImpl implements ProductService {
                 .unit(dto.getUnit())
                 .origin(dto.getOrigin())
                 .imageUrl(dto.getImageUrl())
+                .receivedDate(dto.getReceivedDate())
                 .productType(dto.getProductType())
                 .category(category)
                 .featured(dto.isFeatured())
@@ -113,6 +120,7 @@ public class ProductServiceImpl implements ProductService {
         product.setUnit(dto.getUnit());
         product.setOrigin(dto.getOrigin());
         product.setImageUrl(dto.getImageUrl());
+        product.setReceivedDate(dto.getReceivedDate());
         product.setProductType(dto.getProductType());
         product.setCategory(category);
         product.setFeatured(dto.isFeatured());
@@ -134,12 +142,25 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void adjustStock(Long id, int quantityChange) {
-        Product product = getById(id);
+        Product product = productRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID: " + id));
         int newQuantity = product.getStockQuantity() + quantityChange;
         if (newQuantity < 0) {
             throw new BadRequestException("Số lượng tồn kho không đủ để thực hiện (còn lại: " + product.getStockQuantity() + ")");
         }
         product.setStockQuantity(newQuantity);
+        productRepository.save(product);
+    }
+
+    @Override
+    @Transactional
+    public void updateStock(Long id, int quantity) {
+        if (quantity < 0) {
+            throw new BadRequestException("Số lượng tồn kho không được nhỏ hơn 0");
+        }
+        Product product = productRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID: " + id));
+        product.setStockQuantity(quantity);
         productRepository.save(product);
     }
 

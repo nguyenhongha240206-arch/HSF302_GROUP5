@@ -3,35 +3,214 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 <head>
-    <title>Lịch Sử Đơn Hàng Của Bạn</title>
+    <title>Lịch Sử & Tra Cứu Đơn Hàng</title>
+    <style>
+        .status-tab {
+            transition: all 0.2s ease;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            background-color: #fff;
+        }
+        .status-tab:hover {
+            border-color: #198754;
+            color: #198754;
+        }
+        .status-tab.active {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: #fff !important;
+            font-weight: 600;
+        }
+        .order-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.08) !important;
+        }
+        /* Stepper tiến trình đơn hàng (UC-13) */
+        .order-stepper {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+        .order-stepper::before {
+            content: "";
+            position: absolute;
+            top: 12px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        .step-item {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+            font-size: 0.78rem;
+            color: #6c757d;
+        }
+        .step-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+            font-weight: bold;
+            border: 2px solid #fff;
+        }
+        .step-item.done .step-circle {
+            background-color: #198754;
+            color: #fff;
+        }
+        .step-item.done {
+            color: #198754;
+            font-weight: 600;
+        }
+        .step-item.cancelled .step-circle {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .step-item.cancelled {
+            color: #dc3545;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content" class="py-2">
-    <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-clock-history text-success me-2"></i>Lịch Sử Đơn Hàng</h3>
+    <!-- Header & Thanh Tra cứu nhanh Mã đơn hàng (UC-13) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <h3 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-clock-history text-success me-2"></i>Lịch Sử & Tra Cứu Đơn Hàng
+        </h3>
 
+        <!-- Form tra cứu theo mã đơn hàng -->
+        <form th:action="@{/orders/history}" method="get" class="d-flex gap-2" style="min-width: 310px;">
+            <input type="hidden" name="status" th:if="${selectedStatus != null}" th:value="${selectedStatus}">
+            <div class="input-group shadow-sm rounded-pill overflow-hidden">
+                <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="keyword" th:value="${keyword}"
+                       class="form-control border-start-0 ps-0"
+                       placeholder="Nhập mã đơn (VD: FS-...)">
+                <button type="submit" class="btn btn-success px-3 fw-semibold">Tra cứu</button>
+            </div>
+            <a th:if="${keyword != null or selectedStatus != null}"
+               th:href="@{/orders/history}"
+               class="btn btn-outline-secondary rounded-pill px-3 d-flex align-items-center"
+               title="Xóa bộ lọc">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </form>
+    </div>
+
+    <!-- Thanh Tab lọc theo Trạng thái đơn hàng (UC-13: Chờ duyệt ➔ Đang giao ➔ Hoàn thành / Hủy) -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a th:href="@{/orders/history(keyword=${keyword})}"
+           class="btn rounded-pill px-3 py-2 text-decoration-none status-tab"
+           th:classappend="${selectedStatus == null ? 'active' : ''}">
+            <i class="bi bi-grid-fill me-1"></i>Tất cả đơn
+        </a>
+
+        <a th:each="st : ${orderStatuses}"
+           th:href="@{/orders/history(status=${st.name()}, keyword=${keyword})}"
+           class="btn rounded-pill px-3 py-2 text-decoration-none status-tab"
+           th:classappend="${selectedStatus == st.name() ? 'active' : ''}">
+            <span th:text="${st.displayName}">Trạng thái</span>
+        </a>
+    </div>
+
+    <!-- Trường hợp không có đơn hàng nào -->
     <div th:if="${#lists.isEmpty(orders)}" class="card border-0 shadow-sm rounded-4 p-5 text-center">
         <i class="bi bi-bag-x fs-1 text-muted"></i>
-        <h5 class="fw-bold mt-3">Bạn chưa có đơn hàng nào</h5>
-        <p class="text-muted small">Hãy đặt mua các loại trái cây tươi ngon ngay hôm nay!</p>
-        <div class="mt-3">
+        <h5 class="fw-bold mt-3" th:text="${(keyword != null or selectedStatus != null) ? 'Không tìm thấy đơn hàng phù hợp' : 'Bạn chưa có đơn hàng nào'}">
+            Bạn chưa có đơn hàng nào
+        </h5>
+        <p class="text-muted small">
+            <span th:if="${keyword != null or selectedStatus != null}">Hãy thử xóa bộ lọc hoặc kiểm tra lại mã đơn hàng của bạn.</span>
+            <span th:unless="${keyword != null or selectedStatus != null}">Hãy đặt mua các loại trái cây tươi ngon ngay hôm nay!</span>
+        </p>
+        <div class="mt-3 d-flex justify-content-center gap-2">
+            <a th:if="${keyword != null or selectedStatus != null}" th:href="@{/orders/history}" class="btn btn-outline-success rounded-pill px-4">
+                Xem Tất Cả Đơn Hàng
+            </a>
             <a th:href="@{/catalog}" class="btn btn-primary rounded-pill px-4">Mua Sắm Ngay</a>
         </div>
     </div>
 
+    <!-- Danh sách đơn hàng -->
     <div th:unless="${#lists.isEmpty(orders)}" class="d-flex flex-column gap-3">
-        <div class="card border-0 shadow-sm rounded-4 p-4" th:each="o : ${orders}">
+        <div class="card border-0 shadow-sm rounded-4 p-4 order-card" th:each="o : ${orders}">
+            <!-- Dòng tiêu đề đơn hàng -->
             <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
                 <div>
-                    <span class="fw-bold fs-5 text-dark" th:text="'Đơn Hàng #' + ${o.orderNumber}">#FS-12345</span>
-                    <span class="text-muted small ms-2" th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                    <a th:href="@{/orders/{num}(num=${o.orderNumber})}" class="text-decoration-none">
+                        <span class="fw-bold fs-5 text-dark" th:text="'Đơn Hàng #' + ${o.orderNumber}">#FS-12345</span>
+                    </a>
+                    <span class="text-muted small ms-2">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        <span th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                    </span>
                 </div>
                 <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+                    <!-- Phương thức thanh toán (UC-12) -->
+                    <span th:if="${o.paymentMethod != null and o.paymentMethod.name() == 'BANK_TRANSFER'}"
+                          class="badge bg-info bg-opacity-10 text-primary border border-primary-subtle">
+                        <i class="bi bi-qr-code me-1"></i>VietQR
+                    </span>
+                    <span th:if="${o.paymentMethod != null and o.paymentMethod.name() == 'COD'}"
+                          class="badge bg-light text-dark border">
+                        <i class="bi bi-cash me-1"></i>COD
+                    </span>
+
+                    <!-- Trạng thái đơn hàng & Thanh toán -->
                     <span th:class="${o.orderStatus.badgeClass}" th:text="${o.orderStatus.displayName}">Chờ xử lý</span>
                     <span class="badge bg-secondary" th:text="${o.paymentStatus.displayName}">Chưa thanh toán</span>
                 </div>
             </div>
 
-            <!-- Items list -->
+            <!-- Thanh tiến trình trạng thái đơn hàng trực quan (UC-13: Chờ duyệt ➔ Đang giao ➔ Hoàn thành / Hủy) -->
+            <div class="bg-light rounded-3 px-3 py-2 mb-3">
+                <div class="order-stepper" th:with="stName=${o.orderStatus.name()}">
+                    <!-- Bước 1: Chờ xác nhận -->
+                    <div class="step-item done">
+                        <div class="step-circle"><i class="bi bi-receipt"></i></div>
+                        <div>Chờ duyệt</div>
+                    </div>
+
+                    <!-- Bước 2: Đang xử lý / Đang giao -->
+                    <div class="step-item"
+                         th:classappend="${(stName == 'CONFIRMED' or stName == 'SHIPPING' or stName == 'DELIVERED') ? 'done' : ''}">
+                        <div class="step-circle"><i class="bi bi-truck"></i></div>
+                        <div>Đang giao</div>
+                    </div>
+
+                    <!-- Bước 3: Hoàn thành hoặc Đã hủy -->
+                    <div class="step-item"
+                         th:if="${stName != 'CANCELLED'}"
+                         th:classappend="${stName == 'DELIVERED' ? 'done' : ''}">
+                        <div class="step-circle"><i class="bi bi-check2-circle"></i></div>
+                        <div>Hoàn thành</div>
+                    </div>
+
+                    <div class="step-item cancelled" th:if="${stName == 'CANCELLED'}">
+                        <div class="step-circle"><i class="bi bi-x-lg"></i></div>
+                        <div>Đã hủy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách sản phẩm & Các nút thao tác -->
             <div class="row g-3 align-items-center">
                 <div class="col-md-7">
                     <div th:each="d : ${o.orderDetails}" class="d-flex align-items-center mb-2">
@@ -39,18 +218,44 @@
                         <span class="fw-semibold text-dark me-2" th:text="${d.productName}">Tên quả</span>
                         <span class="text-muted small" th:text="'x ' + ${d.quantity} + ' (' + ${#numbers.formatDecimal(d.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ)'">x 2 (200k)</span>
                     </div>
+
+                    <!-- Thông tin người nhận tóm tắt -->
+                    <div class="small text-muted mt-2 ps-2 border-start border-3 border-success">
+                        <i class="bi bi-geo-alt me-1"></i>Nhận hàng:
+                        <strong th:text="${o.receiverName}">Nguyễn Văn A</strong> -
+                        <span th:text="${o.receiverPhone}">09xxx</span>
+                    </div>
                 </div>
 
                 <div class="col-md-5 text-md-end">
                     <div class="small text-muted">Tổng thanh toán:</div>
                     <div class="h4 fw-bold text-danger mb-3" th:text="${#numbers.formatDecimal(o.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">200,000 đ</div>
 
-                    <div class="d-flex justify-content-md-end gap-2">
+                    <div class="d-flex flex-wrap justify-content-md-end gap-2">
+                        <!-- Nút Xem chi tiết / Quét mã VietQR -->
                         <a th:href="@{/orders/{num}(num=${o.orderNumber})}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
                             <i class="bi bi-eye me-1"></i>Chi Tiết
                         </a>
 
-                        <form th:if="${o.orderStatus.name() == 'PENDING'}" th:action="@{/orders/{id}/cancel(id=${o.id})}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
+                        <!-- UC-12: Nếu chọn VietQR và đơn đang chờ xử lý thì hiện nút Quét QR nhanh -->
+                        <a th:if="${o.paymentMethod != null and o.paymentMethod.name() == 'BANK_TRANSFER' and o.orderStatus.name() != 'CANCELLED' and o.paymentStatus.name() != 'PAID'}"
+                           th:href="@{/orders/{num}(num=${o.orderNumber})}"
+                           class="btn btn-primary btn-sm rounded-pill px-3">
+                            <i class="bi bi-qr-code-scan me-1"></i>Thanh toán / Thử lại
+                        </a>
+
+                        <!-- UC-15: Nút Đánh giá & Khiếu nại quả hỏng (Hiện khi đơn đã DELIVERED) -->
+                        <a th:if="${o.orderStatus.name() == 'DELIVERED'}"
+                           th:href="@{/orders/{num}(num=${o.orderNumber}, action='review')}"
+                           class="btn btn-warning btn-sm rounded-pill px-3 text-dark fw-semibold">
+                            <i class="bi bi-star-fill text-danger me-1"></i>Đánh Giá / Khiếu Nại Quả Hỏng
+                        </a>
+
+                        <!-- UC-14: Nút Hủy đơn hàng (Chỉ hiện khi đơn đang PENDING - Chờ xác nhận) -->
+                        <form th:if="${o.orderStatus.name() == 'PENDING'}"
+                              th:action="@{/orders/{id}/cancel(id=${o.id})}"
+                              method="post"
+                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
                             <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
                                 <i class="bi bi-x-circle me-1"></i>Hủy Đơn
                             </button>
@@ -63,4 +268,3 @@
 </div>
 </body>
 </html>
-

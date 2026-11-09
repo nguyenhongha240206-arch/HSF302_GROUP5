@@ -80,14 +80,18 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional(readOnly = true)
     public Page<LossSlip> getAllLossSlips(String keyword, Pageable pageable) {
-        return lossSlipRepository.searchLossSlips(keyword, pageable);
+        Page<LossSlip> slips = lossSlipRepository.searchLossSlips(keyword, pageable);
+        slips.getContent().forEach(lossSlip -> lossSlip.getDetails().size());
+        return slips;
     }
 
     @Override
     @Transactional(readOnly = true)
     public LossSlip getById(Long id) {
-        return lossSlipRepository.findById(id)
+        LossSlip lossSlip = lossSlipRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu hao hụt với ID: " + id));
+        lossSlip.getDetails().forEach(detail -> detail.getProduct().getName());
+        return lossSlip;
     }
 
     @Override
@@ -104,6 +108,12 @@ public class InventoryServiceImpl implements InventoryService {
         lossSlip.setDeleted(true);
         lossSlip.setDeletedAt(LocalDateTime.now());
         lossSlipRepository.save(lossSlip);
+    }
+
+    @Override
+    @Transactional
+    public void updateStock(Long productId, int quantity) {
+        productService.updateStock(productId, quantity);
     }
 
     @Override

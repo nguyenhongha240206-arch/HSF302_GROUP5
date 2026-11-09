@@ -4,6 +4,7 @@ import fu.fruitstore.order.entity.Order;
 import fu.fruitstore.order.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +21,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
 
+
+    @EntityGraph(attributePaths = {"user", "orderDetails", "orderDetails.product"})
+    Optional<Order> findWithDetailsById(Long id);
+
+    @EntityGraph(attributePaths = {"user", "orderDetails", "orderDetails.product"})
+    Optional<Order> findWithDetailsByOrderNumber(String orderNumber);
+
+    @EntityGraph(attributePaths = {"orderDetails", "orderDetails.product"})
+    List<Order> findWithDetailsByUserIdOrderByCreatedAtDesc(Long userId);
+
+    Page<Order> findByUserId(Long userId, Pageable pageable);
+
+
     @Query("SELECT o FROM Order o WHERE " +
            "(:status IS NULL OR o.orderStatus = :status) AND " +
            "(:keyword IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -35,5 +49,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     BigDecimal calculateTotalDeliveredRevenue();
 
     List<Order> findTop5ByOrderByCreatedAtDesc();
+
+    List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(java.time.LocalDateTime start, java.time.LocalDateTime end);
 }
 

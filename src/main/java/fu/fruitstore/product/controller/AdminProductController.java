@@ -92,6 +92,7 @@ public class AdminProductController {
         dto.setUnit(product.getUnit());
         dto.setOrigin(product.getOrigin());
         dto.setImageUrl(product.getImageUrl());
+        dto.setReceivedDate(product.getReceivedDate());
         dto.setProductType(product.getProductType());
         dto.setCategoryId(product.getCategory().getId());
         dto.setFeatured(product.isFeatured());

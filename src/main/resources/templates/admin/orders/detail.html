@@ -74,6 +74,8 @@
                 <p class="mb-2"><strong>Họ tên:</strong> <span th:text="${order.receiverName}"></span></p>
                 <p class="mb-2"><strong>Số điện thoại:</strong> <span th:text="${order.receiverPhone}"></span></p>
                 <p class="mb-2"><strong>Địa chỉ giao:</strong> <span th:text="${order.shippingAddress}"></span></p>
+                <p class="mb-2" th:if="${order.deliveryTimeSlot != null}"><strong>Khung giờ hẹn giao (UC-11):</strong> <span class="badge bg-primary" th:text="${order.deliveryTimeSlot}"></span></p>
+                <p class="mb-2" th:if="${order.packagingRequirement != null}"><strong>Tiêu chuẩn quả & Đóng gói (UC-11):</strong> <span class="text-success fw-bold" th:text="${order.packagingRequirement}"></span></p>
                 <p class="mb-0" th:if="${order.note != null && !order.note.isBlank()}"><strong>Ghi chú:</strong> <span th:text="${order.note}"></span></p>
             </div>
         </div>
@@ -108,8 +110,9 @@
                 <tbody>
                     <tr th:each="d : ${order.orderDetails}">
                         <td>
-                            <div class="fw-semibold text-dark" th:text="${d.productName}">Tên sản phẩm</div>
-                            <small class="text-muted" th:text="'Mã SP: ' + ${d.product.code}"></small>
+                            <div class="fw-bold text-dark" th:text="${d.productName}">Tên sản phẩm</div>
+                            <small th:if="${d.product != null}" class="text-muted" th:text="'Mã SP: ' + ${d.product.code}"></small>
+                            <div th:if="${d.itemDetails != null}" class="small text-muted mt-1 p-2 bg-light rounded" th:text="${d.itemDetails}"></div>
                         </td>
                         <td class="text-center" th:text="${#numbers.formatDecimal(d.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
                         <td class="text-center fw-bold" th:text="${d.quantity}">1</td>

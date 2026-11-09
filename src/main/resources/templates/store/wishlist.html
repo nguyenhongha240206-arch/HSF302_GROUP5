@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/main-layout}">
+<head>
+    <title>Danh Sách Yêu Thích - Cửa Hàng Hoa Quả</title>
+</head>
+<body>
+<div layout:fragment="content" class="py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-success text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Danh sách yêu thích</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h3 class="fw-bold mb-0">
+            <i class="bi bi-heart-fill text-danger me-2"></i>Danh Sách Yêu Thích
+        </h3>
+        <span class="badge bg-danger rounded-pill fs-6" th:if="${wishlistItems != null and not #lists.isEmpty(wishlistItems)}"
+              th:text="'Tổng ' + ${wishlistItems.size()} + ' sản phẩm yêu thích'">
+            Tổng 0 sản phẩm yêu thích
+        </span>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${wishlistItems == null or #lists.isEmpty(wishlistItems)}"
+         class="card border-0 shadow-sm rounded-4 p-4 text-center py-5">
+        <i class="bi bi-heart fs-1 text-muted mb-3"></i>
+        <h5 class="fw-bold text-muted mb-2">Bạn chưa có sản phẩm yêu thích nào</h5>
+        <p class="text-muted small mb-4">Hãy khám phá và thêm những sản phẩm bạn yêu thích vào đây!</p>
+        <div>
+            <a th:href="@{/catalog}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-shop me-2"></i>Khám Phá Ngay
+            </a>
+        </div>
+    </div>
+
+    <!-- Wishlist Grid -->
+    <div th:unless="${wishlistItems == null or #lists.isEmpty(wishlistItems)}" class="row g-4">
+        <div class="col-6 col-md-3" th:each="item : ${wishlistItems}">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                <!-- Product Image -->
+                <div class="position-relative">
+                    <a th:href="@{/products/{id}(id=${item.product.id})}">
+                        <img th:src="${item.product.imageUrl != null ? item.product.imageUrl : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80'}"
+                             th:alt="${item.product.name}"
+                             class="card-img-top"
+                             style="height: 180px; object-fit: cover;">
+                    </a>
+                    <!-- Origin Badge -->
+                    <span class="badge bg-success position-absolute top-0 start-0 m-2"
+                          th:text="${item.product.origin}">Xuất xứ</span>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body d-flex flex-column p-3">
+                    <!-- Product Name -->
+                    <a th:href="@{/products/{id}(id=${item.product.id})}"
+                       class="fw-semibold text-dark text-decoration-none mb-1 lh-sm"
+                       th:text="${item.product.name}">Tên sản phẩm</a>
+
+                    <!-- Price -->
+                    <div class="mb-1">
+                        <span class="fw-bold text-danger"
+                              th:text="${#numbers.formatDecimal(item.product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
+                        <span th:if="${item.product.originalPrice != null and item.product.originalPrice > item.product.price}"
+                              class="text-muted text-decoration-line-through small ms-1"
+                              th:text="${#numbers.formatDecimal(item.product.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">120,000 đ</span>
+                    </div>
+
+                    <!-- Unit -->
+                    <div class="text-muted small mb-2"
+                         th:text="'/ 1 ' + ${item.product.unit}">/ 1 kg</div>
+
+                    <!-- Added date -->
+                    <div class="text-muted small mb-3">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        <span th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy')}">01/01/2026</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-auto">
+                        <!-- Add to Cart -->
+                        <form th:action="@{/cart/add}" method="post" class="mb-2">
+                            <input type="hidden" name="productId" th:value="${item.product.id}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit"
+                                    class="btn btn-primary btn-sm rounded-pill w-100"
+                                    th:disabled="${item.product.stockQuantity <= 0}">
+                                <i class="bi bi-cart-plus me-1"></i>
+                                <span th:text="${item.product.stockQuantity > 0 ? 'Thêm Vào Giỏ' : 'Hết Hàng'}">Thêm Vào Giỏ</span>
+                            </button>
+                        </form>
+
+                        <!-- Remove from Wishlist -->
+                        <form th:action="@{/wishlist/toggle/{id}(id=${item.product.id})}" method="post">
+                            <input type="hidden" name="redirectUrl" value="/wishlist">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100 mt-2">
+                                <i class="bi bi-heart-break me-1"></i>Xóa Yêu Thích
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to catalog -->
+    <div th:unless="${wishlistItems == null or #lists.isEmpty(wishlistItems)}" class="mt-4 text-center">
+        <a th:href="@{/catalog}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-2"></i>Tiếp Tục Mua Sắm
+        </a>
+    </div>
+</div>
+</body>
+</html>

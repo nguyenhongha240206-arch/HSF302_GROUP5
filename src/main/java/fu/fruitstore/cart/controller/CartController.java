@@ -2,6 +2,7 @@ package fu.fruitstore.cart.controller;
 
 import fu.fruitstore.cart.dto.CartDto;
 import fu.fruitstore.cart.services.CartService;
+import fu.fruitstore.voucher.services.VoucherService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -18,11 +19,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CartController {
 
     private final CartService cartService;
+    private final VoucherService voucherService;
 
     @GetMapping
     public String viewCart(HttpSession session, Model model) {
         CartDto cart = cartService.getCart(session);
         model.addAttribute("cart", cart);
+        model.addAttribute("availableVouchers", voucherService.getActiveVouchers());
         return "store/cart";
     }
 
@@ -33,7 +36,7 @@ public class CartController {
                             RedirectAttributes redirectAttributes) {
         try {
             cartService.addToCart(session, productId, quantity);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã thêm sản phẩm vào giỏ hàng thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã thêm hoa quả vào giỏ hàng thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -41,12 +44,14 @@ public class CartController {
     }
 
     @PostMapping("/update")
-    public String updateQuantity(@RequestParam("productId") Long productId,
+    public String updateQuantity(@RequestParam(value = "itemId", required = false) String itemId,
+                                 @RequestParam(value = "productId", required = false) Long productId,
                                  @RequestParam("quantity") int quantity,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
         try {
-            cartService.updateQuantity(session, productId, quantity);
+            String targetId = itemId != null && !itemId.isBlank() ? itemId : ("P_" + productId);
+            cartService.updateQuantity(session, targetId, quantity);
             redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật số lượng!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -55,10 +60,12 @@ public class CartController {
     }
 
     @PostMapping("/remove")
-    public String removeFromCart(@RequestParam("productId") Long productId,
+    public String removeFromCart(@RequestParam(value = "itemId", required = false) String itemId,
+                                 @RequestParam(value = "productId", required = false) Long productId,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
-        cartService.removeFromCart(session, productId);
+        String targetId = itemId != null && !itemId.isBlank() ? itemId : ("P_" + productId);
+        cartService.removeFromCart(session, targetId);
         redirectAttributes.addFlashAttribute("successMessage", "Đã xóa sản phẩm khỏi giỏ hàng!");
         return "redirect:/cart";
     }
@@ -69,7 +76,7 @@ public class CartController {
                                RedirectAttributes redirectAttributes) {
         try {
             cartService.applyVoucher(session, voucherCode);
-            redirectAttributes.addFlashAttribute("successMessage", "Áp dụng mã giảm giá thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Áp dụng mã giảm giá '" + voucherCode.trim().toUpperCase() + "' thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -83,4 +90,3 @@ public class CartController {
         return "redirect:/cart";
     }
 }
-

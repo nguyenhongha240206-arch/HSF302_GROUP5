@@ -2,6 +2,7 @@ package fu.fruitstore.product.dto;
 
 import fu.fruitstore.product.entity.ProductType;
 import jakarta.validation.constraints.DecimalMin;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -39,6 +41,7 @@ public class ProductDto {
 
     private String origin;
     private String imageUrl;
+    private LocalDate receivedDate;
 
     @NotNull(message = "Vui lòng chọn loại sản phẩm")
     private ProductType productType = ProductType.FRUIT;

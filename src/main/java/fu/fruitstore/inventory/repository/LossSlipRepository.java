@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,5 +24,7 @@ public interface LossSlipRepository extends JpaRepository<LossSlip, Long> {
 
     @Query("SELECT COALESCE(SUM(ls.totalLossAmount), 0) FROM LossSlip ls")
     BigDecimal calculateTotalLossAmount();
+
+    List<LossSlip> findBySlipDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
 }
 
