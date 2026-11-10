@@ -10,6 +10,10 @@ import java.util.List;
 
 public interface UserService {
     User register(RegisterDto dto);
+    void sendRegistrationOtp(RegisterStep1Dto dto);
+    boolean verifyRegistrationOtp(String email, String otpCode);
+    User completeRegistration(String fullName, String email, String phoneNumber, RegisterPasswordDto passwordDto);
+
     User findByEmail(String email);
     User findById(Long id);
     User updateProfile(String email, UserProfileDto dto);

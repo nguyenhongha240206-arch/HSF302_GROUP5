@@ -1,5 +1,5 @@
 -- =====================================================================
--- DATABASE SCRIPT: V3__seed_test_accounts.sql (Microsoft SQL Server)
+-- DATABASE SCRIPT: V9__seed_test_accounts.sql (Microsoft SQL Server)
 -- PROJECT: Fruit Store Management System (Spring Boot + Thymeleaf)
 -- DESCRIPTION: Seed Verified Test Accounts (Admin & Customer with BCrypt Passwords)
 -- =====================================================================
@@ -29,10 +29,8 @@ BEGIN
 
     DECLARE @adm_id BIGINT = (SELECT id FROM users WHERE email = 'admin@fruitstore.com');
     DECLARE @r_adm BIGINT = (SELECT id FROM roles WHERE name = 'ROLE_ADMIN');
-    DECLARE @r_stf BIGINT = (SELECT id FROM roles WHERE name = 'ROLE_STAFF');
 
     IF (@r_adm IS NOT NULL) INSERT INTO user_roles (user_id, role_id) VALUES (@adm_id, @r_adm);
-    IF (@r_stf IS NOT NULL) INSERT INTO user_roles (user_id, role_id) VALUES (@adm_id, @r_stf);
 END
 ELSE
 BEGIN

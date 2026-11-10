@@ -1,10 +1,8 @@
 package fu.fruitstore.auth.controller;
 
-import fu.fruitstore.auth.dto.ForgotPasswordDto;
-import fu.fruitstore.auth.dto.RegisterDto;
-import fu.fruitstore.auth.dto.ResetPasswordDto;
-import fu.fruitstore.auth.dto.VerifyOtpDto;
+import fu.fruitstore.auth.dto.*;
 import fu.fruitstore.auth.services.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -33,29 +31,192 @@ public class AuthController {
         return "auth/login";
     }
 
+    // ==========================================
+    // STEP 1: REGISTER - ENTER BASIC INFO & REQUEST OTP
+    // ==========================================
+
     @GetMapping("/register")
-    public String registerPage(Model model) {
-        if (!model.containsAttribute("registerDto")) {
-            model.addAttribute("registerDto", new RegisterDto());
+    public String registerPage(Model model, HttpSession session) {
+        if (!model.containsAttribute("registerStep1Dto")) {
+            RegisterStep1Dto dto = new RegisterStep1Dto();
+            String savedEmail = (String) session.getAttribute("REG_EMAIL");
+            String savedName = (String) session.getAttribute("REG_FULL_NAME");
+            String savedPhone = (String) session.getAttribute("REG_PHONE");
+            if (savedEmail != null) dto.setEmail(savedEmail);
+            if (savedName != null) dto.setFullName(savedName);
+            if (savedPhone != null) dto.setPhoneNumber(savedPhone);
+            model.addAttribute("registerStep1Dto", dto);
         }
         return "auth/register";
     }
 
     @PostMapping("/register")
-    public String handleRegister(@Valid @ModelAttribute("registerDto") RegisterDto dto,
-                                 BindingResult bindingResult,
-                                 RedirectAttributes redirectAttributes) {
+    public String handleRegisterStep1(@Valid @ModelAttribute("registerStep1Dto") RegisterStep1Dto dto,
+                                      BindingResult bindingResult,
+                                      HttpSession session,
+                                      RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return "auth/register";
         }
 
         try {
-            userService.register(dto);
-            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký tài khoản thành công! Vui lòng đăng nhập.");
+            userService.sendRegistrationOtp(dto);
+
+            session.setAttribute("REG_FULL_NAME", dto.getFullName().trim());
+            session.setAttribute("REG_EMAIL", dto.getEmail().toLowerCase().trim());
+            session.setAttribute("REG_PHONE", dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : "");
+            session.setAttribute("REG_OTP_VERIFIED", false);
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Mã OTP gồm 6 chữ số đã được gửi đến email " + dto.getEmail() + ". Vui lòng kiểm tra hộp thư!");
+            return "redirect:/auth/register/verify-otp";
+        } catch (Exception e) {
+            bindingResult.rejectValue("email", "error.registerStep1Dto", e.getMessage());
+            return "auth/register";
+        }
+    }
+
+    // ==========================================
+    // STEP 2: REGISTER - VERIFY EMAIL OTP
+    // ==========================================
+
+    @GetMapping("/register/verify-otp")
+    public String registerVerifyOtpPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        String email = (String) session.getAttribute("REG_EMAIL");
+        if (email == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng nhập thông tin đăng ký trước!");
+            return "redirect:/auth/register";
+        }
+
+        if (!model.containsAttribute("verifyOtpDto")) {
+            VerifyOtpDto dto = new VerifyOtpDto();
+            dto.setEmail(email);
+            model.addAttribute("verifyOtpDto", dto);
+        }
+        model.addAttribute("regEmail", email);
+        return "auth/register-verify-otp";
+    }
+
+    @PostMapping("/register/verify-otp")
+    public String handleRegisterVerifyOtp(@Valid @ModelAttribute("verifyOtpDto") VerifyOtpDto dto,
+                                          BindingResult bindingResult,
+                                          HttpSession session,
+                                          RedirectAttributes redirectAttributes,
+                                          Model model) {
+        String email = (String) session.getAttribute("REG_EMAIL");
+        if (email == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Phiên đăng ký đã hết hạn. Vui lòng thử lại!");
+            return "redirect:/auth/register";
+        }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("regEmail", email);
+            return "auth/register-verify-otp";
+        }
+
+        boolean isValid = userService.verifyRegistrationOtp(email, dto.getOtpCode());
+        if (!isValid) {
+            bindingResult.rejectValue("otpCode", "error.verifyOtpDto", "Mã OTP không đúng hoặc đã hết hạn (quá 5 phút)!");
+            model.addAttribute("regEmail", email);
+            return "auth/register-verify-otp";
+        }
+
+        session.setAttribute("REG_OTP_VERIFIED", true);
+        redirectAttributes.addFlashAttribute("successMessage", "Xác thực email thành công! Bây giờ hãy thiết lập mật khẩu cho tài khoản.");
+        return "redirect:/auth/register/set-password";
+    }
+
+    @PostMapping("/register/resend-otp")
+    public String handleRegisterResendOtp(HttpSession session, RedirectAttributes redirectAttributes) {
+        String email = (String) session.getAttribute("REG_EMAIL");
+        String fullName = (String) session.getAttribute("REG_FULL_NAME");
+        String phone = (String) session.getAttribute("REG_PHONE");
+
+        if (email == null || fullName == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Phiên đăng ký đã hết hạn. Vui lòng đăng ký lại!");
+            return "redirect:/auth/register";
+        }
+
+        try {
+            RegisterStep1Dto dto = new RegisterStep1Dto();
+            dto.setEmail(email);
+            dto.setFullName(fullName);
+            dto.setPhoneNumber(phone);
+            userService.sendRegistrationOtp(dto);
+            redirectAttributes.addFlashAttribute("successMessage", "Mã OTP mới đã được gửi lại vào email của bạn!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/auth/register/verify-otp";
+    }
+
+    // ==========================================
+    // STEP 3: REGISTER - SET PASSWORD & COMPLETE
+    // ==========================================
+
+    @GetMapping("/register/set-password")
+    public String registerSetPasswordPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Boolean verified = (Boolean) session.getAttribute("REG_OTP_VERIFIED");
+        String email = (String) session.getAttribute("REG_EMAIL");
+
+        if (verified == null || !verified || email == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng xác thực mã OTP trước khi thiết lập mật khẩu!");
+            return "redirect:/auth/register";
+        }
+
+        if (!model.containsAttribute("registerPasswordDto")) {
+            model.addAttribute("registerPasswordDto", new RegisterPasswordDto());
+        }
+        model.addAttribute("regEmail", email);
+        model.addAttribute("regFullName", session.getAttribute("REG_FULL_NAME"));
+        return "auth/register-set-password";
+    }
+
+    @PostMapping("/register/set-password")
+    public String handleRegisterSetPassword(@Valid @ModelAttribute("registerPasswordDto") RegisterPasswordDto dto,
+                                            BindingResult bindingResult,
+                                            HttpSession session,
+                                            RedirectAttributes redirectAttributes,
+                                            Model model) {
+        Boolean verified = (Boolean) session.getAttribute("REG_OTP_VERIFIED");
+        String email = (String) session.getAttribute("REG_EMAIL");
+        String fullName = (String) session.getAttribute("REG_FULL_NAME");
+        String phone = (String) session.getAttribute("REG_PHONE");
+
+        if (verified == null || !verified || email == null || fullName == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Phiên đăng ký không hợp lệ. Vui lòng thử lại!");
+            return "redirect:/auth/register";
+        }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("regEmail", email);
+            model.addAttribute("regFullName", fullName);
+            return "auth/register-set-password";
+        }
+
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "error.registerPasswordDto", "Mật khẩu xác nhận không khớp!");
+            model.addAttribute("regEmail", email);
+            model.addAttribute("regFullName", fullName);
+            return "auth/register-set-password";
+        }
+
+        try {
+            userService.completeRegistration(fullName, email, phone, dto);
+
+            // Xóa session đăng ký
+            session.removeAttribute("REG_FULL_NAME");
+            session.removeAttribute("REG_EMAIL");
+            session.removeAttribute("REG_PHONE");
+            session.removeAttribute("REG_OTP_VERIFIED");
+
+            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký tài khoản thành công! Vui lòng đăng nhập với mật khẩu vừa tạo.");
             return "redirect:/auth/login";
         } catch (Exception e) {
-            bindingResult.rejectValue("email", "error.registerDto", e.getMessage());
-            return "auth/register";
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("regEmail", email);
+            model.addAttribute("regFullName", fullName);
+            return "auth/register-set-password";
         }
     }
 

@@ -24,11 +24,11 @@ public class CustomAuthenticationSuccessHandler extends SavedRequestAwareAuthent
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        boolean isAdminOrStaff = authorities.stream().anyMatch(a ->
-                a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_STAFF")
+        boolean isAdmin = authorities.stream().anyMatch(a ->
+                a.getAuthority().equals("ROLE_ADMIN")
         );
 
-        if (isAdminOrStaff) {
+        if (isAdmin) {
             clearAuthenticationAttributes(request);
             getRedirectStrategy().sendRedirect(request, response, "/admin");
             return;

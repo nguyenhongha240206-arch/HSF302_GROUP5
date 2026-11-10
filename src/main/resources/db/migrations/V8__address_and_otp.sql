@@ -1,5 +1,5 @@
 -- =====================================================================
--- DATABASE SCRIPT: V2__address_and_otp.sql (Microsoft SQL Server)
+-- DATABASE SCRIPT: V8__address_and_otp.sql (Microsoft SQL Server)
 -- PROJECT: Fruit Store Management System (Spring Boot + Thymeleaf)
 -- DESCRIPTION: Add user_addresses and password_reset_otps tables
 -- =====================================================================

@@ -71,6 +71,89 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void sendRegistrationOtp(RegisterStep1Dto dto) {
+        String cleanEmail = dto.getEmail().toLowerCase().trim();
+
+        if (userRepository.existsByEmail(cleanEmail)) {
+            throw new BadRequestException("Email này đã được sử dụng bởi một tài khoản khác!");
+        }
+
+        if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank()) {
+            if (userRepository.existsByPhoneNumber(dto.getPhoneNumber().trim())) {
+                throw new BadRequestException("Số điện thoại này đã được đăng ký bởi tài khoản khác!");
+            }
+        }
+
+        // Hủy các mã OTP cũ chưa dùng của email này
+        otpRepository.invalidateAllByEmail(cleanEmail);
+
+        // Sinh mã OTP 6 số ngẫu nhiên
+        SecureRandom random = new SecureRandom();
+        String otpCode = String.format("%06d", random.nextInt(1_000_000));
+
+        PasswordResetOtp otp = PasswordResetOtp.builder()
+                .email(cleanEmail)
+                .otpCode(otpCode)
+                .expiryTime(LocalDateTime.now().plusMinutes(5))
+                .isUsed(false)
+                .build();
+        otpRepository.save(otp);
+
+        // Gửi OTP qua email (không sửa EmailService)
+        emailService.sendOtpEmail(cleanEmail, otpCode);
+    }
+
+    @Override
+    @Transactional
+    public boolean verifyRegistrationOtp(String email, String otpCode) {
+        String cleanEmail = email.toLowerCase().trim();
+        String cleanOtp = otpCode.trim();
+
+        PasswordResetOtp otp = otpRepository
+                .findTopByEmailAndOtpCodeAndIsUsedFalseOrderByCreatedAtDesc(cleanEmail, cleanOtp)
+                .orElse(null);
+
+        if (otp == null || otp.isExpired()) {
+            return false;
+        }
+
+        otp.setUsed(true);
+        otpRepository.save(otp);
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public User completeRegistration(String fullName, String email, String phoneNumber, RegisterPasswordDto passwordDto) {
+        if (!passwordDto.getPassword().equals(passwordDto.getConfirmPassword())) {
+            throw new BadRequestException("Mật khẩu xác nhận không khớp!");
+        }
+
+        String cleanEmail = email.toLowerCase().trim();
+        if (userRepository.existsByEmail(cleanEmail)) {
+            throw new BadRequestException("Email này đã được sử dụng bởi một tài khoản khác!");
+        }
+
+        Role customerRole = roleRepository.findByName("ROLE_CUSTOMER")
+                .orElseGet(() -> roleRepository.save(Role.builder()
+                        .name("ROLE_CUSTOMER")
+                        .description("Khách hàng mua sắm")
+                        .build()));
+
+        User user = User.builder()
+                .fullName(fullName.trim())
+                .email(cleanEmail)
+                .password(passwordEncoder.encode(passwordDto.getPassword()))
+                .phoneNumber(phoneNumber != null && !phoneNumber.isBlank() ? phoneNumber.trim() : null)
+                .enabled(true)
+                .roles(new HashSet<>(Collections.singletonList(customerRole)))
+                .build();
+
+        return userRepository.save(user);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -192,8 +275,9 @@ public class UserServiceImpl implements UserService {
         String cleanEmail = dto.getEmail().toLowerCase().trim();
         String cleanOtp = dto.getOtpCode().trim();
 
-        PasswordResetOtp otp = otpRepository.findTopByEmailAndOtpCodeAndIsUsedFalseOrderByCreatedAtDesc(cleanEmail, cleanOtp)
-                .orElseThrow(() -> new BadRequestException("Mã OTP không chính xác hoặc đã được sử dụng!"));
+        PasswordResetOtp otp = otpRepository
+                .findTopByEmailAndOtpCodeAndIsUsedFalseOrderByCreatedAtDesc(cleanEmail, cleanOtp)
+                .orElseThrow(() -> new BadRequestException("Mã OTP không hợp lệ hoặc đã được sử dụng!"));
 
         if (otp.isExpired()) {
             throw new BadRequestException("Mã OTP đã hết hiệu lực (quá 5 phút). Vui lòng yêu cầu mã mới!");
