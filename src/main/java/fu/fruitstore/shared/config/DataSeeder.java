@@ -9,6 +9,10 @@ import fu.fruitstore.category.repository.CategoryRepository;
 import fu.fruitstore.product.entity.Product;
 import fu.fruitstore.product.entity.ProductType;
 import fu.fruitstore.product.repository.ProductRepository;
+import fu.fruitstore.promotion.entity.Banner;
+import fu.fruitstore.promotion.entity.UserVoucher;
+import fu.fruitstore.promotion.repository.BannerRepository;
+import fu.fruitstore.promotion.repository.UserVoucherRepository;
 import fu.fruitstore.review.entity.Review;
 import fu.fruitstore.review.repository.ReviewRepository;
 import fu.fruitstore.voucher.entity.Voucher;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +42,8 @@ public class DataSeeder implements CommandLineRunner {
     private final ProductRepository productRepository;
     private final VoucherRepository voucherRepository;
     private final ReviewRepository reviewRepository;
+    private final BannerRepository bannerRepository;
+    private final UserVoucherRepository userVoucherRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -312,6 +319,65 @@ public class DataSeeder implements CommandLineRunner {
                             .comment("Giỏ quà rất sang trọng và đẹp mắt, trái cây đều quả và tươi rói. Đem đi biếu sinh nhật ai cũng khen!")
                             .build())
             );
+        }
+
+        // 7. Banners (Module 3 - HaNH UC-14)
+        if (bannerRepository.count() == 0) {
+            bannerRepository.save(Banner.builder()
+                    .title("Lễ Hội Hoa Quả Mùa Hè - Tươi Ngon Giòn Ngọt")
+                    .subtitle("Chiết khấu lên tới 25% cho tất cả các dòng Cherry Mỹ, Nho mẫu đơn & Táo Envy New Zealand đạt chuẩn GlobalGAP.")
+                    .imageUrl("https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=1200&q=80")
+                    .targetUrl("/catalog")
+                    .position("HERO_SLIDER")
+                    .displayOrder(1)
+                    .startDate(LocalDate.now().minusDays(5))
+                    .endDate(LocalDate.now().plusMonths(2))
+                    .active(true)
+                    .build());
+
+            bannerRepository.save(Banner.builder()
+                    .title("Thiết Kế Giỏ Quà Hoa Quả Độc Quyền Theo Yêu Cầu")
+                    .subtitle("Tự tay chọn mẫu giỏ mây tre đan, phối các loại trái cây thượng hạng, tặng kèm nơ lụa & thiệp mừng cá nhân hóa.")
+                    .imageUrl("https://images.unsplash.com/photo-1546548970-71785318a17b?auto=format&fit=crop&w=1200&q=80")
+                    .targetUrl("/custom-basket")
+                    .position("HERO_SLIDER")
+                    .displayOrder(2)
+                    .startDate(LocalDate.now().minusDays(5))
+                    .endDate(LocalDate.now().plusMonths(3))
+                    .active(true)
+                    .build());
+
+            bannerRepository.save(Banner.builder()
+                    .title("Đặc Sản Trái Cây Ba Miền Chuẩn VietGAP")
+                    .subtitle("Sầu riêng Ri6 chín cây, Bơ sáp 034 Đắk Lắk, Xoài cát Hòa Lộc thu hái trực tiếp từ nhà vườn uy tín.")
+                    .imageUrl("https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=1200&q=80")
+                    .targetUrl("/catalog?categoryId=2")
+                    .position("HERO_SLIDER")
+                    .displayOrder(3)
+                    .startDate(LocalDate.now().minusDays(5))
+                    .endDate(LocalDate.now().plusMonths(2))
+                    .active(true)
+                    .build());
+        }
+
+        // 8. Ví Voucher Khách Hàng (Module 3 - HaNH UC-15)
+        if (userVoucherRepository.count() == 0) {
+            voucherRepository.findByCodeIgnoreCaseAndActiveTrue("CHAOBANMOI").ifPresent(v -> {
+                userVoucherRepository.save(UserVoucher.builder()
+                        .user(customer)
+                        .voucher(v)
+                        .collectedAt(LocalDateTime.now())
+                        .isUsed(false)
+                        .build());
+            });
+            voucherRepository.findByCodeIgnoreCaseAndActiveTrue("TRIAN50K").ifPresent(v -> {
+                userVoucherRepository.save(UserVoucher.builder()
+                        .user(customer)
+                        .voucher(v)
+                        .collectedAt(LocalDateTime.now().minusDays(1))
+                        .isUsed(false)
+                        .build());
+            });
         }
 
         log.info(">>> Khởi tạo dữ liệu mẫu hoàn tất thành công! Tổng số sản phẩm hiện có: {}", productRepository.count());

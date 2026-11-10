@@ -125,5 +125,18 @@ public class VoucherServiceImpl implements VoucherService {
             voucherRepository.save(v);
         });
     }
+
+    @Override
+    @Transactional
+    public void deactivateExpiredVouchers() {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        List<Voucher> expiredVouchers = voucherRepository.findByActiveTrueAndEndDateBefore(today);
+        if (!expiredVouchers.isEmpty()) {
+            for (Voucher v : expiredVouchers) {
+                v.setActive(false);
+            }
+            voucherRepository.saveAll(expiredVouchers);
+        }
+    }
 }
 

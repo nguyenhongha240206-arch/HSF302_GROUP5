@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 <head>
-    <title>Giỏ Hàng Mua Sắm (UC-08 & UC-10)</title>
+    <title>Giỏ Hàng Mua Sắm (UC-11 & UC-12)</title>
 </head>
 <body>
 <div layout:fragment="content" class="py-2">
@@ -128,9 +128,29 @@
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
                 <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-receipt-cutoff text-success me-2"></i>Tóm Tắt Đơn Hàng</h5>
 
-                <!-- Voucher Form (UC-10) -->
+                <!-- Best Voucher Recommendation (UC-15 & UC-12) -->
+                <div th:if="${bestVoucher != null && (cart.voucherCode == null || !cart.voucherCode.equalsIgnoreCase(bestVoucher.code))}"
+                     class="p-3 mb-3 bg-warning bg-opacity-10 border border-warning rounded-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-warning text-dark font-monospace mb-1">
+                                <i class="bi bi-stars me-1"></i>Đề xuất tiết kiệm nhất (UC-15)
+                            </span>
+                            <div class="fw-bold text-dark small" th:text="${bestVoucher.name}">Tên voucher</div>
+                            <div class="text-success fw-bold small" th:text="'Giảm ngay: -' + ${#numbers.formatDecimal(bestDiscountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
+                        </div>
+                        <form th:action="@{/cart/voucher/apply}" method="post" class="m-0">
+                            <input type="hidden" name="voucherCode" th:value="${bestVoucher.code}">
+                            <button type="submit" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
+                                Áp Dụng
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Voucher Form (UC-12) -->
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold"><i class="bi bi-ticket-perforated-fill text-danger me-1"></i>Mã Giảm Giá / Voucher</label>
+                    <label class="form-label small fw-semibold"><i class="bi bi-ticket-perforated-fill text-danger me-1"></i>Mã Giảm Giá / Voucher (UC-12)</label>
 
                     <form th:if="${cart.voucherCode == null}" th:action="@{/cart/voucher/apply}" method="post" class="input-group">
                         <input type="text" name="voucherCode" id="inputVoucherCode" class="form-control form-control-sm text-uppercase font-monospace"
@@ -149,22 +169,52 @@
                     </div>
                 </div>
 
-                <!-- Available Coupons List for 1-Click Apply -->
-                <div th:if="${availableVouchers != null && !availableVouchers.empty}" class="mb-4">
-                    <small class="text-muted fw-semibold d-block mb-2">Voucher Khuyến Mãi Đang Diễn Ra (Nhấn để dùng):</small>
+                <!-- Customer Wallet Vouchers (UC-15) -->
+                <div th:if="${myWalletVouchers != null && !myWalletVouchers.empty}" class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-success fw-bold"><i class="bi bi-wallet2 me-1"></i>Ví Voucher Của Bạn:</small>
+                        <a th:href="@{/account/vouchers}" class="small text-decoration-none">Xem ví</a>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        <div th:each="uv : ${myWalletVouchers}"
+                             class="p-2 border rounded-3 bg-white d-flex justify-content-between align-items-center shadow-xs">
+                            <div>
+                                <span class="badge bg-success font-monospace" th:text="${uv.voucher.code}">CODE</span>
+                                <span class="small fw-semibold ms-1" th:text="'Giảm ' + ${uv.voucher.discountPercent} + '%'">Giảm 10%</span>
+                                <div class="text-muted" style="font-size: 0.72rem;"
+                                     th:text="'Đơn từ ' + ${#numbers.formatDecimal(uv.voucher.minOrderAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
+                            </div>
+                            <form th:action="@{/cart/voucher/apply}" method="post" class="m-0">
+                                <input type="hidden" name="voucherCode" th:value="${uv.voucher.code}">
+                                <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2 rounded-pill" style="font-size: 0.75rem;"
+                                        th:disabled="${cart.voucherCode != null && cart.voucherCode.equalsIgnoreCase(uv.voucher.code)}">
+                                    <span th:text="${cart.voucherCode != null && cart.voucherCode.equalsIgnoreCase(uv.voucher.code) ? 'Đang dùng' : 'Dùng ngay'}">Dùng</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Public Available Coupons List -->
+                <div th:if="${availableVouchers != null && !availableVouchers.empty}" class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted fw-semibold">Voucher Cửa Hàng:</small>
+                        <a th:href="@{/promotions}" class="small text-success text-decoration-none">Săn thêm voucher</a>
+                    </div>
                     <div class="d-flex flex-column gap-2">
                         <div th:each="v : ${availableVouchers}"
                              class="p-2 border rounded-3 bg-light d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="badge bg-danger font-monospace" th:text="${v.code}">CODE</span>
                                 <span class="small fw-semibold ms-1" th:text="'Giảm ' + ${v.discountPercent} + '%'">Giảm 10%</span>
-                                <div class="text-muted" style="font-size: 0.75rem;"
+                                <div class="text-muted" style="font-size: 0.72rem;"
                                      th:text="'Đơn từ ' + ${#numbers.formatDecimal(v.minOrderAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
                             </div>
                             <form th:action="@{/cart/voucher/apply}" method="post" class="m-0">
                                 <input type="hidden" name="voucherCode" th:value="${v.code}">
-                                <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2 rounded-pill" style="font-size: 0.8rem;">
-                                    Dùng ngay
+                                <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2 rounded-pill" style="font-size: 0.75rem;"
+                                        th:disabled="${cart.voucherCode != null && cart.voucherCode.equalsIgnoreCase(v.code)}">
+                                    <span th:text="${cart.voucherCode != null && cart.voucherCode.equalsIgnoreCase(v.code) ? 'Đang dùng' : 'Dùng'}">Dùng</span>
                                 </button>
                             </form>
                         </div>

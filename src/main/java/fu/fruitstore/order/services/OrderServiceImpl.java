@@ -11,6 +11,7 @@ import fu.fruitstore.order.entity.*;
 import fu.fruitstore.order.repository.OrderRepository;
 import fu.fruitstore.product.entity.Product;
 import fu.fruitstore.product.services.ProductService;
+import fu.fruitstore.promotion.services.UserVoucherService;
 import fu.fruitstore.shared.exception.BadRequestException;
 import fu.fruitstore.shared.exception.ResourceNotFoundException;
 import fu.fruitstore.voucher.services.VoucherService;
@@ -38,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final CartService cartService;
     private final VoucherService voucherService;
+    private final UserVoucherService userVoucherService;
 
     @Override
     @Transactional
@@ -130,9 +132,12 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Increment voucher count if used
+        // Increment voucher count if used and mark as used in user's wallet
         if (cart.getVoucherCode() != null) {
             voucherService.incrementUsage(cart.getVoucherCode());
+            if (userEmail != null) {
+                userVoucherService.markVoucherAsUsed(userEmail, cart.getVoucherCode());
+            }
         }
 
         // Clear shopping cart

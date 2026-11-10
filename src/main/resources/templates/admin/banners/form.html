@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<head>
+    <title th:text="${bannerDto.id == null ? 'Thêm Banner Mới' : 'Cập Nhật Banner'} + ' (UC-14)'">Quản Lý Banner</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="mb-4">
+        <a th:href="@{/admin/banners}" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách banner
+        </a>
+        <h3 class="fw-bold mb-1 text-dark" th:text="${bannerDto.id == null ? 'Thêm Banner Khuyến Mãi Mới' : 'Cập Nhật Banner Khuyến Mãi'}"></h3>
+        <p class="text-muted small mb-0">Thiết lập vị trí hiển thị, thời hạn chạy và tải ảnh banner sự kiện hoa quả (UC-14)</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <form th:action="@{/admin/banners/save}" th:object="${bannerDto}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="row g-3">
+                        <!-- Tiêu đề Banner -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Tiêu Đề Banner / Sự Kiện <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{title}" class="form-control"
+                                   placeholder="vd: Lễ Hội Hoa Quả Mùa Hè - Giảm Tới 25%"
+                                   th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                        </div>
+
+                        <!-- Phụ đề / Mô tả -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Phụ Đề / Mô Tả Ngắn</label>
+                            <input type="text" th:field="*{subtitle}" class="form-control"
+                                   placeholder="vd: Chiết khấu trực tiếp cho Cherry Mỹ & Táo Envy New Zealand">
+                        </div>
+
+                        <!-- Upload File Ảnh -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tải Lên File Ảnh Banner</label>
+                            <input type="file" name="imageFile" id="imageFileInput" class="form-control" accept="image/*">
+                            <small class="text-muted">Định dạng JPG, PNG, WebP (Tối đa 10MB)</small>
+                        </div>
+
+                        <!-- Hoặc Link Ảnh Online -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Hoặc Đường Dẫn Ảnh Trực Tuyến (URL)</label>
+                            <input type="text" th:field="*{imageUrl}" id="imageUrlInput" class="form-control"
+                                   placeholder="https://images.unsplash.com/photo-...">
+                            <small class="text-muted">Ưu tiên dùng ảnh tải lên nếu bạn chọn file</small>
+                        </div>
+
+                        <!-- Preview ảnh -->
+                        <div class="col-12" th:if="*{imageUrl != null && !imageUrl.isBlank()}">
+                            <label class="form-label small text-muted">Xem trước ảnh hiện tại:</label>
+                            <div>
+                                <img th:src="*{imageUrl}" class="rounded-3 shadow-sm border" style="max-height: 180px; width: auto; object-fit: cover;" alt="Banner preview">
+                            </div>
+                        </div>
+
+                        <!-- Liên kết điều hướng (Target URL) -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Liên Kết Điều Hướng Khi Bấm</label>
+                            <input type="text" th:field="*{targetUrl}" class="form-control font-monospace"
+                                   placeholder="/catalog hoặc /custom-basket">
+                            <small class="text-muted">Ví dụ: /catalog, /custom-basket, /catalog?categoryId=1</small>
+                        </div>
+
+                        <!-- Vị trí hiển thị -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Vị Trí Hiển Thị</label>
+                            <select th:field="*{position}" class="form-select">
+                                <option value="HERO_SLIDER">Slider Trang Chủ (Hero)</option>
+                                <option value="PROMO_BANNER">Banner Trang Khuyến Mãi</option>
+                                <option value="SIDEBAR">Banner Cột Phải (Sidebar)</option>
+                            </select>
+                        </div>
+
+                        <!-- Thứ tự hiển thị -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Thứ Tự Sắp Xếp</label>
+                            <input type="number" th:field="*{displayOrder}" class="form-control" min="0" placeholder="1">
+                            <small class="text-muted">Số nhỏ hơn ưu tiên hiển thị trước</small>
+                        </div>
+
+                        <!-- Ngày bắt đầu -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày Bắt Đầu <span class="text-danger">*</span></label>
+                            <input type="date" th:field="*{startDate}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('startDate')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+                        </div>
+
+                        <!-- Ngày kết thúc -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày Kết Thúc <span class="text-danger">*</span></label>
+                            <input type="date" th:field="*{endDate}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('endDate')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+                        </div>
+
+                        <!-- Bật / Tắt hiển thị -->
+                        <div class="col-12 mt-3">
+                            <div class="form-check form-switch fs-6">
+                                <input class="form-check-input" type="checkbox" th:field="*{active}" id="activeSwitch" checked>
+                                <label class="form-check-label fw-semibold" for="activeSwitch">Kích hoạt và cho phép hiển thị banner này ngay</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a th:href="@{/admin/banners}" class="btn btn-outline-secondary rounded-pill px-4">Hủy Bỏ</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-check2-circle me-1"></i>Lưu Banner Khuyến Mãi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

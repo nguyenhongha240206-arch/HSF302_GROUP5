@@ -18,5 +18,6 @@ public interface VoucherService {
     Voucher update(Long id, VoucherDto dto);
     void delete(Long id);
     void incrementUsage(String code);
+    void deactivateExpiredVouchers();
 }
 

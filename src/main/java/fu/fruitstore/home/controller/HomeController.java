@@ -2,6 +2,7 @@ package fu.fruitstore.home.controller;
 
 import fu.fruitstore.category.services.CategoryService;
 import fu.fruitstore.product.services.ProductService;
+import fu.fruitstore.promotion.services.BannerService;
 import fu.fruitstore.voucher.services.VoucherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,9 +16,11 @@ public class HomeController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final VoucherService voucherService;
+    private final BannerService bannerService;
 
     @GetMapping({"/", "/home"})
     public String index(Model model) {
+        model.addAttribute("banners", bannerService.getActiveBanners());
         model.addAttribute("categories", categoryService.getAllActive());
         model.addAttribute("featuredProducts", productService.getFeaturedProducts());
         model.addAttribute("newestProducts", productService.getNewestProducts());

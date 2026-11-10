@@ -45,13 +45,13 @@ public class SecurityConfig {
             }, CsrfFilter.class)
             .authorizeHttpRequests(auth -> auth
                 // Public static resources
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico", "/error/**").permitAll()
-                // Public store pages & auth
-                .requestMatchers("/", "/home", "/about", "/contact", "/catalog/**", "/products/**", "/cart/**", "/auth/**", "/custom-basket/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico", "/error/**").permitAll()
+                // Public store pages, promotions & auth
+                .requestMatchers("/", "/home", "/about", "/contact", "/catalog/**", "/products/**", "/cart/**", "/auth/**", "/custom-basket/**", "/promotions/**", "/api/vouchers/**").permitAll()
                 // Admin (Chủ shop) management
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 // Customer actions
-                .requestMatchers("/checkout/**", "/orders/**", "/profile/**", "/reviews/add/**", "/wishlist/**").authenticated()
+                .requestMatchers("/checkout/**", "/orders/**", "/profile/**", "/account/**", "/reviews/add/**", "/wishlist/**").authenticated()
                 .anyRequest().permitAll()
             )
             .formLogin(form -> form

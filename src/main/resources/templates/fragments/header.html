@@ -33,6 +33,11 @@
                     <a class="nav-link" th:href="@{/catalog(productType='GIFT_BASKET')}">Giỏ quà mẫu</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-warning-emphasis fw-semibold" th:href="@{/promotions}">
+                        <i class="bi bi-tag-fill text-warning me-1"></i>Khuyến Mãi
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
                 </li>
                 <li class="nav-item">
@@ -93,6 +98,11 @@
                         <li>
                             <a class="dropdown-item" th:href="@{/orders/history}">
                                 <i class="bi bi-bag-check me-2"></i>Lịch sử đơn hàng
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/account/vouchers}">
+                                <i class="bi bi-wallet2 me-2 text-success"></i>Ví Voucher của tôi
                             </a>
                         </li>
                         <li>
