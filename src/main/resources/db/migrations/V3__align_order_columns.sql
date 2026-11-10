@@ -80,17 +80,16 @@ GO
 -- current entity columns. Preserve uniqueness for any historical order codes.
 IF COL_LENGTH('dbo.orders', 'order_code') IS NOT NULL
 BEGIN
-    ALTER TABLE dbo.orders ALTER COLUMN order_code NVARCHAR(50) NULL;
+    EXEC sys.sp_executesql N'ALTER TABLE dbo.orders ALTER COLUMN order_code NVARCHAR(50) NULL';
 
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID('dbo.orders') AND name = 'UX_orders_legacy_order_code')
-        CREATE UNIQUE INDEX UX_orders_legacy_order_code
-            ON dbo.orders(order_code) WHERE order_code IS NOT NULL;
+        EXEC sys.sp_executesql N'CREATE UNIQUE INDEX UX_orders_legacy_order_code ON dbo.orders(order_code) WHERE order_code IS NOT NULL';
 END;
 
 IF COL_LENGTH('dbo.orders', 'customer_name') IS NOT NULL
-    ALTER TABLE dbo.orders ALTER COLUMN customer_name NVARCHAR(100) NULL;
+    EXEC sys.sp_executesql N'ALTER TABLE dbo.orders ALTER COLUMN customer_name NVARCHAR(100) NULL';
 IF COL_LENGTH('dbo.orders', 'customer_phone') IS NOT NULL
-    ALTER TABLE dbo.orders ALTER COLUMN customer_phone NVARCHAR(20) NULL;
+    EXEC sys.sp_executesql N'ALTER TABLE dbo.orders ALTER COLUMN customer_phone NVARCHAR(20) NULL';
 GO
 
 IF NOT EXISTS (

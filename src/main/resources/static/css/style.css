@@ -237,3 +237,25 @@ footer a:hover {
     color: #81c784;
 }
 
+/* Cart badge bounce animation */
+@keyframes cartBounce {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.4); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.cart-badge-bounce {
+    animation: cartBounce 0.4s ease-in-out !important;
+}
+
+/* Cart nav button subtle pulse */
+@keyframes cartBtnPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+.btn-cart-pulse {
+    animation: cartBtnPulse 0.3s ease-in-out;
+}
+

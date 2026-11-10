@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public interface OrderService {
     Order placeOrder(String userEmail, CheckoutDto checkoutDto, HttpSession session);
@@ -21,6 +22,9 @@ public interface OrderService {
     void updateOrderStatus(Long orderId, OrderStatus newStatus);
     void updatePaymentStatus(Long orderId, PaymentStatus newStatus);
     void cancelOrder(Long orderId, String userEmail);
+    void confirmDelivery(Long orderId, String userEmail);
+    void reorder(Long orderId, HttpSession session);
+    Map<OrderStatus, Long> getOrderStatusCounts();
     BigDecimal getTotalDeliveredRevenue();
     long countByStatus(OrderStatus status);
     List<Order> getRecentOrders();

@@ -3,15 +3,17 @@ package fu.fruitstore.cart.controller;
 import fu.fruitstore.cart.dto.CartDto;
 import fu.fruitstore.cart.services.CartService;
 import fu.fruitstore.voucher.services.VoucherService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/cart")
@@ -30,17 +32,64 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public String addToCart(@RequestParam("productId") Long productId,
+    public Object addToCart(@RequestParam("productId") Long productId,
                             @RequestParam(value = "quantity", defaultValue = "1") int quantity,
+                            HttpServletRequest request,
                             HttpSession session,
                             RedirectAttributes redirectAttributes) {
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                || (request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json"));
         try {
             cartService.addToCart(session, productId, quantity);
+            CartDto cart = cartService.getCart(session);
+            if (isAjax) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Đã thêm hoa quả vào giỏ hàng thành công!");
+                response.put("totalQuantity", cart.getTotalQuantity());
+                return ResponseEntity.ok(response);
+            }
             redirectAttributes.addFlashAttribute("successMessage", "Đã thêm hoa quả vào giỏ hàng thành công!");
         } catch (Exception e) {
+            if (isAjax) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("success", false);
+                error.put("message", e.getMessage());
+                return ResponseEntity.badRequest().body(error);
+            }
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/cart";
+
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null && !referer.isBlank() ? referer : "/cart");
+    }
+
+    @PostMapping("/api/add")
+    @ResponseBody
+    public ResponseEntity<?> addToCartApi(@RequestParam("productId") Long productId,
+                                          @RequestParam(value = "quantity", defaultValue = "1") int quantity,
+                                          HttpSession session) {
+        try {
+            cartService.addToCart(session, productId, quantity);
+            CartDto cart = cartService.getCart(session);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Đã thêm hoa quả vào giỏ hàng thành công!");
+            response.put("totalQuantity", cart.getTotalQuantity());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @GetMapping("/api/count")
+    @ResponseBody
+    public ResponseEntity<?> getCartCount(HttpSession session) {
+        CartDto cart = cartService.getCart(session);
+        return ResponseEntity.ok(Map.of("totalQuantity", cart.getTotalQuantity()));
     }
 
     @PostMapping("/update")

@@ -4,13 +4,68 @@
       layout:decorate="~{layouts/admin-layout}">
 <head>
     <title th:text="'Quản Lý Đơn Hàng ' + ${order.orderNumber}">Chi Tiết Đơn Hàng</title>
+    <style>
+        .admin-order-stepper {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 15px 0 20px 0;
+        }
+        .admin-order-stepper::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        .admin-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+            color: #6c757d;
+        }
+        .admin-step-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            margin-bottom: 6px;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .admin-step.done .admin-step-icon {
+            background-color: #198754;
+            color: #fff;
+        }
+        .admin-step.done {
+            color: #198754;
+            font-weight: 600;
+        }
+        .admin-step.cancelled .admin-step-icon {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .admin-step.cancelled {
+            color: #dc3545;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-1 text-dark">
-                Chi Tiết Đơn Hàng #<span th:text="${order.orderNumber}"></span>
+                <i class="bi bi-receipt-cutoff text-success me-2"></i>Đơn Hàng #<span th:text="${order.orderNumber}"></span>
             </h3>
             <p class="text-muted small mb-0" th:text="'Ngày tạo đơn: ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></p>
         </div>
@@ -19,12 +74,112 @@
         </a>
     </div>
 
-    <!-- Order Status Management Cards -->
+    <!-- Shopee Timeline Stepper -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" th:with="stName=${order.orderStatus.name()}">
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-diagram-3 me-2 text-primary"></i>Tiến Trình Đơn Hàng (Luồng Shopee)</h6>
+        <div class="admin-order-stepper">
+            <!-- 1. Đặt hàng -->
+            <div class="admin-step done">
+                <div class="admin-step-icon"><i class="bi bi-receipt"></i></div>
+                <div class="small">1. Đã đặt đơn</div>
+            </div>
+
+            <!-- 2. Xác nhận & Đóng gói -->
+            <div class="admin-step" th:classappend="${stName == 'CONFIRMED' or stName == 'SHIPPING' or stName == 'DELIVERED'} ? 'done' : ''">
+                <div class="admin-step-icon"><i class="bi bi-box-seam"></i></div>
+                <div class="small">2. Chuẩn bị hàng</div>
+            </div>
+
+            <!-- 3. Đang giao -->
+            <div class="admin-step" th:classappend="${stName == 'SHIPPING' or stName == 'DELIVERED'} ? 'done' : ''">
+                <div class="admin-step-icon"><i class="bi bi-truck"></i></div>
+                <div class="small">3. Đang giao hàng</div>
+            </div>
+
+            <!-- 4. Hoàn thành / Hủy -->
+            <div class="admin-step" th:if="${stName != 'CANCELLED'}" th:classappend="${stName == 'DELIVERED'} ? 'done' : ''">
+                <div class="admin-step-icon"><i class="bi bi-check2-circle"></i></div>
+                <div class="small">4. Hoàn thành</div>
+            </div>
+
+            <div class="admin-step cancelled" th:if="${stName == 'CANCELLED'}">
+                <div class="admin-step-icon"><i class="bi bi-x-circle"></i></div>
+                <div class="small">Đã hủy đơn</div>
+            </div>
+        </div>
+
+        <!-- Shopee Action Banner based on current state -->
+        <div class="p-3 rounded-3 mt-2 border"
+             th:classappend="${stName == 'PENDING'} ? 'bg-warning bg-opacity-10 border-warning' : (${stName == 'CONFIRMED'} ? 'bg-info bg-opacity-10 border-info' : (${stName == 'SHIPPING'} ? 'bg-primary bg-opacity-10 border-primary' : (${stName == 'DELIVERED'} ? 'bg-success bg-opacity-10 border-success' : 'bg-danger bg-opacity-10 border-danger')))">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <strong th:if="${stName == 'PENDING'}" class="text-dark">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>Đơn hàng mới chờ bạn xác nhận và chuẩn bị hoa quả!
+                    </strong>
+                    <strong th:if="${stName == 'CONFIRMED'}" class="text-dark">
+                        <i class="bi bi-box-seam text-info me-1"></i>Đơn đã xác nhận! Hãy đóng gói cẩn thận và bàn giao cho đơn vị vận chuyển.
+                    </strong>
+                    <strong th:if="${stName == 'SHIPPING'}" class="text-dark">
+                        <i class="bi bi-truck text-primary me-1"></i>Đơn hàng đang trên đường giao đến người nhận.
+                    </strong>
+                    <strong th:if="${stName == 'DELIVERED'}" class="text-success">
+                        <i class="bi bi-check-circle-fill me-1"></i>Đơn hàng đã hoàn thành và giao thành công!
+                    </strong>
+                    <strong th:if="${stName == 'CANCELLED'}" class="text-danger">
+                        <i class="bi bi-x-circle-fill me-1"></i>Đơn hàng đã bị hủy. Toàn bộ số lượng đã được tự động hoàn lại kho.
+                    </strong>
+                </div>
+
+                <!-- One-click action buttons -->
+                <div class="d-flex gap-2">
+                    <th:block th:if="${stName == 'PENDING'}">
+                        <form th:action="@{/admin/orders/{id}/quick-status(id=${order.id})}" method="post">
+                            <input type="hidden" name="status" value="CONFIRMED">
+                            <input type="hidden" name="redirectUrl" th:value="'/admin/orders/' + ${order.id}">
+                            <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 shadow-sm fw-bold">
+                                <i class="bi bi-check2-circle me-1"></i>Xác Nhận & Chuẩn Bị Hàng
+                            </button>
+                        </form>
+                        <form th:action="@{/admin/orders/{id}/quick-status(id=${order.id})}" method="post"
+                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn này?');">
+                            <input type="hidden" name="status" value="CANCELLED">
+                            <input type="hidden" name="redirectUrl" th:value="'/admin/orders/' + ${order.id}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                <i class="bi bi-x-lg me-1"></i>Hủy Đơn
+                            </button>
+                        </form>
+                    </th:block>
+
+                    <th:block th:if="${stName == 'CONFIRMED'}">
+                        <form th:action="@{/admin/orders/{id}/quick-status(id=${order.id})}" method="post">
+                            <input type="hidden" name="status" value="SHIPPING">
+                            <input type="hidden" name="redirectUrl" th:value="'/admin/orders/' + ${order.id}">
+                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-bold">
+                                <i class="bi bi-truck me-1"></i>Giao Cho Đơn Vị Vận Chuyển
+                            </button>
+                        </form>
+                    </th:block>
+
+                    <th:block th:if="${stName == 'SHIPPING'}">
+                        <form th:action="@{/admin/orders/{id}/quick-status(id=${order.id})}" method="post">
+                            <input type="hidden" name="status" value="DELIVERED">
+                            <input type="hidden" name="redirectUrl" th:value="'/admin/orders/' + ${order.id}">
+                            <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 shadow-sm fw-bold">
+                                <i class="bi bi-check2-all me-1"></i>Xác Nhận Đã Giao Thành Công
+                            </button>
+                        </form>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Status & Payment Management Cards -->
     <div class="row g-4 mb-4">
         <!-- Status update form -->
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-                <h5 class="fw-bold mb-3"><i class="bi bi-arrow-repeat text-primary me-2"></i>Cập Nhật Trạng Thái Đơn Hàng</h5>
+                <h5 class="fw-bold mb-3"><i class="bi bi-arrow-repeat text-primary me-2"></i>Thay Đổi Trạng Thái Trực Tiếp</h5>
                 <div class="mb-3">
                     <span class="text-muted me-2">Trạng thái hiện tại:</span>
                     <span th:class="${order.orderStatus.badgeClass} + ' fs-6 px-3 py-1'" th:text="${order.orderStatus.displayName}"></span>
@@ -71,17 +226,26 @@
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
                 <h5 class="fw-bold mb-3"><i class="bi bi-person-circle text-primary me-2"></i>Người Nhận Hàng</h5>
-                <p class="mb-2"><strong>Họ tên:</strong> <span th:text="${order.receiverName}"></span></p>
-                <p class="mb-2"><strong>Số điện thoại:</strong> <span th:text="${order.receiverPhone}"></span></p>
+                <p class="mb-2"><strong>Họ tên:</strong> <span class="fw-bold text-dark" th:text="${order.receiverName}"></span></p>
+                <p class="mb-2"><strong>Số điện thoại:</strong> <span class="fw-bold text-primary" th:text="${order.receiverPhone}"></span></p>
                 <p class="mb-2"><strong>Địa chỉ giao:</strong> <span th:text="${order.shippingAddress}"></span></p>
-                <p class="mb-2" th:if="${order.deliveryTimeSlot != null}"><strong>Khung giờ hẹn giao (UC-11):</strong> <span class="badge bg-primary" th:text="${order.deliveryTimeSlot}"></span></p>
-                <p class="mb-2" th:if="${order.packagingRequirement != null}"><strong>Tiêu chuẩn quả & Đóng gói (UC-11):</strong> <span class="text-success fw-bold" th:text="${order.packagingRequirement}"></span></p>
-                <p class="mb-0" th:if="${order.note != null && !order.note.isBlank()}"><strong>Ghi chú:</strong> <span th:text="${order.note}"></span></p>
+                <p class="mb-2" th:if="${order.deliveryTimeSlot != null}">
+                    <strong>Khung giờ hẹn giao (Shopee / Giao 2h):</strong> 
+                    <span class="badge bg-primary fs-6" th:text="${order.deliveryTimeSlot}"></span>
+                </p>
+                <p class="mb-2" th:if="${order.packagingRequirement != null}">
+                    <strong>Tiêu chuẩn quả & Đóng gói:</strong> 
+                    <span class="text-success fw-bold" th:text="${order.packagingRequirement}"></span>
+                </p>
+                <p class="mb-0" th:if="${order.note != null && !order.note.isBlank()}">
+                    <strong>Ghi chú của khách:</strong> 
+                    <span class="text-muted fst-italic" th:text="${order.note}"></span>
+                </p>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-                <h5 class="fw-bold mb-3"><i class="bi bi-person-badge text-secondary me-2"></i>Tài Khoản Đặt Hàng</h5>
+                <h5 class="fw-bold mb-3"><i class="bi bi-person-badge text-secondary me-2"></i>Tài Khoản Khách Hàng</h5>
                 <div th:if="${order.user != null}">
                     <p class="mb-2"><strong>Khách hàng:</strong> <span th:text="${order.user.fullName}"></span></p>
                     <p class="mb-2"><strong>Email:</strong> <span th:text="${order.user.email}"></span></p>
@@ -99,7 +263,7 @@
         <h5 class="fw-bold mb-3">Chi Tiết Các Mặt Hàng</h5>
         <div class="table-responsive mb-3">
             <table class="table align-middle">
-                <thead>
+                <thead class="table-light">
                     <tr>
                         <th>Sản Phẩm</th>
                         <th class="text-center">Đơn Giá</th>
@@ -141,4 +305,3 @@
 </div>
 </body>
 </html>
-

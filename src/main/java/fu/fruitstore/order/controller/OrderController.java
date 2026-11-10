@@ -184,4 +184,37 @@ public class OrderController {
         }
         return "redirect:/orders/history";
     }
+
+    @PostMapping("/orders/{id}/confirm-received")
+    @PreAuthorize("isAuthenticated()")
+    public String confirmReceived(@PathVariable("id") Long id,
+                                  @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
+                                  @AuthenticationPrincipal UserDetails userDetails,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            orderService.confirmDelivery(id, userDetails.getUsername());
+            redirectAttributes.addFlashAttribute("successMessage", "Cảm ơn bạn đã xác nhận nhận hàng thành công! Đơn hàng đã hoàn tất.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        if (redirectUrl != null && !redirectUrl.isBlank()) {
+            return "redirect:" + redirectUrl;
+        }
+        return "redirect:/orders/history";
+    }
+
+    @PostMapping("/orders/{id}/reorder")
+    public String reorder(@PathVariable("id") Long id,
+                          HttpSession session,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            orderService.reorder(id, session);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã thêm các mặt hàng vào giỏ hàng thành công!");
+            return "redirect:/cart";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể mua lại đơn hàng: " + e.getMessage());
+            return "redirect:/orders/history";
+        }
+    }
 }

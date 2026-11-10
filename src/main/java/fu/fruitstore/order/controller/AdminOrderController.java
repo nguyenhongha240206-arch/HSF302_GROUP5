@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/orders")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminOrderController {
 
     private final OrderService orderService;
@@ -35,6 +35,7 @@ public class AdminOrderController {
         model.addAttribute("selectedStatus", status);
         model.addAttribute("keyword", keyword);
         model.addAttribute("statuses", OrderStatus.values());
+        model.addAttribute("statusCounts", orderService.getOrderStatusCounts());
         return "admin/orders/list";
     }
 
@@ -60,6 +61,31 @@ public class AdminOrderController {
         return "redirect:/admin/orders/" + id;
     }
 
+    @PostMapping("/{id}/quick-status")
+    public String quickStatus(@PathVariable("id") Long id,
+                              @RequestParam("status") OrderStatus status,
+                              @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            orderService.updateOrderStatus(id, status);
+            String message = switch (status) {
+                case CONFIRMED -> "Đã xác nhận đơn hàng! Chuyển sang chuẩn bị đóng gói hoa quả.";
+                case SHIPPING -> "Đã bàn giao đơn hàng cho bên giao hàng (shipper)!";
+                case DELIVERED -> "Đã hoàn tất đơn hàng và ghi nhận thanh toán/doanh thu!";
+                case CANCELLED -> "Đã hủy đơn hàng và hoàn trả số lượng hoa quả vào kho!";
+                default -> "Cập nhật trạng thái đơn hàng thành công!";
+            };
+            redirectAttributes.addFlashAttribute("successMessage", message);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        if (redirectUrl != null && !redirectUrl.isBlank()) {
+            return "redirect:" + redirectUrl;
+        }
+        return "redirect:/admin/orders";
+    }
+
     @PostMapping("/{id}/payment")
     public String updatePaymentStatus(@PathVariable("id") Long id,
                                       @RequestParam("paymentStatus") PaymentStatus paymentStatus,
@@ -73,4 +99,3 @@ public class AdminOrderController {
         return "redirect:/admin/orders/" + id;
     }
 }
-
