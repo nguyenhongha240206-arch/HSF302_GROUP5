@@ -82,21 +82,15 @@ public class OrderServiceImpl implements OrderService {
                 .paymentStatus(PaymentStatus.UNPAID)
                 .build();
 
-        // Process details and deduct stock
-        for (CartItemDto item : cart.getItems()) {
-            if (item.isCustomBasket()) {
-                // UC-09: Deduct inventory for all fruits mixed in the custom basket
-                for (CustomFruitSelectionDto fruit : item.getCustomFruitItems()) {
-                    Product fruitProduct = productService.getById(fruit.getProductId());
-                    int requiredQty = fruit.getQuantity() * item.getQuantity();
-                    if (fruitProduct.getStockQuantity() < requiredQty) {
-                        throw new BadRequestException("Hoa quả '" + fruitProduct.getName() + "' trong giỏ quà không đủ số lượng tồn kho!");
-                    }
-                    productService.adjustStock(fruitProduct.getId(), -requiredQty);
-                }
 
+// Process order details and deduct stock
+        for (CartItemDto item : cart.getItems()) {
+
+            if (item.isCustomBasket()) {
+
+                // Tạo OrderDetail trước để gắn các trái cây thành phần
                 OrderDetail detail = OrderDetail.builder()
-                        .product(null) // Custom composite basket
+                        .product(null)
                         .productName(item.getProductName())
                         .itemDetails(item.getCustomBasketSummary())
                         .unitPrice(item.getUnitPrice())
@@ -104,18 +98,50 @@ public class OrderServiceImpl implements OrderService {
                         .subTotal(item.getSubTotal())
                         .build();
 
+                // Lưu từng trái cây trong Custom Basket
+                for (CustomFruitSelectionDto fruit : item.getCustomFruitItems()) {
+
+                    Product fruitProduct =
+                            productService.getById(fruit.getProductId());
+
+                    int requiredQty = fruit.getQuantity() * item.getQuantity();
+
+                    if (requiredQty <= 0) {
+                        throw new BadRequestException(
+                                "Số lượng trái cây trong giỏ quà không hợp lệ!"
+                        );
+                    }
+
+                    // Trừ tồn kho bằng phương thức có khóa pessimistic
+                    productService.adjustStock(
+                            fruitProduct.getId(),
+                            -requiredQty
+                    );
+
+                    // Lưu thành phần để sau này có thể hoàn kho
+                    detail.addFruitComponent(fruitProduct, requiredQty);
+                }
+
                 order.addOrderDetail(detail);
+
             } else {
+
                 // Regular fruit product
                 Product product = productService.getById(item.getProductId());
-                if (product.getStockQuantity() < item.getQuantity()) {
-                    throw new BadRequestException("Sản phẩm '" + product.getName() + "' không đủ số lượng tồn kho!");
+
+                if (item.getQuantity() <= 0) {
+                    throw new BadRequestException(
+                            "Số lượng sản phẩm không hợp lệ!"
+                    );
                 }
 
                 OrderDetail detail = OrderDetail.builder()
                         .product(product)
                         .productName(product.getName())
-                        .itemDetails("ĐVT: " + product.getUnit() + " | Xuất xứ: " + product.getOrigin())
+                        .itemDetails(
+                                "ĐVT: " + product.getUnit()
+                                        + " | Xuất xứ: " + product.getOrigin()
+                        )
                         .unitPrice(product.getPrice())
                         .quantity(item.getQuantity())
                         .subTotal(item.getSubTotal())
@@ -124,9 +150,13 @@ public class OrderServiceImpl implements OrderService {
                 order.addOrderDetail(detail);
 
                 // Deduct inventory
-                productService.adjustStock(product.getId(), -item.getQuantity());
+                productService.adjustStock(
+                        product.getId(),
+                        -item.getQuantity()
+                );
             }
         }
+
 
         Order savedOrder = orderRepository.save(order);
 
@@ -177,21 +207,58 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
-        Order order = getById(orderId);
-        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-            throw new BadRequestException("Không thể cập nhật đơn hàng đã bị hủy!");
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy đơn hàng với ID: " + orderId
+                ));
+        OrderStatus currentStatus = order.getOrderStatus();
+
+        if (currentStatus == OrderStatus.CANCELLED
+                || currentStatus == OrderStatus.DELIVERED) {
+            throw new BadRequestException(
+                    "Đơn hàng đã kết thúc, không thể cập nhật trạng thái!"
+            );
         }
 
+        boolean validTransition = switch (currentStatus) {
+            case PENDING ->
+                    newStatus == OrderStatus.CONFIRMED
+                            || newStatus == OrderStatus.CANCELLED;
+
+            case CONFIRMED ->
+                    newStatus == OrderStatus.SHIPPING;
+
+            case SHIPPING ->
+                    newStatus == OrderStatus.DELIVERED;
+
+            default -> false;
+        };
+
+        if (!validTransition) {
+            throw new BadRequestException(
+                    "Không thể chuyển trạng thái từ "
+                            + currentStatus.getDisplayName()
+                            + " sang "
+                            + newStatus.getDisplayName()
+                            + "!"
+            );
+        }
+
+        // Hoàn kho khi admin hủy đơn
         if (newStatus == OrderStatus.CANCELLED) {
-            // Restore inventory when cancelled by admin
-            for (OrderDetail detail : order.getOrderDetails()) {
-                if (detail.getProduct() != null) {
-                    productService.adjustStock(detail.getProduct().getId(), detail.getQuantity());
-                }
+
+            if (order.getPaymentStatus() == PaymentStatus.PAID) {
+                throw new BadRequestException(
+                        "Đơn hàng đã thanh toán. Không thể hủy trực tiếp!"
+                );
             }
+
+            restoreOrderStock(order);
         }
 
-        if (newStatus == OrderStatus.DELIVERED && order.getPaymentMethod() == PaymentMethod.COD) {
+        // COD chỉ được xem là đã thanh toán khi giao thành công
+        if (newStatus == OrderStatus.DELIVERED
+                && order.getPaymentMethod() == PaymentMethod.COD) {
             order.setPaymentStatus(PaymentStatus.PAID);
         }
 
@@ -203,34 +270,78 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void updatePaymentStatus(Long orderId, PaymentStatus newStatus) {
         Order order = getById(orderId);
-        order.setPaymentStatus(newStatus);
+
+        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new BadRequestException(
+                    "Đơn hàng đã thanh toán, không thể thay đổi trạng thái!"
+            );
+        }
+
+        if (newStatus != PaymentStatus.PAID) {
+            throw new BadRequestException(
+                    "Chỉ được phép xác nhận thanh toán từ UNPAID sang PAID!"
+            );
+        }
+
+        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+            throw new BadRequestException(
+                    "Không thể xác nhận thanh toán cho đơn hàng đã hủy!"
+            );
+        }
+
+        order.setPaymentStatus(PaymentStatus.PAID);
         orderRepository.save(order);
     }
+
+
+
 
     @Override
     @Transactional
     public void cancelOrder(Long orderId, String userEmail) {
-        Order order = getById(orderId);
+
+        // 1. Khóa đơn hàng trước khi xử lý
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy đơn hàng với ID: " + orderId
+                ));
+
+        // 2. Kiểm tra người dùng
         User user = userService.findByEmail(userEmail);
 
-        if (order.getUser() == null || !order.getUser().getId().equals(user.getId())) {
-            throw new BadRequestException("Bạn không có quyền thao tác trên đơn hàng này!");
+        // 3. Kiểm tra quyền sở hữu đơn hàng
+        if (order.getUser() == null
+                || !order.getUser().getId().equals(user.getId())) {
+            throw new BadRequestException(
+                    "Bạn không có quyền hủy đơn hàng này!"
+            );
         }
 
+        // 4. Chỉ được hủy đơn PENDING
         if (order.getOrderStatus() != OrderStatus.PENDING) {
-            throw new BadRequestException("Chỉ có thể hủy đơn hàng khi trạng thái là 'Chờ xác nhận'!");
+            throw new BadRequestException(
+                    "Chỉ có thể hủy đơn hàng khi đang chờ xác nhận!"
+            );
         }
 
-        // Return stock
-        for (OrderDetail detail : order.getOrderDetails()) {
-            if (detail.getProduct() != null) {
-                productService.adjustStock(detail.getProduct().getId(), detail.getQuantity());
-            }
+        // 5. Không cho hủy nếu đã thanh toán
+        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new BadRequestException(
+                    "Đơn hàng đã thanh toán. Vui lòng liên hệ Admin để được hỗ trợ!"
+            );
         }
 
+        // 6. Hoàn kho sản phẩm thường và Custom Basket
+        restoreOrderStock(order);
+
+        // 7. Cập nhật trạng thái
         order.setOrderStatus(OrderStatus.CANCELLED);
+
         orderRepository.save(order);
     }
+
+
+
 
     @Override
     @Transactional
@@ -242,8 +353,10 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Bạn không có quyền thao tác trên đơn hàng này!");
         }
 
-        if (order.getOrderStatus() != OrderStatus.SHIPPING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
-            throw new BadRequestException("Chỉ có thể xác nhận khi đơn hàng đang được giao!");
+        if (order.getOrderStatus() != OrderStatus.SHIPPING) {
+            throw new BadRequestException(
+                    "Chỉ có thể xác nhận khi đơn hàng đang được giao!"
+            );
         }
 
         order.setOrderStatus(OrderStatus.DELIVERED);
@@ -295,5 +408,29 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public List<Order> getRecentOrders() {
         return orderRepository.findTop5ByOrderByCreatedAtDesc();
+    }
+    public void restoreOrderStock(Order order) {
+
+        for (OrderDetail detail : order.getOrderDetails()) {
+
+            // 1. Hoàn kho sản phẩm thông thường
+            if (detail.getProduct() != null) {
+                productService.adjustStock(
+                        detail.getProduct().getId(),
+                        detail.getQuantity()
+                );
+            }
+
+            // 2. Hoàn kho từng trái cây trong Custom Basket
+            if (detail.getFruitComponents() != null) {
+                for (OrderDetailFruit component : detail.getFruitComponents()) {
+
+                    productService.adjustStock(
+                            component.getProduct().getId(),
+                            component.getQuantity()
+                    );
+                }
+            }
+        }
     }
 }

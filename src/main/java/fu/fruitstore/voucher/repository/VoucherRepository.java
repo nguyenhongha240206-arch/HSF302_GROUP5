@@ -23,5 +23,7 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
     @Query("SELECT v FROM Voucher v WHERE " +
            "(:keyword IS NULL OR LOWER(v.code) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(v.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Voucher> searchVouchers(@Param("keyword") String keyword, Pageable pageable);
+
+    Optional<Voucher> findByCodeIgnoreCase(String code);
 }
 

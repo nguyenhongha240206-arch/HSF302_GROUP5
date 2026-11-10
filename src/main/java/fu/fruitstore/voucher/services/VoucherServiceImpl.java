@@ -125,5 +125,19 @@ public class VoucherServiceImpl implements VoucherService {
             voucherRepository.save(v);
         });
     }
+    @Override
+    @Transactional
+    public void decrementUsage(String code) {
+        if (code == null || code.isBlank()) {
+            return;
+        }
+
+        voucherRepository.findByCodeIgnoreCase(code).ifPresent(v -> {
+            if (v.getUsedCount() > 0) {
+                v.setUsedCount(v.getUsedCount() - 1);
+                voucherRepository.save(v);
+            }
+        });
+    }
 }
 

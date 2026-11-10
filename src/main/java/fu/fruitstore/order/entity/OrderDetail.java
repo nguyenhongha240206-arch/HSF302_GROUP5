@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "order_details")
@@ -41,5 +43,19 @@ public class OrderDetail {
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal subTotal;
+    @OneToMany(
+            mappedBy = "orderDetail",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<OrderDetailFruit> fruitComponents = new ArrayList<>();
+
+    public void addFruitComponent(Product product, int quantity) {
+        OrderDetailFruit component =
+                new OrderDetailFruit(this, product, quantity);
+
+        fruitComponents.add(component);
+    }
 }
 

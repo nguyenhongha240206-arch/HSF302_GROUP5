@@ -28,5 +28,6 @@ public interface OrderService {
     BigDecimal getTotalDeliveredRevenue();
     long countByStatus(OrderStatus status);
     List<Order> getRecentOrders();
+    void restoreOrderStock(Order order);
 }
 

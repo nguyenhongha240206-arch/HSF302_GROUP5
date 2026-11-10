@@ -58,7 +58,7 @@ public class Order extends BaseEntity {
     private String voucherCode;
 
     @Column(length = 50)
-    private String deliveryTimeType; // EXPRESS_2H (Giao gấp 2h), SCHEDULED (Hẹn giờ)
+    private String deliveryTimeType;
 
     @Column(length = 100)
     private String deliveryTimeSlot; // Khung giờ: 08:00 - 11:30, 13:30 - 17:30, 18:00 - 21:00
@@ -94,5 +94,19 @@ public class Order extends BaseEntity {
     @PreUpdate
     private void syncOrderNumberColumns() {
         orderNumberCompat = orderNumber;
+    }
+    @Transient
+    public String getVietQrUrl() {
+        if (this.paymentMethod != PaymentMethod.BANK_TRANSFER) return null;
+
+        String bankId = "ICB";
+        String accountNo = "102877116090";
+        String accountName = "PHAM DUC HUNG";
+
+        long amount = this.finalAmount != null ? this.finalAmount.longValue() : 0;
+        String addInfo = "THANHTOAN " + this.orderNumber;
+
+        return String.format("https://img.vietqr.io/image/%s-%s-compact2.png?amount=%d&addInfo=%s&accountName=%s",
+                bankId, accountNo, amount, addInfo.replace(" ", "%20"), accountName.replace(" ", "%20"));
     }
 }

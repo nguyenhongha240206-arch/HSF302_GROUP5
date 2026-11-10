@@ -153,7 +153,7 @@ public class OrderController {
             String addInfo = URLEncoder.encode("THANHTOAN " + order.getOrderNumber(), StandardCharsets.UTF_8);
             String accountName = URLEncoder.encode("FRUIT STORE VIET NAM", StandardCharsets.UTF_8);
             String vietQrUrl = String.format(
-                    "https://img.vietqr.io/image/MB-0388888888-compact2.png?amount=%d&addInfo=%s&accountName=%s",
+                    "https://img.vietqr.io/image/ICB-102877116090-compact2.png?amount=%d&addInfo=%s&accountName=%s",
                     amount, addInfo, accountName
             );
             model.addAttribute("vietQrUrl", vietQrUrl);

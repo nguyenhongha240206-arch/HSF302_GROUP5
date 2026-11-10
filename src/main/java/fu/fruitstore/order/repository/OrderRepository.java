@@ -2,10 +2,12 @@ package fu.fruitstore.order.repository;
 
 import fu.fruitstore.order.entity.Order;
 import fu.fruitstore.order.entity.OrderStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -33,6 +35,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByUserId(Long userId, Pageable pageable);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Order o WHERE o.id = :id")
+    Optional<Order> findByIdForUpdate(@Param("id") Long id);
 
     @Query("SELECT o FROM Order o WHERE " +
            "(:status IS NULL OR o.orderStatus = :status) AND " +
@@ -44,7 +49,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                              Pageable pageable);
 
     long countByOrderStatus(OrderStatus orderStatus);
+    Page<Order> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
+    @Query("SELECT o FROM Order o WHERE " +
+            "(:status IS NULL OR o.orderStatus = :status) AND " +
+            "(:keyword IS NULL OR :keyword = '' OR o.orderNumber LIKE %:keyword% " +
+            "OR o.receiverPhone LIKE %:keyword% OR o.receiverName LIKE %:keyword%) " +
+            "ORDER BY o.createdAt DESC")
+    Page<Order> filterAdminOrders(@Param("status") OrderStatus status,
+                                  @Param("keyword") String keyword,
+                                  Pageable pageable);
     @Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.orderStatus = 'DELIVERED'")
     BigDecimal calculateTotalDeliveredRevenue();
 

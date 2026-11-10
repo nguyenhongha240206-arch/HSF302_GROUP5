@@ -58,6 +58,12 @@
             color: #dc3545;
             font-weight: 600;
         }
+        @media print {
+            .admin-sidebar, .navbar, .btn, form, .admin-order-stepper, .breadcrumb { display: none !important; }
+            body { background-color: #fff !important; }
+            .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+            @page { margin: 1cm; }
+        }
     </style>
 </head>
 <body>
@@ -69,6 +75,9 @@
             </h3>
             <p class="text-muted small mb-0" th:text="'Ngày tạo đơn: ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></p>
         </div>
+        <button type="button" onclick="window.print()" class="btn btn-dark btn-sm rounded-pill px-3 fw-bold">
+            <i class="bi bi-printer-fill me-1"></i>In Phiếu Giao Hàng
+        </button>
         <a th:href="@{/admin/orders}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
             <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
         </a>
@@ -185,14 +194,49 @@
                     <span th:class="${order.orderStatus.badgeClass} + ' fs-6 px-3 py-1'" th:text="${order.orderStatus.displayName}"></span>
                 </div>
 
-                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="d-flex gap-2">
-                    <select name="status" class="form-select" th:disabled="${order.orderStatus.name() == 'CANCELLED'}">
-                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.displayName}" th:selected="${st == order.orderStatus}"></option>
+
+                <form th:if="${order.orderStatus.name() == 'PENDING'
+              or order.orderStatus.name() == 'CONFIRMED'
+              or order.orderStatus.name() == 'SHIPPING'}"
+                      th:action="@{/admin/orders/{id}/status(id=${order.id})}"
+                      method="post"
+                      class="d-flex gap-2">
+
+                    <select name="status" class="form-select">
+                        <option th:if="${order.orderStatus.name() == 'PENDING'}"
+                                value="CONFIRMED">
+                            Xác nhận đơn hàng
+                        </option>
+
+                        <option th:if="${order.orderStatus.name() == 'CONFIRMED'}"
+                                value="SHIPPING">
+                            Đang giao hàng
+                        </option>
+
+                        <option th:if="${order.orderStatus.name() == 'SHIPPING'}"
+                                value="DELIVERED">
+                            Giao hàng thành công
+                        </option>
                     </select>
-                    <button type="submit" class="btn btn-primary text-nowrap rounded-pill px-4" th:disabled="${order.orderStatus.name() == 'CANCELLED'}">
-                        Lưu Trạng Thái
+
+                    <button type="submit"
+                            class="btn btn-primary text-nowrap rounded-pill px-4">
+                        Cập nhật
                     </button>
                 </form>
+
+                <div th:if="${order.orderStatus.name() == 'DELIVERED'}"
+                     class="alert alert-success mb-0">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Đơn hàng đã hoàn thành. Không thể cập nhật tiếp.
+                </div>
+
+                <div th:if="${order.orderStatus.name() == 'CANCELLED'}"
+                     class="alert alert-danger mb-0">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    Đơn hàng đã bị hủy. Không thể cập nhật tiếp.
+                </div>
+
                 <small class="text-muted mt-2 d-block" th:if="${order.orderStatus.name() == 'CANCELLED'}">
                     * Đơn hàng đã bị hủy, số lượng tồn kho của các mặt hàng đã được tự động hoàn trả.
                 </small>
@@ -202,23 +246,104 @@
         <!-- Payment update form -->
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-                <h5 class="fw-bold mb-3"><i class="bi bi-cash-stack text-success me-2"></i>Cập Nhật Thanh Toán</h5>
+
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-cash-stack text-success me-2"></i>
+                    Cập Nhật Thanh Toán
+                </h5>
+
                 <div class="mb-3">
                     <span class="text-muted me-2">Hình thức:</span>
                     <strong th:text="${order.paymentMethod.displayName}"></strong>
-                    <span class="ms-3 badge" th:classappend="${order.paymentStatus.name() == 'PAID' ? 'bg-success' : 'bg-secondary'}" th:text="${order.paymentStatus.displayName}"></span>
+
+                    <span class="ms-3 badge"
+                          th:classappend="${order.paymentStatus.name() == 'PAID'
+                      ? 'bg-success' : 'bg-secondary'}"
+                          th:text="${order.paymentStatus.displayName}">
+            </span>
                 </div>
 
-                <form th:action="@{/admin/orders/{id}/payment(id=${order.id})}" method="post" class="d-flex gap-2">
-                    <select name="paymentStatus" class="form-select">
-                        <option th:each="ps : ${paymentStatuses}" th:value="${ps}" th:text="${ps.displayName}" th:selected="${ps == order.paymentStatus}"></option>
-                    </select>
-                    <button type="submit" class="btn btn-success text-nowrap rounded-pill px-4">
-                        Cập Nhật Thanh Toán
+                <!-- Chỉ hiển thị nút khi chưa thanh toán -->
+                <div th:if="${order.paymentStatus.name() == 'UNPAID'}">
+
+                    <button type="button"
+                            class="btn btn-success rounded-pill px-4"
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirmPaymentModal">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Xác nhận đã thanh toán
                     </button>
-                </form>
+
+                </div>
+
+                <!-- Đã thanh toán thì khóa -->
+                <div th:if="${order.paymentStatus.name() == 'PAID'}"
+                     class="alert alert-success mb-0">
+
+                    <i class="bi bi-shield-check me-2"></i>
+                    Đơn hàng đã thanh toán. Trạng thái đã được khóa.
+
+                </div>
             </div>
         </div>
+
+        <!-- Confirmation Modal -->
+        <div class="modal fade"
+             id="confirmPaymentModal"
+             tabindex="-1"
+             aria-hidden="true">
+
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 rounded-4 shadow">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">
+                            <i class="bi bi-cash-check text-success me-2"></i>
+                            Xác nhận thanh toán
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="fw-semibold mb-2">
+                            Khách hàng đã thanh toán đơn hàng này chưa?
+                        </p>
+
+                        <p class="text-muted small mb-0">
+                            Vui lòng kiểm tra giao dịch ngân hàng hoặc xác nhận
+                            đã thu tiền COD trước khi tiếp tục.
+                        </p>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-outline-secondary rounded-pill"
+                                data-bs-dismiss="modal">
+                            Chưa xác nhận
+                        </button>
+
+                        <form th:action="@{/admin/orders/{id}/payment(id=${order.id})}"
+                              method="post">
+
+                            <input type="hidden"
+                                   name="paymentStatus"
+                                   value="PAID">
+
+                            <button type="submit"
+                                    class="btn btn-success rounded-pill px-4">
+                                Xác nhận đã thanh toán
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Customer & Shipping info -->

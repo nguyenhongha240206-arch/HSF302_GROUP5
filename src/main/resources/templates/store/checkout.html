@@ -189,7 +189,7 @@
                                         <!-- Mã QR tự động điền số tiền từ cart.finalAmount -->
                                         <img id="vietQrImage"
                                              th:data-amount="${amount}"
-                                             th:src="'https://img.vietqr.io/image/MB-0388888888-compact2.png?amount=' + ${amount} + '&addInfo=FRUITSTORE%20THANH%20TOAN&accountName=FRUIT%20STORE%20VIET%20NAM'"
+                                             th:src="'https://img.vietqr.io/image/ICB--compact2.png?amount=' + ${amount} + '&addInfo=FRUITSTORE%20THANH%20TOAN&accountName=FRUIT%20STORE%20VIET%20NAM'"
                                              alt="Mã VietQR Thanh Toán"
                                              class="img-fluid rounded-2"
                                              style="max-width: 210px;">
@@ -206,7 +206,7 @@
                                     <ul class="list-unstyled small mb-2">
                                         <li class="mb-2">
                                             <span class="text-muted">Ngân hàng:</span>
-                                            <strong class="text-dark ms-1">MB Bank (Ngân hàng Quân Đội)</strong>
+                                            <strong class="text-dark ms-1">VietinBank (Ngân hàng Thương Mại)</strong>
                                         </li>
                                         <li class="mb-2">
                                             <span class="text-muted">Chủ tài khoản:</span>
@@ -214,7 +214,7 @@
                                         </li>
                                         <li class="mb-2">
                                             <span class="text-muted">Số tài khoản:</span>
-                                            <strong class="text-primary ms-1 fs-6">0388888888</strong>
+                                            <strong class="text-primary ms-1 fs-6">102877116090</strong>
                                         </li>
                                         <li class="mb-2">
                                             <span class="text-muted">Số tiền tự động điền:</span>
@@ -333,7 +333,7 @@
                 }
 
                 const encodedInfo = encodeURIComponent(transferInfo);
-                vietQrImage.src = `https://img.vietqr.io/image/MB-0388888888-compact2.png?amount=${amount}&addInfo=${encodedInfo}&accountName=FRUIT%20STORE%20VIET%20NAM`;
+                vietQrImage.src = `https://img.vietqr.io/image/ICB-102877116090-compact2.png?amount=${amount}&addInfo=${encodedInfo}&accountName=FRUIT%20STORE%20VIET%20NAM`;
             }
 
             // Sự kiện khi chọn Radio button

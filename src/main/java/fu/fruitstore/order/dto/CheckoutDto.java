@@ -21,16 +21,19 @@ public class CheckoutDto {
     @NotBlank(message = "Địa chỉ nhận hàng chi tiết không được để trống")
     private String shippingAddress;
 
-    // UC-11: Khung giờ giao hàng
+    // Khung giờ giao hàng
     private String deliveryTimeType = "EXPRESS_2H"; // EXPRESS_2H (Giao gấp) / SCHEDULED (Hẹn giờ)
-    private String deliveryTimeSlot = "Giao gấp trong 2 giờ"; // e.g. 08:00 - 11:30, 13:30 - 17:30, 18:00 - 21:00
-    private String deliveryDate; // Ngày hẹn giao
+    private String deliveryTimeSlot = "Giao gấp trong 2 giờ";
+    private String deliveryDate; // Ngày hẹn giao (Service sẽ gộp trường này với TimeSlot để lưu vào Entity)
 
-    // UC-11: Tiêu chuẩn đóng gói & chọn hoa quả
-    private String packagingRequirement = "Chọn quả tươi cứng đẹp để thắp hương / làm lễ"; 
+    // Tiêu chuẩn đóng gói & chọn hoa quả
+    private String packagingRequirement = "Chọn quả chín ngọt ăn ngay";
 
     private String note;
 
     @NotNull(message = "Vui lòng chọn phương thức thanh toán")
     private PaymentMethod paymentMethod = PaymentMethod.COD;
+
+
+    private String voucherCode;
 }
