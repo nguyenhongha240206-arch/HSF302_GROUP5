@@ -4,6 +4,31 @@
       layout:decorate="~{layouts/main-layout}">
 <head>
     <title>Tự Thiết Kế Giỏ Quà Hoa Quả Theo Yêu Cầu</title>
+    <style>
+        .style-card {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .style-card:hover {
+            border-color: #2e7d32;
+            transform: translateY(-3px);
+        }
+        .style-card.selected {
+            border-color: #2e7d32;
+            background-color: #f1f8e9;
+        }
+        .fruit-row {
+            transition: background-color 0.2s;
+        }
+        .fruit-row:hover {
+            background-color: #f8fafc;
+        }
+        .sticky-summary {
+            position: sticky;
+            top: 90px;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content" class="py-2">
@@ -17,21 +42,19 @@
     </nav>
 
     <!-- Header Banner -->
-    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid var(--primary-border) !important;">
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: linear-gradient(135deg, #fef9e7 0%, #edf7ed 100%);">
         <div class="row align-items-center">
-            <div class="col-md-9">
-                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2 fw-semibold shadow-xs">
-                    <i class="bi bi-gift-fill me-1 text-danger"></i>Dịch Vụ Tùy Biến Quà Tặng Độc Quyền
+            <div class="col-md-8">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2">
+                    <i class="bi bi-gift-fill me-1"></i>Dịch Vụ Tùy Biến Quà Tặng Độc Quyền
                 </span>
                 <h2 class="fw-bold text-dark mb-2">Tự Thiết Kế Giỏ Quà Hoa Quả Theo Yêu Cầu</h2>
-                <p class="text-muted mb-0 leading-relaxed">
+                <p class="text-muted mb-0">
                     Tự do lựa chọn mẫu giỏ/hộp mây tre đan, hộp da sang trọng, mix các loại quả tươi nhập khẩu & đặc sản theo ngân sách, chọn màu nơ phong thủy và đính kèm thiệp chúc mừng ý nghĩa.
                 </p>
             </div>
-            <div class="col-md-3 text-end d-none d-md-block">
-                <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm" style="width: 80px; height: 80px; color: var(--primary); font-size: 2.5rem;">
-                    <i class="bi bi-gift"></i>
-                </div>
+            <div class="col-md-4 text-end d-none d-md-block">
+                <span class="fs-1">🎁 🍎 🍇</span>
             </div>
         </div>
     </div>
@@ -44,9 +67,9 @@
             <!-- Left: Customization Steps -->
             <div class="col-lg-8">
                 <!-- STEP 1: Chọn Kiểu Dáng Giỏ / Hộp -->
-                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
                     <div class="d-flex align-items-center mb-3">
-                        <span class="badge bg-success rounded-circle me-2 d-inline-flex align-items-center justify-content-center fs-6" style="width: 32px; height: 32px; padding: 0;">1</span>
+                        <span class="badge bg-success rounded-circle me-2 p-2 px-3 fs-6">1</span>
                         <h5 class="fw-bold mb-0 text-dark">Chọn Kiểu Dáng Giỏ / Hộp Đựng Quà</h5>
                     </div>
                     <p class="text-muted small mb-3">Mỗi kiểu dáng bao gồm màng co bọc định hình, lót rơm lụa cao cấp chống va đập quả.</p>
@@ -59,13 +82,13 @@
                                  th:data-name="${style.name}"
                                  th:data-price="${style.price}">
                                 <div class="d-flex align-items-center mb-2">
-                                    <img th:src="${style.imageUrl}" class="rounded-3 me-3 border" width="70" height="70" style="object-fit: cover;">
+                                    <img th:src="${style.imageUrl}" class="rounded-3 me-3" width="70" height="70" style="object-fit: cover;">
                                     <div>
                                         <h6 class="fw-bold mb-1 text-dark" th:text="${style.name}">Tên giỏ</h6>
                                         <div class="text-danger fw-bold fs-6" th:text="${#numbers.formatDecimal(style.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
                                     </div>
                                 </div>
-                                <div class="small text-muted mb-2" th:text="${style.description}"></div>
+                                <div class="small text-muted mb-1" th:text="${style.description}"></div>
                                 <span class="badge bg-light text-secondary border align-self-start small" th:text="${style.capacity}">Sức chứa</span>
                             </div>
                         </div>
@@ -73,9 +96,9 @@
                 </div>
 
                 <!-- STEP 2: Chọn Phụ Kiện Nơ & Thiệp Mừng -->
-                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
                     <div class="d-flex align-items-center mb-3">
-                        <span class="badge bg-success rounded-circle me-2 d-inline-flex align-items-center justify-content-center fs-6" style="width: 32px; height: 32px; padding: 0;">2</span>
+                        <span class="badge bg-success rounded-circle me-2 p-2 px-3 fs-6">2</span>
                         <h5 class="fw-bold mb-0 text-dark">Chọn Nơ Lụa & Thiệp Chúc Mừng</h5>
                     </div>
 
@@ -108,10 +131,10 @@
                 </div>
 
                 <!-- STEP 3: Tự Mix Hoa Quả Theo Ngân Sách -->
-                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <div class="card border-0 shadow-sm rounded-4 p-4">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="d-flex align-items-center">
-                            <span class="badge bg-success rounded-circle me-2 d-inline-flex align-items-center justify-content-center fs-6" style="width: 32px; height: 32px; padding: 0;">3</span>
+                            <span class="badge bg-success rounded-circle me-2 p-2 px-3 fs-6">3</span>
                             <h5 class="fw-bold mb-0 text-dark">Tự Chọn Hoa Quả Tươi Đặt Vào Giỏ</h5>
                         </div>
                         <span class="text-muted small">Chọn ít nhất 1 loại quả</span>
@@ -120,7 +143,7 @@
 
                     <!-- Fruit Items Table -->
                     <div class="table-responsive">
-                        <table class="table align-middle mb-0">
+                        <table class="table align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th>Hoa Quả Tươi</th>
@@ -131,10 +154,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="f, stat : ${fruits}">
+                                <tr th:each="f, stat : ${fruits}" class="fruit-row">
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img th:src="${f.imageUrl}" class="rounded-3 me-2 border" width="45" height="45" style="object-fit: cover;">
+                                            <img th:src="${f.imageUrl}" class="rounded-3 me-2" width="45" height="45" style="object-fit: cover;">
                                             <div>
                                                 <div class="fw-semibold text-dark" th:text="${f.name}">Tên quả</div>
                                                 <small class="text-muted" th:text="'Còn lại: ' + ${f.stockQuantity} + ' ' + ${f.unit}"></small>
@@ -149,14 +172,14 @@
                                     <td><span class="badge bg-light text-dark border" th:text="${f.origin}">Xuất xứ</span></td>
                                     <td class="fw-semibold text-danger" th:text="${#numbers.formatDecimal(f.price, 0, 'COMMA', 0, 'POINT')} + ' đ/' + ${f.unit}"></td>
                                     <td>
-                                        <div class="input-group input-group-sm" style="width: 110px; margin: 0 auto;">
-                                            <button type="button" class="btn btn-outline-secondary btn-minus px-2" th:data-index="${stat.index}">-</button>
+                                        <div class="input-group input-group-sm">
+                                            <button type="button" class="btn btn-outline-secondary btn-minus" th:data-index="${stat.index}">-</button>
                                             <input type="number" min="0" th:max="${f.stockQuantity}"
                                                    th:name="'selectedFruits[' + ${stat.index} + '].quantity'"
-                                                   value="0" class="form-control form-control-sm text-center fruit-qty px-1 fw-semibold"
+                                                   value="0" class="form-control text-center fruit-qty"
                                                    th:data-price="${f.price}"
                                                    th:data-index="${stat.index}">
-                                            <button type="button" class="btn btn-outline-secondary btn-plus px-2" th:data-index="${stat.index}">+</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-plus" th:data-index="${stat.index}">+</button>
                                         </div>
                                     </td>
                                     <td class="text-end fw-bold text-dark fruit-subtotal" th:id="'subtotal_' + ${stat.index}">0 đ</td>
@@ -169,24 +192,22 @@
 
             <!-- Right: Sticky Live Budget Calculator -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top bg-white" style="top: 90px;">
-                    <h5 class="fw-bold mb-3 text-dark d-flex align-items-center">
-                        <i class="bi bi-calculator-fill text-success me-2"></i>Dự Toán Chi Phí Giỏ Quà
-                    </h5>
+                <div class="card border-0 shadow rounded-4 p-4 sticky-summary">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-calculator-fill text-success me-2"></i>Dự Toán Chi Phí Giỏ Quà</h5>
 
                     <div class="mb-3 pb-3 border-bottom">
                         <div class="small text-muted">Kiểu dáng giỏ/hộp:</div>
                         <div class="fw-bold text-dark" id="summaryStyleName">Giỏ Mây Tre Đan Truyền Thống</div>
                         <div class="d-flex justify-content-between mt-1">
                             <span class="small text-muted">Tiền giỏ & đóng gói:</span>
-                            <span class="fw-semibold text-dark" id="summaryStylePrice">80,000 đ</span>
+                            <span class="fw-semibold" id="summaryStylePrice">80,000 đ</span>
                         </div>
                     </div>
 
                     <div class="mb-3 pb-3 border-bottom">
                         <div class="d-flex justify-content-between mb-1">
                             <span class="small text-muted">Màu nơ:</span>
-                            <span class="small fw-semibold text-dark" id="summaryRibbon">Đỏ Nhung May Mắn</span>
+                            <span class="small fw-semibold" id="summaryRibbon">Đỏ Nhung May Mắn</span>
                         </div>
                         <div class="d-flex justify-content-between">
                             <span class="small text-muted">Thiệp chúc mừng:</span>
@@ -197,7 +218,7 @@
                     <div class="mb-3 pb-3 border-bottom">
                         <div class="d-flex justify-content-between mb-2">
                             <span class="small text-muted">Số loại quả đã chọn:</span>
-                            <span class="fw-bold text-success" id="summaryFruitCount">0 loại quả</span>
+                            <span class="fw-bold text-success" id="summaryFruitCount">0 loại</span>
                         </div>
                         <div class="d-flex justify-content-between">
                             <span class="small text-muted">Tiền hoa quả mix:</span>
@@ -206,14 +227,18 @@
                     </div>
 
                     <!-- Total Live Budget -->
-                    <div class="p-3 bg-light rounded-3 mb-4 border border-light">
-                        <small class="text-muted d-block">Tổng Chi Phí Dự Toán:</small>
-                        <div class="h3 fw-bold text-danger mb-0" id="summaryGrandTotal">80,000 đ</div>
+                    <div class="p-3 bg-light rounded-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Tổng Chi Phí Dự Toán:</small>
+                                <div class="h3 fw-bold text-danger mb-0" id="summaryGrandTotal">80,000 đ</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Submit Button -->
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm" id="btnSubmitCustomBasket">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold shadow-sm" id="btnSubmitCustomBasket">
                             <i class="bi bi-cart-plus-fill me-2"></i>Thêm Giỏ Quà Vào Giỏ Hàng
                         </button>
                     </div>
@@ -350,3 +375,4 @@
 </th:block>
 </body>
 </html>
+

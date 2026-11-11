@@ -41,7 +41,7 @@
                     <td><span th:class="${order.orderStatus.badgeClass}" th:text="${order.orderStatus.displayName}"></span></td>
                     <td th:text="${order.paymentStatus.displayName}"></td>
                     <td class="text-end">
-                        <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-outline-success btn-sm rounded-pill px-3">Xem đơn</a>
+                        <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Xem đơn</a>
                     </td>
                 </tr>
                 </tbody>

@@ -16,7 +16,7 @@
             <a th:href="@{/admin/inventory/slips/new}" class="btn btn-outline-danger rounded-pill px-3">
                 <i class="bi bi-clipboard2-minus me-1"></i>Tạo Phiếu Hao Hụt
             </a>
-            <a th:href="@{/admin/products/new}" class="btn btn-success rounded-pill px-4 fw-semibold shadow-sm">
+            <a th:href="@{/admin/products/new}" class="btn btn-primary rounded-pill px-4">
                 <i class="bi bi-plus-lg me-1"></i>Thêm Sản Phẩm
             </a>
         </div>
@@ -29,7 +29,7 @@
                 <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo tên hoặc mã sản phẩm...">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">Tìm Kiếm</button>
+                <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm Kiếm</button>
                 <a th:href="@{/admin/products}" class="btn btn-outline-secondary rounded-pill px-3">Làm Mới</a>
             </div>
         </form>
@@ -84,7 +84,7 @@
                             <span th:unless="${p.active}" class="badge bg-secondary">Ngừng bán</span>
                         </td>
                         <td class="text-end">
-                            <a th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="btn btn-outline-success btn-sm rounded-pill me-1" title="Chỉnh sửa">
+                            <a th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="btn btn-outline-primary btn-sm rounded-pill me-1" title="Chỉnh sửa">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                             <form th:action="@{/admin/products/delete/{id}(id=${p.id})}" method="post" class="d-inline"

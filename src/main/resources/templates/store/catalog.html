@@ -5,6 +5,12 @@
       layout:decorate="~{layouts/main-layout}">
 <head>
     <title>Cửa Hàng Hoa Quả - Danh Sách Sản Phẩm</title>
+    <style>
+        .product-img-wrapper { position: relative; }
+        .wishlist-btn-wrapper { position: absolute; top: 8px; right: 8px; z-index: 10; text-decoration: none; }
+        .wishlist-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.15); transition: transform 0.15s; padding: 0; }
+        .wishlist-btn:hover { transform: scale(1.15); background: white; }
+    </style>
 </head>
 <body>
 <div layout:fragment="content" class="py-2">
@@ -19,10 +25,8 @@
     <div class="row g-4">
         <!-- Sidebar Filter -->
         <div class="col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-                <h5 class="fw-bold mb-3 text-dark d-flex align-items-center">
-                    <i class="bi bi-funnel-fill text-success me-2"></i>Bộ Lọc Sản Phẩm
-                </h5>
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+                <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-funnel-fill text-success me-2"></i>Bộ Lọc Sản Phẩm</h5>
 
                 <form th:action="@{/catalog}" method="get">
                     <!-- Keyword input -->
@@ -74,10 +78,10 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-sm">
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill">
                             <i class="bi bi-search me-1"></i>Áp Dụng Lọc
                         </button>
-                        <a th:href="@{/catalog}" class="btn btn-outline-secondary btn-sm">Đặt Lại</a>
+                        <a th:href="@{/catalog}" class="btn btn-outline-secondary btn-sm rounded-pill">Đặt Lại</a>
                     </div>
                 </form>
             </div>
@@ -86,7 +90,7 @@
         <!-- Product List & Sorting -->
         <div class="col-lg-9">
             <!-- Top Controls -->
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 bg-white rounded-4 shadow-sm border border-light">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 bg-white rounded-4 shadow-sm">
                 <div class="small text-muted mb-2 mb-md-0">
                     Hiển thị <span class="fw-bold text-dark" th:text="${productsPage.totalElements}">0</span> sản phẩm
                 </div>
@@ -114,27 +118,20 @@
                 </div>
             </div>
 
-            <!-- Products Grid Empty State -->
-            <div th:if="${productsPage.empty}" class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
-                <div class="empty-state">
-                    <div class="empty-state-icon mx-auto">
-                        <i class="bi bi-search"></i>
-                    </div>
-                    <h5 class="fw-bold mt-2 text-dark">Không tìm thấy sản phẩm phù hợp</h5>
-                    <p class="text-muted small mb-4">Hãy thử tìm với từ khóa khác hoặc xóa bộ lọc để hiển thị toàn bộ trái cây.</p>
-                    <a th:href="@{/catalog}" class="btn btn-outline-success btn-sm px-4">Xem Tất Cả Sản Phẩm</a>
-                </div>
+            <!-- Products Grid -->
+            <div th:if="${productsPage.empty}" class="text-center py-5 bg-white rounded-4 shadow-sm">
+                <i class="bi bi-emoji-neutral fs-1 text-muted"></i>
+                <h5 class="fw-bold mt-2">Không tìm thấy sản phẩm phù hợp</h5>
+                <p class="text-muted small">Hãy thử tìm với từ khóa khác hoặc xóa bộ lọc.</p>
+                <a th:href="@{/catalog}" class="btn btn-outline-success btn-sm rounded-pill mt-2">Xem Tất Cả Sản Phẩm</a>
             </div>
 
-            <!-- Products Grid -->
             <div class="row g-4" th:unless="${productsPage.empty}">
                 <div class="col-6 col-md-4" th:each="p : ${productsPage.content}">
                     <div class="product-card">
                         <div class="product-img-wrapper">
-                            <div class="product-badges">
-                                <span class="badge-tag badge-tag-origin" th:text="${p.origin}">Xuất xứ</span>
-                                <span th:if="${p.featured}" class="badge-tag badge-tag-discount">Hot</span>
-                            </div>
+                            <span class="badge-origin" th:text="${p.origin}">Xuất xứ</span>
+                            <span th:if="${p.featured}" class="badge-featured">Hot</span>
                             <img th:src="${p.imageUrl != null ? p.imageUrl : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80'}" th:alt="${p.name}">
                             <!-- Wishlist toggle button -->
                             <form th:action="@{/wishlist/toggle/{id}(id=${p.id})}" method="post" class="wishlist-btn-wrapper" sec:authorize="isAuthenticated()">
@@ -150,21 +147,22 @@
                             </a>
                         </div>
                         <div class="product-body">
-                            <div class="product-category-meta" th:text="${p.productType?.displayName != null ? p.productType.displayName : 'Hoa Quả Tươi'}">Trái Cây Tươi</div>
                             <a th:href="@{/products/{id}(id=${p.id})}" class="product-title" th:text="${p.name}">Tên Sản Phẩm</a>
                             <div class="small text-muted mb-2">ĐVT: <span th:text="${p.unit}">kg</span> | Kho: <span th:text="${p.stockQuantity}">10</span></div>
-                            <div class="product-pricing">
-                                <span class="product-price-current" th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
-                                <span th:if="${p.originalPrice != null && p.originalPrice > p.price}"
-                                      class="product-price-old" th:text="${#numbers.formatDecimal(p.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">120,000 đ</span>
+                            <div class="mt-auto">
+                                <div class="d-flex align-items-baseline mb-3">
+                                    <span class="product-price" th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
+                                    <span th:if="${p.originalPrice != null && p.originalPrice > p.price}"
+                                          class="product-old-price" th:text="${#numbers.formatDecimal(p.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">120,000 đ</span>
+                                </div>
+                                <form th:action="@{/cart/add}" method="post">
+                                    <input type="hidden" name="productId" th:value="${p.id}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn btn-primary w-100 rounded-pill btn-sm py-2" th:disabled="${p.stockQuantity <= 0}">
+                                        <i class="bi bi-cart-plus me-1"></i> <span th:text="${p.stockQuantity > 0 ? 'Thêm Vào Giỏ' : 'Hết Hàng'}"></span>
+                                    </button>
+                                </form>
                             </div>
-                            <form th:action="@{/cart/add}" method="post" class="mt-auto">
-                                <input type="hidden" name="productId" th:value="${p.id}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="btn btn-primary w-100 btn-sm py-2" th:disabled="${p.stockQuantity <= 0}">
-                                    <i class="bi bi-cart-plus me-1"></i> <span th:text="${p.stockQuantity > 0 ? 'Thêm Vào Giỏ' : 'Hết Hàng'}">Thêm Vào Giỏ</span>
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -172,17 +170,17 @@
 
             <!-- Pagination -->
             <div th:if="${productsPage.totalPages > 1}" class="d-flex justify-content-center mt-5">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination pagination-sm gap-1">
+                <nav>
+                    <ul class="pagination">
                         <li class="page-item" th:classappend="${productsPage.first} ? 'disabled'">
-                            <a class="page-link rounded-pill px-3" th:href="@{/catalog(page=${productsPage.number - 1}, keyword=${keyword}, origin=${origin}, categoryId=${selectedCategoryId}, productType=${selectedProductType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy}, direction=${direction})}">Trước</a>
+                            <a class="page-link" th:href="@{/catalog(page=${productsPage.number - 1}, keyword=${keyword}, origin=${origin}, categoryId=${selectedCategoryId}, productType=${selectedProductType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy}, direction=${direction})}">Trước</a>
                         </li>
                         <li class="page-item" th:each="i : ${#numbers.sequence(0, productsPage.totalPages - 1)}"
                             th:classappend="${i == productsPage.number} ? 'active'">
-                            <a class="page-link rounded-circle text-center" style="width: 36px; height: 36px; line-height: 24px;" th:href="@{/catalog(page=${i}, keyword=${keyword}, origin=${origin}, categoryId=${selectedCategoryId}, productType=${selectedProductType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy}, direction=${direction})}" th:text="${i + 1}">1</a>
+                            <a class="page-link" th:href="@{/catalog(page=${i}, keyword=${keyword}, origin=${origin}, categoryId=${selectedCategoryId}, productType=${selectedProductType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy}, direction=${direction})}" th:text="${i + 1}">1</a>
                         </li>
                         <li class="page-item" th:classappend="${productsPage.last} ? 'disabled'">
-                            <a class="page-link rounded-pill px-3" th:href="@{/catalog(page=${productsPage.number + 1}, keyword=${keyword}, origin=${origin}, categoryId=${selectedCategoryId}, productType=${selectedProductType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy}, direction=${direction})}">Sau</a>
+                            <a class="page-link" th:href="@{/catalog(page=${productsPage.number + 1}, keyword=${keyword}, origin=${origin}, categoryId=${selectedCategoryId}, productType=${selectedProductType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy}, direction=${direction})}">Sau</a>
                         </li>
                     </ul>
                 </nav>
@@ -192,3 +190,4 @@
 </div>
 </body>
 </html>
+

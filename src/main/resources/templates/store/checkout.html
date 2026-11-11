@@ -4,6 +4,25 @@
       layout:decorate="~{layouts/main-layout}">
 <head>
     <title>Thanh Toán Đơn Hàng - Fruit Store</title>
+    <style>
+        .payment-option {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .payment-option:hover {
+            border-color: #198754 !important;
+            background-color: #f8fff9;
+        }
+        .payment-option.active-method {
+            border-color: #198754 !important;
+            background-color: #f0fdf4;
+            box-shadow: 0 0 0 0.15rem rgba(25, 135, 84, 0.15);
+        }
+        .vietqr-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px dashed #0d6efd;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content" class="py-2">
@@ -16,7 +35,7 @@
         </ol>
     </nav>
 
-    <h3 class="fw-bold mb-4 text-dark d-flex align-items-center">
+    <h3 class="fw-bold mb-4 text-dark">
         <i class="bi bi-shield-check text-success me-2"></i>Thông Tin Đặt Hàng & Giao Nhận
     </h3>
 
@@ -25,8 +44,8 @@
             <!-- Left: Shipping info, delivery slot, packaging & payment -->
             <div class="col-lg-7">
                 <!-- 1. Thông Tin Nhận Hàng -->
-                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-                    <h5 class="fw-bold mb-3 text-dark d-flex align-items-center">
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <h5 class="fw-bold mb-3">
                         <i class="bi bi-geo-alt-fill text-danger me-2"></i>1. Thông Tin Người Nhận
                     </h5>
 
@@ -42,7 +61,7 @@
                         <div class="invalid-feedback" th:errors="*{receiverPhone}"></div>
                     </div>
 
-                    <div class="mb-0">
+                    <div class="mb-3">
                         <label class="form-label fw-semibold">Địa chỉ giao hàng chi tiết <span class="text-danger">*</span></label>
                         <textarea th:field="*{shippingAddress}" class="form-control" th:errorclass="is-invalid" rows="2"
                                   placeholder="Số nhà, tên đường, ngõ ngách, phường/xã, quận/huyện..." required></textarea>
@@ -51,24 +70,22 @@
                 </div>
 
                 <!-- 2. Khung Giờ Giao Hàng & Giao Hẹn Giờ -->
-                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-                    <h5 class="fw-bold mb-3 text-dark d-flex align-items-center">
-                        <i class="bi bi-clock-history text-success me-2"></i>2. Khung Giờ Nhận Hàng
-                    </h5>
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-clock-history text-success me-2"></i>2. Khung Giờ Nhận Hàng</h5>
 
-                    <div class="form-check p-3 border rounded-3 mb-3 payment-option active-method" id="expressCard">
+                    <div class="form-check p-3 border rounded-3 mb-3" id="expressCard">
                         <input class="form-check-input ms-0 me-3" type="radio" th:field="*{deliveryTimeType}" id="delExpress" value="EXPRESS_2H" checked>
-                        <label class="form-check-label fw-semibold" for="delExpress" style="cursor: pointer;">
+                        <label class="form-check-label fw-semibold" for="delExpress">
                             <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Giao Gấp Siêu Tốc (Trong 2 Giờ)
-                            <div class="small text-muted fw-normal mt-1">Đóng gói ngay khi xác nhận đơn và giao ngay trong vòng 120 phút.</div>
+                            <div class="small text-muted fw-normal">Đóng gói ngay khi xác nhận đơn và giao ngay trong vòng 120 phút.</div>
                         </label>
                     </div>
 
-                    <div class="form-check p-3 border rounded-3 payment-option" id="scheduledCard">
+                    <div class="form-check p-3 border rounded-3" id="scheduledCard">
                         <input class="form-check-input ms-0 me-3" type="radio" th:field="*{deliveryTimeType}" id="delScheduled" value="SCHEDULED">
-                        <label class="form-check-label fw-semibold" for="delScheduled" style="cursor: pointer;">
+                        <label class="form-check-label fw-semibold" for="delScheduled">
                             <i class="bi bi-calendar-check-fill text-primary me-1"></i>Hẹn Khung Giờ Giao Cụ Thể
-                            <div class="small text-muted fw-normal mt-1">Chọn ngày và khung giờ bạn hoặc người nhận thuận tiện nhất.</div>
+                            <div class="small text-muted fw-normal">Chọn ngày và khung giờ bạn hoặc người nhận thuận tiện nhất.</div>
                         </label>
 
                         <div class="row g-2 mt-2 pt-2 border-top" id="scheduledOptions">
@@ -89,18 +106,16 @@
                 </div>
 
                 <!-- 3. Tiêu Chuẩn Chọn Quả & Đóng Gói -->
-                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-                    <h5 class="fw-bold mb-3 text-dark d-flex align-items-center">
-                        <i class="bi bi-basket2-fill text-warning me-2"></i>3. Tiêu Chuẩn Chọn Hoa Quả & Đóng Gói
-                    </h5>
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-basket2-fill text-warning me-2"></i>3. Tiêu Chuẩn Chọn Hoa Quả & Đóng Gói</h5>
 
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
                             <div class="form-check p-2 border rounded-3 h-100">
                                 <input class="form-check-input ms-0 me-2" type="radio" th:field="*{packagingRequirement}"
                                        id="packWorship" value="Chọn quả tươi cứng đẹp để thắp hương / làm lễ" checked>
-                                <label class="form-check-label small fw-semibold" for="packWorship" style="cursor: pointer;">
-                                    <i class="bi bi-flower1 text-success me-1"></i>Chọn quả cứng, cuống tươi để thắp hương / lễ
+                                <label class="form-check-label small fw-semibold" for="packWorship">
+                                    🍎 Chọn quả cứng, cuống tươi để thắp hương / lễ
                                 </label>
                             </div>
                         </div>
@@ -108,8 +123,8 @@
                             <div class="form-check p-2 border rounded-3 h-100">
                                 <input class="form-check-input ms-0 me-2" type="radio" th:field="*{packagingRequirement}"
                                        id="packEat" value="Chọn quả chín ngọt thơm để ăn ngay">
-                                <label class="form-check-label small fw-semibold" for="packEat" style="cursor: pointer;">
-                                    <i class="bi bi-heart-pulse text-danger me-1"></i>Chọn quả chín mềm, ngọt đậm để ăn ngay
+                                <label class="form-check-label small fw-semibold" for="packEat">
+                                    🍇 Chọn quả chín mềm, ngọt đậm để ăn ngay
                                 </label>
                             </div>
                         </div>
@@ -117,8 +132,8 @@
                             <div class="form-check p-2 border rounded-3 h-100">
                                 <input class="form-check-input ms-0 me-2" type="radio" th:field="*{packagingRequirement}"
                                        id="packGift" value="Bọc xốp lưới chống dập từng quả làm quà biếu">
-                                <label class="form-check-label small fw-semibold" for="packGift" style="cursor: pointer;">
-                                    <i class="bi bi-gift text-warning me-1"></i>Bọc lưới xốp từng quả, đính kèm nơ quà biếu
+                                <label class="form-check-label small fw-semibold" for="packGift">
+                                    🎁 Bọc lưới xốp từng quả, đính kèm nơ quà biếu
                                 </label>
                             </div>
                         </div>
@@ -126,8 +141,8 @@
                             <div class="form-check p-2 border rounded-3 h-100">
                                 <input class="form-check-input ms-0 me-2" type="radio" th:field="*{packagingRequirement}"
                                        id="packStandard" value="Đóng gói tiêu chuẩn cửa hàng">
-                                <label class="form-check-label small fw-semibold" for="packStandard" style="cursor: pointer;">
-                                    <i class="bi bi-box-seam text-secondary me-1"></i>Đóng gói tiêu chuẩn bảo quản lạnh
+                                <label class="form-check-label small fw-semibold" for="packStandard">
+                                    📦 Đóng gói tiêu chuẩn bảo quản lạnh
                                 </label>
                             </div>
                         </div>
@@ -141,18 +156,14 @@
                 </div>
 
                 <!-- 4. Phương Thức Thanh Toán -->
-                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-                    <h5 class="fw-bold mb-3 text-dark d-flex align-items-center">
-                        <i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>4. Phương Thức Thanh Toán
-                    </h5>
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>4. Phương Thức Thanh Toán</h5>
 
                     <!-- Option 1: COD -->
                     <div class="form-check p-3 border rounded-3 mb-3 payment-option active-method" id="optionCOD">
-                        <input class="form-check-input ms-0 me-3 mt-1" type="radio" th:field="*{paymentMethod}" id="payCOD" value="COD" checked>
+                        <input class="form-check-input ms-0 me-3 mt-2" type="radio" th:field="*{paymentMethod}" id="payCOD" value="COD" checked>
                         <label class="form-check-label fw-semibold d-block" for="payCOD" style="cursor: pointer;">
-                            <span class="d-flex align-items-center text-dark">
-                                <i class="bi bi-cash-stack text-success me-2 fs-5"></i>Thanh toán khi nhận hàng (COD)
-                            </span>
+                            <i class="bi bi-cash-stack text-success me-2 fs-5"></i>Thanh toán khi nhận hàng (COD)
                             <div class="small text-muted fw-normal mt-1">
                                 Bạn kiểm tra hoa quả tươi ngon, giỏ quà nguyên vẹn trước khi thanh toán tiền mặt cho shipper.
                             </div>
@@ -161,23 +172,21 @@
 
                     <!-- Option 2: VietQR / Bank Transfer -->
                     <div class="form-check p-3 border rounded-3 payment-option" id="optionBank">
-                        <input class="form-check-input ms-0 me-3 mt-1" type="radio" th:field="*{paymentMethod}" id="payBank" value="BANK_TRANSFER">
+                        <input class="form-check-input ms-0 me-3 mt-2" type="radio" th:field="*{paymentMethod}" id="payBank" value="BANK_TRANSFER">
                         <label class="form-check-label fw-semibold d-block" for="payBank" style="cursor: pointer;">
-                            <span class="d-flex align-items-center text-dark">
-                                <i class="bi bi-qr-code-scan text-primary me-2 fs-5"></i>Chuyển khoản Ngân hàng (VietQR Tự Động)
-                            </span>
+                            <i class="bi bi-qr-code-scan text-primary me-2 fs-5"></i>Chuyển khoản Ngân hàng (VietQR Tự Động)
                             <div class="small text-muted fw-normal mt-1">
                                 Quét mã QR qua app ngân hàng, hệ thống xác nhận thanh toán tức thì. Đơn hàng được ưu tiên đóng gói.
                             </div>
                         </label>
 
-                        <!-- Khung hiển thị mã VietQR tự động -->
-                        <div id="vietQrContainer" class="rounded-4 p-4 mt-3 d-none border"
-                             style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);"
+                        <!-- Khung hiển thị mã VietQR tự động (Ẩn mặc định, hiện khi chọn BANK_TRANSFER) -->
+                        <div id="vietQrContainer" class="vietqr-box rounded-4 p-3 mt-3 d-none"
                              th:with="amount=${cart.finalAmount != null ? cart.finalAmount.longValue() : 0}">
                             <div class="row align-items-center g-3">
                                 <div class="col-md-5 text-center">
-                                    <div class="bg-white p-2 rounded-3 shadow-sm d-inline-block border">
+                                    <div class="bg-white p-2 rounded-3 shadow-sm d-inline-block">
+                                        <!-- Mã QR tự động điền số tiền từ cart.finalAmount -->
                                         <img id="vietQrImage"
                                              th:data-amount="${amount}"
                                              th:src="'https://img.vietqr.io/image/ICB--compact2.png?amount=' + ${amount} + '&addInfo=FRUITSTORE%20THANH%20TOAN&accountName=FRUIT%20STORE%20VIET%20NAM'"
@@ -223,23 +232,24 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- End khung VietQR -->
                     </div>
                 </div>
             </div>
 
             <!-- Right: Order items summary & confirm button -->
             <div class="col-lg-5">
-                <div class="card border-0 shadow rounded-4 p-4 sticky-top bg-white" style="top: 90px;">
-                    <h5 class="fw-bold mb-3 text-dark">Đơn Hàng Của Bạn (<span th:text="${cart.totalQuantity}">0</span> sản phẩm)</h5>
+                <div class="card border-0 shadow rounded-4 p-4 sticky-top" style="top: 100px;">
+                    <h5 class="fw-bold mb-3">Đơn Hàng Của Bạn (<span th:text="${cart.totalQuantity}">0</span> sản phẩm)</h5>
 
                     <!-- Items mini list -->
                     <div class="overflow-auto mb-3" style="max-height: 280px;">
                         <div class="d-flex align-items-center mb-3 pb-2 border-bottom" th:each="i : ${cart.items}">
                             <img th:src="${i.imageUrl != null ? i.imageUrl : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=100&q=80'}"
-                                 class="rounded-3 me-3 border" width="55" height="55" style="object-fit: cover;">
+                                 class="rounded-3 me-3" width="55" height="55" style="object-fit: cover;">
                             <div class="flex-grow-1">
                                 <div class="d-flex align-items-center gap-1">
-                                    <span th:if="${i.customBasket}" class="badge bg-warning text-dark font-monospace" style="font-size: 0.65rem;">Giỏ Quà</span>
+                                    <span th:if="${i.customBasket}" class="badge bg-warning text-dark small" style="font-size: 0.65rem;">Giỏ Quà</span>
                                     <h6 class="mb-0 small fw-bold text-dark" th:text="${i.productName}">Tên sản phẩm</h6>
                                 </div>
                                 <div th:if="${i.customBasket}" class="text-muted" style="font-size: 0.75rem;" th:text="${i.basketStyleName}"></div>
@@ -252,7 +262,7 @@
                     <!-- Price calculation -->
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Tổng tiền hàng:</span>
-                        <span class="fw-semibold text-dark" th:text="${#numbers.formatDecimal(cart.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
+                        <span class="fw-semibold" th:text="${#numbers.formatDecimal(cart.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2" th:if="${cart.discountAmount > 0}">
@@ -265,15 +275,15 @@
                         <span class="text-success fw-semibold">Miễn phí</span>
                     </div>
 
-                    <hr class="my-3 opacity-25">
+                    <hr>
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <span class="h5 fw-bold mb-0 text-dark">Tổng Thanh Toán:</span>
+                        <span class="h5 fw-bold mb-0">Tổng Thanh Toán:</span>
                         <span class="h3 fw-bold text-danger mb-0" th:text="${#numbers.formatDecimal(cart.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
                     </div>
 
                     <div class="d-grid">
-                        <button type="submit" id="submitOrderBtn" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                        <button type="submit" id="submitOrderBtn" class="btn btn-primary btn-lg rounded-pill fw-semibold shadow-sm">
                             <i class="bi bi-check-circle-fill me-2"></i>Xác Nhận Đặt Hàng
                         </button>
                     </div>
@@ -286,6 +296,7 @@
         </div>
     </form>
 
+    <!-- Script xử lý UC-12: Ẩn/hiện VietQR và tự động cập nhật nội dung chuyển khoản theo SĐT người nhận -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const payCOD = document.getElementById('payCOD');
@@ -310,6 +321,7 @@
                 }
             }
 
+            // Tự động gán Số điện thoại khách hàng vào nội dung chuyển khoản của mã VietQR
             function updateQrCodeWithPhone() {
                 if (!vietQrImage) return;
                 const amount = vietQrImage.getAttribute('data-amount') || 0;
@@ -324,9 +336,11 @@
                 vietQrImage.src = `https://img.vietqr.io/image/ICB-102877116090-compact2.png?amount=${amount}&addInfo=${encodedInfo}&accountName=FRUIT%20STORE%20VIET%20NAM`;
             }
 
+            // Sự kiện khi chọn Radio button
             payCOD.addEventListener('change', updatePaymentMethodUI);
             payBank.addEventListener('change', updatePaymentMethodUI);
 
+            // Cho phép bấm vào cả khung card để chọn phương thức
             optionCOD.addEventListener('click', function () {
                 payCOD.checked = true;
                 updatePaymentMethodUI();
@@ -336,6 +350,7 @@
                 updatePaymentMethodUI();
             });
 
+            // Cập nhật lại mã QR khi khách nhập/đổi số điện thoại
             if (phoneInput) {
                 phoneInput.addEventListener('blur', function () {
                     if (payBank.checked) {
@@ -344,6 +359,7 @@
                 });
             }
 
+            // Khởi tạo trạng thái ban đầu (nếu form bị trả lại do lỗi validation)
             updatePaymentMethodUI();
         });
     </script>

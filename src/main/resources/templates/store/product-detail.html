@@ -19,11 +19,11 @@
     </nav>
 
     <!-- Product Detail Section -->
-    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-5 bg-white">
-        <div class="row g-4 g-lg-5 align-items-center">
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-5">
+        <div class="row g-4 align-items-center">
             <!-- Product Image -->
             <div class="col-md-5">
-                <div class="rounded-4 overflow-hidden border bg-light shadow-xs position-relative">
+                <div class="rounded-4 overflow-hidden border">
                     <img th:src="${product.imageUrl != null ? product.imageUrl : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80'}"
                          th:alt="${product.name}" class="img-fluid w-100" style="max-height: 450px; object-fit: cover;">
                 </div>
@@ -31,7 +31,7 @@
 
             <!-- Product Info -->
             <div class="col-md-7">
-                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <div class="d-flex align-items-center gap-2 mb-2">
                     <span class="badge bg-success" th:text="${product.productType.displayName}">Trái cây tươi</span>
                     <span class="badge bg-light text-dark border" th:text="'Xuất xứ: ' + ${product.origin}">Xuất xứ</span>
                     <span class="badge bg-light text-dark border" th:text="'Mã SP: ' + ${product.code}">Mã SP</span>
@@ -43,12 +43,12 @@
                 <!-- Rating summary -->
                 <div class="d-flex align-items-center mb-3">
                     <span class="text-warning me-2"><i class="bi bi-star-fill"></i></span>
-                    <span class="fw-bold me-2 text-dark" th:text="${averageRating} + ' / 5.0'">5.0 / 5.0</span>
+                    <span class="fw-bold me-2" th:text="${averageRating} + ' / 5.0'">5.0 / 5.0</span>
                     <span class="text-muted small" th:text="'(' + ${totalReviews} + ' đánh giá)'">(0 đánh giá)</span>
                 </div>
 
                 <!-- Price Box -->
-                <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline border border-light">
+                <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline">
                     <span class="h2 fw-bold text-danger mb-0" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
                     <span class="text-muted ms-2" th:text="'/ 1 ' + ${product.unit}">/ 1 kg</span>
                     <span th:if="${product.originalPrice != null && product.originalPrice > product.price}"
@@ -67,17 +67,17 @@
                     </span>
                 </p>
 
-                <!-- Wishlist toggle -->
-                <div class="mb-4 d-flex gap-2">
-                    <form th:action="@{/wishlist/toggle/{id}(id=${product.id})}" method="post" sec:authorize="isAuthenticated()" class="m-0">
+                <!-- UC-06: Wishlist toggle -->
+                <div class="mb-3 d-flex gap-2">
+                    <form th:action="@{/wishlist/toggle/{id}(id=${product.id})}" method="post" sec:authorize="isAuthenticated()">
                         <input type="hidden" name="redirectUrl" th:value="'/products/' + ${product.id}">
-                        <button type="submit" class="btn btn-sm px-3"
+                        <button type="submit" class="btn btn-sm rounded-pill px-3"
                                 th:classappend="${isWishlisted} ? 'btn-danger' : 'btn-outline-secondary'">
                             <i class="bi me-1" th:classappend="${isWishlisted} ? 'bi-heart-fill' : 'bi-heart'"></i>
                             <span th:text="${isWishlisted} ? 'Đã Yêu Thích' : 'Thêm Yêu Thích'">Thêm Yêu Thích</span>
                         </button>
                     </form>
-                    <a th:href="@{/wishlist}" sec:authorize="isAuthenticated()" class="btn btn-sm btn-outline-secondary px-3">
+                    <a th:href="@{/wishlist}" sec:authorize="isAuthenticated()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
                         <i class="bi bi-heart me-1"></i>Xem Yêu Thích
                     </a>
                 </div>
@@ -87,14 +87,14 @@
                     <input type="hidden" name="productId" th:value="${product.id}">
                     <div class="row g-3 align-items-center">
                         <div class="col-auto">
-                            <label class="form-label mb-0 fw-semibold text-dark">Số lượng:</label>
+                            <label class="form-label mb-0 fw-semibold">Số lượng:</label>
                         </div>
                         <div class="col-auto">
                             <input type="number" name="quantity" value="1" min="1" th:max="${product.stockQuantity}"
-                                   class="form-control text-center fw-semibold" style="width: 80px;" th:disabled="${product.stockQuantity <= 0}">
+                                   class="form-control text-center" style="width: 80px;" th:disabled="${product.stockQuantity <= 0}">
                         </div>
                         <div class="col-auto">
-                            <button type="submit" class="btn btn-primary px-4 py-2" th:disabled="${product.stockQuantity <= 0}">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2" th:disabled="${product.stockQuantity <= 0}">
                                 <i class="bi bi-cart-plus me-2"></i>Thêm Vào Giỏ Hàng
                             </button>
                         </div>
@@ -104,10 +104,10 @@
                 <!-- Commitment bullets -->
                 <div class="border-top pt-3 text-muted small">
                     <div class="row g-2">
-                        <div class="col-6 d-flex align-items-center"><i class="bi bi-shield-check text-success me-2 fs-6"></i> Cam kết 100% tươi sạch</div>
-                        <div class="col-6 d-flex align-items-center"><i class="bi bi-truck text-success me-2 fs-6"></i> Giao nhanh trong 2 giờ</div>
-                        <div class="col-6 d-flex align-items-center"><i class="bi bi-arrow-repeat text-success me-2 fs-6"></i> Đổi trả 1-1 nếu dập úng</div>
-                        <div class="col-6 d-flex align-items-center"><i class="bi bi-gift text-success me-2 fs-6"></i> Miễn phí nơ thiệp cho giỏ quà</div>
+                        <div class="col-6"><i class="bi bi-shield-check text-success me-1"></i> Cam kết 100% tươi sạch</div>
+                        <div class="col-6"><i class="bi bi-truck text-success me-1"></i> Giao nhanh trong 2 giờ</div>
+                        <div class="col-6"><i class="bi bi-arrow-repeat text-success me-1"></i> Đổi trả 1-1 nếu dập úng</div>
+                        <div class="col-6"><i class="bi bi-gift text-success me-1"></i> Miễn phí nơ thiệp cho giỏ quà</div>
                     </div>
                 </div>
             </div>
@@ -115,24 +115,22 @@
 
         <!-- Description Tab -->
         <div class="mt-5 pt-4 border-top">
-            <h4 class="fw-bold mb-3 text-dark">Mô Tả Sản Phẩm</h4>
-            <div class="text-muted leading-relaxed" style="white-space: pre-line; line-height: 1.8;" th:text="${product.description}">
+            <h4 class="fw-bold mb-3">Mô Tả Sản Phẩm</h4>
+            <div class="text-muted leading-relaxed" style="white-space: pre-line;" th:text="${product.description}">
                 Mô tả chi tiết sản phẩm...
             </div>
         </div>
     </div>
 
     <!-- Customer Reviews Section -->
-    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
-        <h4 class="fw-bold mb-4 text-dark d-flex align-items-center">
-            <i class="bi bi-chat-heart text-danger me-2"></i>Đánh Giá Từ Khách Hàng
-        </h4>
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold mb-4"><i class="bi bi-chat-heart text-danger me-2"></i>Đánh Giá Từ Khách Hàng</h4>
 
         <div class="row g-4">
             <!-- Review submission form (Authenticated) -->
             <div class="col-lg-5">
-                <div class="p-4 bg-light rounded-4 border">
-                    <h5 class="fw-bold mb-3 text-dark">Gửi đánh giá của bạn</h5>
+                <div class="p-3 bg-light rounded-4">
+                    <h5 class="fw-bold mb-3">Gửi đánh giá của bạn</h5>
 
                     <div sec:authorize="isAuthenticated()">
                         <form th:action="@{/reviews/add}" method="post">
@@ -141,11 +139,11 @@
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold">Đánh giá số sao:</label>
                                 <select name="rating" class="form-select form-select-sm">
-                                    <option value="5">5 sao - Tuyệt vời</option>
-                                    <option value="4">4 sao - Rất tốt</option>
-                                    <option value="3">3 sao - Bình thường</option>
-                                    <option value="2">2 sao - Tạm được</option>
-                                    <option value="1">1 sao - Không hài lòng</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ (5 sao - Tuyệt vời)</option>
+                                    <option value="4">⭐⭐⭐⭐ (4 sao - Rất tốt)</option>
+                                    <option value="3">⭐⭐⭐ (3 sao - Bình thường)</option>
+                                    <option value="2">⭐⭐ (2 sao - Tạm được)</option>
+                                    <option value="1">⭐ (1 sao - Không hài lòng)</option>
                                 </select>
                             </div>
 
@@ -154,13 +152,13 @@
                                 <textarea name="comment" class="form-control form-control-sm" rows="3" placeholder="Chất lượng quả tươi, vị ngọt, đóng gói..." required></textarea>
                             </div>
 
-                            <button type="submit" class="btn btn-success btn-sm px-4">Gửi Đánh Giá</button>
+                            <button type="submit" class="btn btn-success btn-sm rounded-pill px-4">Gửi Đánh Giá</button>
                         </form>
                     </div>
 
                     <div sec:authorize="isAnonymous()" class="text-center py-3">
                         <p class="text-muted small mb-3">Vui lòng đăng nhập để có thể gửi đánh giá cho sản phẩm này.</p>
-                        <a th:href="@{/auth/login}" class="btn btn-outline-primary btn-sm px-3">Đăng Nhập Ngay</a>
+                        <a th:href="@{/auth/login}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Đăng Nhập Ngay</a>
                     </div>
                 </div>
             </div>
@@ -168,10 +166,8 @@
             <!-- Reviews list -->
             <div class="col-lg-7">
                 <div th:if="${#lists.isEmpty(reviews)}" class="text-muted text-center py-4">
-                    <div class="empty-state py-3">
-                        <i class="bi bi-chat-square-text fs-2 text-muted mb-2 d-block"></i>
-                        <p class="mt-2 mb-0">Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!</p>
-                    </div>
+                    <i class="bi bi-chat-square-text fs-2"></i>
+                    <p class="mt-2 mb-0">Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!</p>
                 </div>
 
                 <div th:unless="${#lists.isEmpty(reviews)}" class="d-flex flex-column gap-3">
@@ -179,12 +175,12 @@
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-person-circle fs-5 me-2 text-secondary"></i>
-                                <span class="fw-bold text-dark" th:text="${r.user.fullName}">Tên Khách Hàng</span>
+                                <span class="fw-bold" th:text="${r.user.fullName}">Tên Khách Hàng</span>
                             </div>
                             <small class="text-muted" th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</small>
                         </div>
-                        <div class="text-warning small mb-2 d-flex gap-1">
-                            <span th:each="star : ${#numbers.sequence(1, r.rating)}"><i class="bi bi-star-fill"></i></span>
+                        <div class="text-warning small mb-2">
+                            <span th:each="star : ${#numbers.sequence(1, r.rating)}">★</span>
                         </div>
                         <p class="text-dark small mb-0" th:text="${r.comment}">Nội dung đánh giá...</p>
                     </div>
@@ -195,3 +191,4 @@
 </div>
 </body>
 </html>
+
