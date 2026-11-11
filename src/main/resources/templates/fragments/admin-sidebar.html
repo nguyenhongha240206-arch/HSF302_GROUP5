@@ -2,23 +2,25 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-<aside th:fragment="admin-sidebar" class="admin-sidebar shadow">
-    <div class="sidebar-header d-flex align-items-center">
-        <span class="fs-4 me-2">🍎</span>
+<aside th:fragment="admin-sidebar" class="admin-sidebar">
+    <div class="sidebar-header">
+        <span class="brand-icon-admin">
+            <i class="bi bi-basket2-fill"></i>
+        </span>
         <span class="text-white fw-bold">FRUIT<span class="text-warning">ADMIN</span></span>
     </div>
 
     <ul class="sidebar-menu">
         <li>
             <a th:href="@{/admin}">
-                <i class="bi bi-speedometer2"></i>
+                <i class="bi bi-grid-1x2"></i>
                 <span>Bảng điều khiển</span>
             </a>
         </li>
-        <li class="nav-heading text-uppercase small text-muted px-3 mt-3 mb-1 font-weight-bold">Bán Hàng & Sản Phẩm</li>
+        <li class="nav-heading">Bán Hàng & Sản Phẩm</li>
         <li>
             <a th:href="@{/admin/categories}">
-                <i class="bi bi-grid-3x3-gap"></i>
+                <i class="bi bi-folder2"></i>
                 <span>Danh mục hoa quả</span>
             </a>
         </li>
@@ -47,7 +49,7 @@
             </a>
         </li>
 
-        <li class="nav-heading text-uppercase small text-muted px-3 mt-3 mb-1 font-weight-bold">Kho & Hao Hụt</li>
+        <li class="nav-heading">Kho & Hao Hụt</li>
         <li>
             <a th:href="@{/admin/inventory/slips}">
                 <i class="bi bi-clipboard2-x"></i>
@@ -61,15 +63,15 @@
             </a>
         </li>
 
-        <li class="nav-heading text-uppercase small text-muted px-3 mt-3 mb-1 font-weight-bold">Báo Cáo & Thống Kê</li>
+        <li class="nav-heading">Báo Cáo & Thống Kê</li>
         <li>
             <a th:href="@{/admin/reports}">
                 <i class="bi bi-bar-chart-line"></i>
-                <span>Báo cáo doanh thu & Top bán</span>
+                <span>Báo cáo doanh thu</span>
             </a>
         </li>
 
-        <li sec:authorize="hasRole('ADMIN')" class="nav-heading text-uppercase small text-muted px-3 mt-3 mb-1 font-weight-bold">Hệ Thống</li>
+        <li sec:authorize="hasRole('ADMIN')" class="nav-heading">Hệ Thống</li>
         <li sec:authorize="hasRole('ADMIN')">
             <a th:href="@{/admin/users}">
                 <i class="bi bi-people"></i>
@@ -77,9 +79,9 @@
             </a>
         </li>
 
-        <li class="mt-4 pt-3 border-top border-secondary">
+        <li class="mt-4 pt-3 border-top border-secondary border-opacity-25">
             <a th:href="@{/}" target="_blank" class="text-warning">
-                <i class="bi bi-shop-window"></i>
+                <i class="bi bi-box-arrow-up-right text-warning"></i>
                 <span>Xem Cửa Hàng (FE)</span>
             </a>
         </li>
@@ -87,4 +89,3 @@
 </aside>
 </body>
 </html>
-

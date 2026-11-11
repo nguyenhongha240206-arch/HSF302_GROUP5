@@ -14,7 +14,7 @@
             </h3>
             <p class="text-muted small mb-0">Quản lý banner sự kiện hoa quả theo mùa, thiết lập vị trí hiển thị, thời hạn chạy và liên kết điều hướng</p>
         </div>
-        <a th:href="@{/admin/banners/new}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <a th:href="@{/admin/banners/new}" class="btn btn-success rounded-pill px-4 shadow-sm fw-semibold">
             <i class="bi bi-plus-lg me-1"></i>Thêm Banner Mới
         </a>
     </div>
@@ -29,7 +29,7 @@
                 </div>
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm Kiếm</button>
+                <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">Tìm Kiếm</button>
                 <a th:href="@{/admin/banners}" class="btn btn-outline-secondary rounded-pill px-3">Làm Mới</a>
             </div>
         </form>
@@ -94,7 +94,7 @@
                             </form>
                         </td>
                         <td class="text-end">
-                            <a th:href="@{/admin/banners/edit/{id}(id=${b.id})}" class="btn btn-outline-primary btn-sm rounded-pill me-1" title="Chỉnh sửa">
+                            <a th:href="@{/admin/banners/edit/{id}(id=${b.id})}" class="btn btn-outline-success btn-sm rounded-pill me-1" title="Chỉnh sửa">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                             <form th:action="@{/admin/banners/{id}/delete(id=${b.id})}" method="post" class="d-inline"

@@ -16,20 +16,26 @@
     </nav>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0 text-dark"><i class="bi bi-cart3 text-success me-2"></i>Giỏ Hàng Mua Sắm</h3>
-        <a th:href="@{/custom-basket}" class="btn btn-outline-warning text-dark btn-sm rounded-pill px-3">
+        <h3 class="fw-bold mb-0 text-dark d-flex align-items-center">
+            <i class="bi bi-cart3 text-success me-2"></i>Giỏ Hàng Mua Sắm
+        </h3>
+        <a th:href="@{/custom-basket}" class="btn btn-outline-warning text-dark btn-sm px-3 shadow-none">
             <i class="bi bi-gift-fill text-danger me-1"></i>Tự thiết kế thêm giỏ quà
         </a>
     </div>
 
     <!-- Empty Cart Notification -->
-    <div th:if="${#lists.isEmpty(cart.items)}" class="card border-0 shadow-sm rounded-4 p-5 text-center">
-        <div class="display-3 text-muted mb-3"><i class="bi bi-cart-x"></i></div>
-        <h4 class="fw-bold">Giỏ hàng của bạn đang trống!</h4>
-        <p class="text-muted">Hãy chọn mua các loại hoa quả tươi ngon, giỏ quà cao cấp từ Fruit Store.</p>
-        <div class="mt-3 d-flex justify-content-center gap-2">
-            <a th:href="@{/catalog}" class="btn btn-primary rounded-pill px-4">Khám Phá Cửa Hàng</a>
-            <a th:href="@{/custom-basket}" class="btn btn-outline-success rounded-pill px-4">Tự Tạo Giỏ Quà</a>
+    <div th:if="${#lists.isEmpty(cart.items)}" class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+        <div class="empty-state">
+            <div class="empty-state-icon mx-auto">
+                <i class="bi bi-cart-x"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-2">Giỏ hàng của bạn đang trống!</h4>
+            <p class="text-muted small mb-4">Hãy chọn mua các loại hoa quả tươi ngon, giỏ quà cao cấp từ Fruit Store.</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a th:href="@{/catalog}" class="btn btn-primary px-4 btn-sm">Khám Phá Cửa Hàng</a>
+                <a th:href="@{/custom-basket}" class="btn btn-outline-success px-4 btn-sm">Tự Tạo Giỏ Quà</a>
+            </div>
         </div>
     </div>
 
@@ -37,7 +43,7 @@
     <div th:unless="${#lists.isEmpty(cart.items)}" class="row g-4">
         <!-- Cart Items Table -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
                 <div class="table-responsive">
                     <table class="table align-middle mb-0">
                         <thead class="table-light">
@@ -52,26 +58,26 @@
                         <tbody>
                             <tr th:each="item : ${cart.items}">
                                 <td class="ps-4 py-3">
-                                    <div class="d-flex">
+                                    <div class="d-flex align-items-center">
                                         <img th:src="${item.imageUrl != null ? item.imageUrl : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=150&q=80'}"
-                                             class="rounded-3 me-3" width="70" height="70" style="object-fit: cover;">
+                                             class="rounded-3 me-3 border" width="70" height="70" style="object-fit: cover;">
                                         <div>
                                             <!-- Title & Type Badge -->
                                             <div class="d-flex align-items-center gap-2 mb-1">
-                                                <span th:if="${item.customBasket}" class="badge bg-warning text-dark">
+                                                <span th:if="${item.customBasket}" class="badge bg-warning text-dark font-monospace" style="font-size: 0.7rem;">
                                                     <i class="bi bi-gift-fill text-danger me-1"></i>Giỏ Quà Tự Thiết Kế
                                                 </span>
-                                                <span th:unless="${item.customBasket}" class="badge bg-light text-dark border">
+                                                <span th:unless="${item.customBasket}" class="badge bg-light text-muted border" style="font-size: 0.7rem;">
                                                     Trái Cây Tươi
                                                 </span>
                                             </div>
 
                                             <!-- Product Name -->
                                             <a th:if="${item.productId != null}" th:href="@{/products/{id}(id=${item.productId})}"
-                                               class="fw-bold text-dark text-decoration-none" th:text="${item.productName}">Tên sản phẩm</a>
-                                            <span th:unless="${item.productId != null}" class="fw-bold text-dark" th:text="${item.productName}">Tên giỏ quà</span>
+                                               class="fw-semibold text-dark text-decoration-none" th:text="${item.productName}">Tên sản phẩm</a>
+                                            <span th:unless="${item.productId != null}" class="fw-semibold text-dark" th:text="${item.productName}">Tên giỏ quà</span>
 
-                                            <!-- Custom Basket Details Breakdown (UC-09) -->
+                                            <!-- Custom Basket Details Breakdown -->
                                             <div th:if="${item.customBasket}" class="mt-2 p-2 bg-light rounded-3 small">
                                                 <div th:if="${item.basketStyleName != null}"><strong>Kiểu dáng:</strong> <span th:text="${item.basketStyleName}"></span></div>
                                                 <div th:if="${item.ribbonColor != null}"><strong>Màu nơ:</strong> <span th:text="${item.ribbonColor}"></span></div>
@@ -91,16 +97,16 @@
                                 <td class="text-center fw-semibold text-dark" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</td>
 
                                 <td class="text-center">
-                                    <form th:action="@{/cart/update}" method="post" class="d-flex justify-content-center align-items-center">
+                                    <form th:action="@{/cart/update}" method="post" class="d-flex justify-content-center align-items-center m-0">
                                         <input type="hidden" name="itemId" th:value="${item.itemId}">
-                                        <div class="input-group input-group-sm" style="width: 110px;">
-                                            <button type="button" class="btn btn-outline-secondary px-2"
+                                        <div class="input-group input-group-sm" style="width: 108px;">
+                                            <button type="button" class="btn btn-outline-secondary px-2 border"
                                                     th:onclick="'stepQuantity(this, -1, ' + ${item.quantity} + ')'">-</button>
                                             <input type="number" name="quantity" th:value="${item.quantity}" min="1"
-                                                   th:data-original="${item.quantity}"
-                                                   class="form-control form-control-sm text-center px-1"
-                                                   onchange="handleQuantityChange(this)">
-                                            <button type="button" class="btn btn-outline-secondary px-2"
+                                                    th:data-original="${item.quantity}"
+                                                    class="form-control form-control-sm text-center px-1 border-start-0 border-end-0 fw-semibold"
+                                                    onchange="handleQuantityChange(this)">
+                                            <button type="button" class="btn btn-outline-secondary px-2 border"
                                                     th:onclick="'stepQuantity(this, 1, ' + ${item.quantity} + ')'">+</button>
                                         </div>
                                     </form>
@@ -109,9 +115,9 @@
                                 <td class="text-end fw-bold text-danger" th:text="${#numbers.formatDecimal(item.subTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</td>
 
                                 <td class="text-center pe-4">
-                                    <form th:action="@{/cart/remove}" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa món này khỏi giỏ hàng?');">
+                                    <form th:action="@{/cart/remove}" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa món này khỏi giỏ hàng?');" class="m-0">
                                         <input type="hidden" name="itemId" th:value="${item.itemId}">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm border-0 rounded-circle" title="Xóa khỏi giỏ">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm border-0 rounded-circle" style="width: 32px; height: 32px; padding: 0;" title="Xóa khỏi giỏ">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -123,20 +129,22 @@
             </div>
 
             <div class="d-flex justify-content-between align-items-center">
-                <a th:href="@{/catalog}" class="btn btn-outline-success rounded-pill px-3">
+                <a th:href="@{/catalog}" class="btn btn-outline-success px-4 btn-sm">
                     <i class="bi bi-arrow-left me-1"></i>Tiếp tục chọn thêm quả
                 </a>
             </div>
         </div>
 
-        <!-- Order Summary & Voucher Section (UC-10) -->
+        <!-- Order Summary & Voucher Section -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-                <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-receipt-cutoff text-success me-2"></i>Tóm Tắt Đơn Hàng</h5>
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <h5 class="fw-bold mb-3 text-dark d-flex align-items-center">
+                    <i class="bi bi-receipt-cutoff text-success me-2"></i>Tóm Tắt Đơn Hàng
+                </h5>
 
-                <!-- Best Voucher Recommendation (UC-15 & UC-12) -->
+                <!-- Best Voucher Recommendation -->
                 <div th:if="${bestVoucher != null && (cart.voucherCode == null || !cart.voucherCode.equalsIgnoreCase(bestVoucher.code))}"
-                     class="p-3 mb-3 bg-warning bg-opacity-10 border border-warning rounded-3">
+                     class="p-3 mb-3 border rounded-3" style="background-color: #fffbeb; border-color: #fde68a !important;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="badge bg-warning text-dark font-monospace mb-1">
@@ -147,7 +155,7 @@
                         </div>
                         <form th:action="@{/cart/voucher/apply}" method="post" class="m-0">
                             <input type="hidden" name="voucherCode" th:value="${bestVoucher.code}">
-                            <button type="submit" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
+                            <button type="submit" class="btn btn-warning btn-sm px-3 fw-bold text-dark shadow-sm">
                                 Áp Dụng
                             </button>
                         </form>
@@ -156,34 +164,38 @@
 
                 <!-- Voucher Form -->
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold"><i class="bi bi-ticket-perforated-fill text-danger me-1"></i>Mã Giảm Giá / Voucher</label>
+                    <label class="form-label small fw-semibold d-flex align-items-center">
+                        <i class="bi bi-ticket-perforated-fill text-danger me-1"></i>Mã Giảm Giá / Voucher
+                    </label>
 
                     <form th:if="${cart.voucherCode == null}" th:action="@{/cart/voucher/apply}" method="post" class="input-group">
                         <input type="text" name="voucherCode" id="inputVoucherCode" class="form-control form-control-sm text-uppercase font-monospace"
                                placeholder="Nhập mã (vd: CHAOBANMOI)" required>
-                        <button class="btn btn-dark btn-sm" type="submit">Áp Dụng</button>
+                        <button class="btn btn-dark btn-sm px-3" type="submit">Áp Dụng</button>
                     </form>
 
-                    <div th:unless="${cart.voucherCode == null}" class="d-flex justify-content-between align-items-center p-2 bg-success bg-opacity-10 border border-success rounded-3">
+                    <div th:unless="${cart.voucherCode == null}" class="d-flex justify-content-between align-items-center p-2 rounded-3 border" style="background-color: #f0fdf4; border-color: #bbf7d0 !important;">
                         <div>
                             <span class="badge bg-success font-monospace fs-6" th:text="${cart.voucherCode}">CHAOBANMOI</span>
                             <small class="text-success ms-2 fw-semibold">Đã áp dụng!</small>
                         </div>
-                        <form th:action="@{/cart/voucher/remove}" method="post">
+                        <form th:action="@{/cart/voucher/remove}" method="post" class="m-0">
                             <button type="submit" class="btn btn-sm text-danger p-0 border-0" title="Hủy mã"><i class="bi bi-x-circle-fill fs-5"></i></button>
                         </form>
                     </div>
                 </div>
 
-                <!-- Customer Wallet Vouchers (UC-15) -->
+                <!-- Customer Wallet Vouchers -->
                 <div th:if="${myWalletVouchers != null && !myWalletVouchers.empty}" class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <small class="text-success fw-bold"><i class="bi bi-wallet2 me-1"></i>Ví Voucher Của Bạn:</small>
+                        <small class="text-success fw-bold d-flex align-items-center">
+                            <i class="bi bi-wallet2 me-1"></i>Ví Voucher Của Bạn:
+                        </small>
                         <a th:href="@{/account/vouchers}" class="small text-decoration-none">Xem ví</a>
                     </div>
                     <div class="d-flex flex-column gap-2">
                         <div th:each="uv : ${myWalletVouchers}"
-                             class="p-2 border rounded-3 bg-white d-flex justify-content-between align-items-center shadow-xs">
+                             class="p-2 border rounded-3 bg-white d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="badge bg-success font-monospace" th:text="${uv.voucher.code}">CODE</span>
                                 <span class="small fw-semibold ms-1" th:text="'Giảm ' + ${uv.voucher.discountPercent} + '%'">Giảm 10%</span>
@@ -192,7 +204,7 @@
                             </div>
                             <form th:action="@{/cart/voucher/apply}" method="post" class="m-0">
                                 <input type="hidden" name="voucherCode" th:value="${uv.voucher.code}">
-                                <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2 rounded-pill" style="font-size: 0.75rem;"
+                                <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2" style="font-size: 0.75rem;"
                                         th:disabled="${cart.voucherCode != null && cart.voucherCode.equalsIgnoreCase(uv.voucher.code)}">
                                     <span th:text="${cart.voucherCode != null && cart.voucherCode.equalsIgnoreCase(uv.voucher.code) ? 'Đang dùng' : 'Dùng ngay'}">Dùng</span>
                                 </button>
@@ -218,7 +230,7 @@
                             </div>
                             <form th:action="@{/cart/voucher/apply}" method="post" class="m-0">
                                 <input type="hidden" name="voucherCode" th:value="${v.code}">
-                                <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2 rounded-pill" style="font-size: 0.75rem;"
+                                <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2" style="font-size: 0.75rem;"
                                         th:disabled="${cart.voucherCode != null && cart.voucherCode.equalsIgnoreCase(v.code)}">
                                     <span th:text="${cart.voucherCode != null && cart.voucherCode.equalsIgnoreCase(v.code) ? 'Đang dùng' : 'Dùng'}">Dùng</span>
                                 </button>
@@ -227,11 +239,11 @@
                     </div>
                 </div>
 
-                <hr>
+                <hr class="my-3 opacity-25">
 
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">Tổng tiền hàng:</span>
-                    <span class="fw-semibold" th:text="${#numbers.formatDecimal(cart.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
+                    <span class="fw-semibold text-dark" th:text="${#numbers.formatDecimal(cart.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
                 </div>
 
                 <div class="d-flex justify-content-between mb-2" th:if="${cart.discountAmount > 0}">
@@ -244,15 +256,15 @@
                     <span class="text-success fw-semibold">Miễn phí giao hàng</span>
                 </div>
 
-                <hr>
+                <hr class="my-3 opacity-25">
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <span class="h5 fw-bold mb-0">Tổng Thanh Toán:</span>
+                    <span class="h5 fw-bold mb-0 text-dark">Tổng Thanh Toán:</span>
                     <span class="h3 fw-bold text-danger mb-0" th:text="${#numbers.formatDecimal(cart.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
                 </div>
 
                 <div class="d-grid">
-                    <a th:href="@{/checkout}" class="btn btn-primary btn-lg rounded-pill fw-semibold shadow-sm">
+                    <a th:href="@{/checkout}" class="btn btn-primary btn-lg fw-semibold shadow-sm">
                         <i class="bi bi-credit-card me-2"></i>Tiến Hành Đặt Hàng (Checkout)
                     </a>
                 </div>

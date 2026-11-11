@@ -13,10 +13,12 @@
 <div layout:fragment="content" class="py-4 w-100">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
                 <div class="text-center mb-4">
-                    <span class="fs-1">📩</span>
-                    <h3 class="fw-bold mt-2">Nhập Mã OTP</h3>
+                    <span class="brand-icon mx-auto mb-3" style="width: 52px; height: 52px; font-size: 1.75rem;">
+                        <i class="bi bi-envelope-check-fill"></i>
+                    </span>
+                    <h3 class="fw-bold text-dark">Nhập Mã OTP</h3>
                     <p class="text-muted small">
                         Mã xác thực gồm 6 số đã được gửi đến: <br>
                         <strong class="text-dark" th:text="${verifyOtpDto.email}">email@example.com</strong>

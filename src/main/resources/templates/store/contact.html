@@ -7,62 +7,64 @@
 </head>
 <body>
 <div layout:fragment="content" class="py-4">
-    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
-        <div class="row g-4">
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        <div class="row g-4 align-items-center">
             <div class="col-md-6">
-                <span class="badge bg-success mb-2 px-3 py-2">Liên Hệ</span>
-                <h2 class="fw-bold mb-3">Kết Nối Với Chúng Tôi</h2>
-                <p class="text-muted">Quý khách hàng hoặc quý doanh nghiệp có nhu cầu đặt giỏ quà tặng số lượng lớn hoặc tư vấn hoa quả xin vui lòng liên hệ:</p>
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill mb-3 px-3 py-1 fw-semibold">Liên Hệ</span>
+                <h2 class="fw-bold mb-3 text-dark">Kết Nối Với Chúng Tôi</h2>
+                <p class="text-muted lh-base">Quý khách hàng hoặc quý doanh nghiệp có nhu cầu đặt giỏ quà tặng số lượng lớn hoặc tư vấn hoa quả xin vui lòng liên hệ:</p>
 
                 <div class="mt-4">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="btn btn-light rounded-circle text-success me-3"><i class="bi bi-geo-alt-fill fs-5"></i></div>
+                        <div class="brand-icon me-3" style="width: 44px; height: 44px; font-size: 1.25rem;"><i class="bi bi-geo-alt-fill"></i></div>
                         <div>
-                            <strong>Địa chỉ:</strong>
-                            <div class="text-muted">Khu Công Nghệ Cao Hòa Lạc, Thạch Thất, TP. Hà Nội</div>
+                            <strong class="text-dark">Địa chỉ:</strong>
+                            <div class="text-muted small">Khu Công Nghệ Cao Hòa Lạc, Thạch Thất, TP. Hà Nội</div>
                         </div>
                     </div>
                     <div class="d-flex align-items-center mb-3">
-                        <div class="btn btn-light rounded-circle text-success me-3"><i class="bi bi-telephone-fill fs-5"></i></div>
+                        <div class="brand-icon me-3" style="width: 44px; height: 44px; font-size: 1.25rem;"><i class="bi bi-telephone-fill"></i></div>
                         <div>
-                            <strong>Hotline tư vấn & đặt hàng:</strong>
-                            <div class="text-muted">1900 6868 - 0988 111 222 (24/7)</div>
+                            <strong class="text-dark">Hotline tư vấn & đặt hàng:</strong>
+                            <div class="text-muted small">1900 6868 - 0988 111 222 (24/7)</div>
                         </div>
                     </div>
                     <div class="d-flex align-items-center mb-3">
-                        <div class="btn btn-light rounded-circle text-success me-3"><i class="bi bi-envelope-fill fs-5"></i></div>
+                        <div class="brand-icon me-3" style="width: 44px; height: 44px; font-size: 1.25rem;"><i class="bi bi-envelope-fill"></i></div>
                         <div>
-                            <strong>Email hỗ trợ:</strong>
-                            <div class="text-muted">contact@fruitstore.com</div>
+                            <strong class="text-dark">Email hỗ trợ:</strong>
+                            <div class="text-muted small">contact@fruitstore.com</div>
                         </div>
                     </div>
                     <div class="d-flex align-items-center">
-                        <div class="btn btn-light rounded-circle text-success me-3"><i class="bi bi-clock-fill fs-5"></i></div>
+                        <div class="brand-icon me-3" style="width: 44px; height: 44px; font-size: 1.25rem;"><i class="bi bi-clock-fill"></i></div>
                         <div>
-                            <strong>Giờ mở cửa cửa hàng:</strong>
-                            <div class="text-muted">07:00 - 22:00 (Tất cả các ngày trong tuần)</div>
+                            <strong class="text-dark">Giờ mở cửa cửa hàng:</strong>
+                            <div class="text-muted small">07:00 - 22:00 (Tất cả các ngày trong tuần)</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-6">
-                <div class="p-4 bg-light rounded-4">
-                    <h5 class="fw-bold mb-3">Gửi Thắc Mắc & Góp Ý</h5>
+                <div class="p-4 bg-light rounded-4 border border-light-subtle">
+                    <h5 class="fw-bold mb-3 text-dark">Gửi Thắc Mắc & Góp Ý</h5>
                     <form onsubmit="alert('Cảm ơn bạn đã gửi liên hệ! Chúng tôi sẽ phản hồi trong vòng 30 phút.'); return false;">
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">Họ và tên</label>
-                            <input type="text" class="form-control" placeholder="Nguyễn Văn A" required>
+                            <input type="text" class="form-control rounded-3" placeholder="Nguyễn Văn A" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">Email hoặc Số điện thoại</label>
-                            <input type="text" class="form-control" placeholder="09xxxxxxxx" required>
+                            <input type="text" class="form-control rounded-3" placeholder="09xxxxxxxx" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">Nội dung tin nhắn</label>
-                            <textarea class="form-control" rows="4" placeholder="Nhập câu hỏi hoặc yêu cầu đặt quà của bạn..." required></textarea>
+                            <textarea class="form-control rounded-3" rows="4" placeholder="Nhập câu hỏi hoặc yêu cầu đặt quà của bạn..." required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary rounded-pill px-4">Gửi Tin Nhắn</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-send-fill me-1"></i>Gửi Tin Nhắn
+                        </button>
                     </form>
                 </div>
             </div>

@@ -21,7 +21,7 @@
                 <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo tên hoặc email...">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm Kiếm</button>
+                <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">Tìm Kiếm</button>
                 <a th:href="@{/admin/users}" class="btn btn-outline-secondary rounded-pill px-3">Làm Mới</a>
             </div>
         </form>
@@ -66,7 +66,7 @@
                         </td>
                         <td class="text-center">
                             <div class="d-inline-flex align-items-center justify-content-center gap-1 flex-nowrap">
-                                <a th:href="@{/admin/users/{id}/orders(id=${u.id})}" class="btn btn-outline-primary btn-sm rounded-pill text-nowrap">
+                                <a th:href="@{/admin/users/{id}/orders(id=${u.id})}" class="btn btn-outline-success btn-sm rounded-pill text-nowrap">
                                     Lịch sử
                                 </a>
                                 <th:block th:if="${u.email != currentUserEmail}">

@@ -34,7 +34,7 @@
                 <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo mã phiếu hoặc ghi chú...">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm Kiếm</button>
+                <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">Tìm Kiếm</button>
                 <a th:href="@{/admin/inventory/slips}" class="btn btn-outline-secondary rounded-pill px-3">Làm Mới</a>
             </div>
         </form>
@@ -73,7 +73,7 @@
                             <span class="badge bg-light text-secondary border" th:text="${s.createdBy != null ? s.createdBy : 'SYSTEM'}">admin</span>
                         </td>
                         <td class="text-end">
-                            <a th:href="@{/admin/inventory/slips/{id}(id=${s.id})}" class="btn btn-outline-primary btn-sm rounded-pill me-1">
+                            <a th:href="@{/admin/inventory/slips/{id}(id=${s.id})}" class="btn btn-outline-success btn-sm rounded-pill me-1">
                                 <i class="bi bi-eye"></i>
                             </a>
                             <form th:action="@{/admin/inventory/slips/{id}/delete(id=${s.id})}" method="post" class="d-inline"

@@ -5,45 +5,9 @@
       layout:decorate="~{layouts/main-layout}">
 <head>
     <title>Ưu Đãi & Khuyến Mãi - Fruit Store</title>
-    <style>
-        .voucher-ticket {
-            position: relative;
-            background: #ffffff;
-            border: 2px dashed #2e7d32;
-            border-radius: 16px;
-            overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .voucher-ticket:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(46, 125, 50, 0.15);
-        }
-        .ticket-left {
-            background: linear-gradient(135deg, #1b5e20, #2e7d32);
-            color: #fff;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-width: 140px;
-        }
-        .ticket-right {
-            padding: 18px 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            flex-grow: 1;
-        }
-        .carousel-banner-img {
-            height: 380px;
-            object-fit: cover;
-            border-radius: 20px;
-        }
-    </style>
 </head>
 <body>
-<div layout:fragment="content" class="py-3">
+<div layout:fragment="content" class="py-2">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
@@ -52,7 +16,7 @@
         </ol>
     </nav>
 
-    <!-- Promotional Banners Slider / Header (UC-14 & UC-15) -->
+    <!-- Promotional Banners Slider / Header -->
     <div th:if="${not #lists.isEmpty(banners)}" class="mb-5">
         <div id="promoCarousel" class="carousel slide shadow-sm rounded-4 overflow-hidden" data-bs-ride="carousel">
             <div class="carousel-indicators">
@@ -63,39 +27,38 @@
             <div class="carousel-inner">
                 <div th:each="b, iterStat : ${banners}" class="carousel-item" th:classappend="${iterStat.first} ? 'active'" data-bs-interval="4500">
                     <a th:href="${b.targetUrl != null ? b.targetUrl : '/catalog'}">
-                        <img th:src="${b.imageUrl}" class="d-block w-100 carousel-banner-img" th:alt="${b.title}">
+                        <img th:src="${b.imageUrl}" class="d-block w-100" style="height: 380px; object-fit: cover;" th:alt="${b.title}">
                     </a>
-                    <div class="carousel-caption d-none d-md-block text-start bg-dark bg-opacity-50 p-4 rounded-4" style="bottom: 30px; left: 40px; max-width: 600px;">
-                        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill mb-2">Sự Kiện Đặc Biệt</span>
+                    <div class="carousel-caption d-none d-md-block text-start p-4 rounded-4"
+                         style="bottom: 30px; left: 40px; max-width: 600px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px);">
+                        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill mb-2 fw-semibold">Sự Kiện Đặc Biệt</span>
                         <h3 class="fw-bold text-white mb-2" th:text="${b.title}">Tiêu đề banner</h3>
-                        <p class="text-light mb-3" th:text="${b.subtitle}">Phụ đề banner</p>
-                        <a th:href="${b.targetUrl != null ? b.targetUrl : '/catalog'}" class="btn btn-success rounded-pill px-4 shadow">
+                        <p class="text-light mb-3 opacity-90" th:text="${b.subtitle}">Phụ đề banner</p>
+                        <a th:href="${b.targetUrl != null ? b.targetUrl : '/catalog'}" class="btn btn-success px-4 btn-sm shadow">
                             Khám Phá Ngay <i class="bi bi-arrow-right ms-1"></i>
                         </a>
                     </div>
                 </div>
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#promoCarousel" data-bs-slide="prev">
+            <button class="carousel-control-prev" type="button" data-bs-target="#promoCarousel" data-bs-slide="prev" aria-label="Trước">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Trước</span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#promoCarousel" data-bs-slide="next">
+            <button class="carousel-control-next" type="button" data-bs-target="#promoCarousel" data-bs-slide="next" aria-label="Sau">
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Sau</span>
             </button>
         </div>
     </div>
 
-    <!-- Voucher Collection Hub (UC-15) -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- Voucher Collection Hub -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-            <h3 class="fw-bold text-dark mb-1">
+            <h3 class="fw-bold text-dark mb-1 d-flex align-items-center">
                 <i class="bi bi-ticket-perforated-fill text-danger me-2"></i>Kho Mã Giảm Giá & Thu Thập Voucher
             </h3>
             <p class="text-muted small mb-0">Bấm <strong>"Thu thập"</strong> để lưu voucher vào Ví cá nhân. Hệ thống sẽ tự động đề xuất voucher tốt nhất khi bạn thanh toán!</p>
         </div>
         <div sec:authorize="isAuthenticated()">
-            <a th:href="@{/account/vouchers}" class="btn btn-outline-success rounded-pill px-4 fw-semibold">
+            <a th:href="@{/account/vouchers}" class="btn btn-outline-success px-4 fw-semibold btn-sm">
                 <i class="bi bi-wallet2 me-2"></i>Ví Voucher Của Tôi
             </a>
         </div>
@@ -116,63 +79,71 @@
     <!-- Vouchers List -->
     <div class="row g-4 mb-5">
         <div th:if="${#lists.isEmpty(vouchers)}" class="col-12 text-center py-5">
-            <i class="bi bi-ticket-detailed fs-1 text-muted d-block mb-3"></i>
-            <h5 class="text-muted">Hiện tại chưa có mã giảm giá mới. Hãy quay lại sau nhé!</h5>
+            <div class="empty-state">
+                <div class="empty-state-icon mx-auto">
+                    <i class="bi bi-ticket-detailed"></i>
+                </div>
+                <h5 class="text-dark fw-bold mt-2">Hiện tại chưa có mã giảm giá mới</h5>
+                <p class="text-muted small">Hãy quay lại sau hoặc theo dõi fanpage để cập nhật các ưu đãi mới nhất!</p>
+            </div>
         </div>
 
         <div th:each="v : ${vouchers}" class="col-lg-6">
-            <div class="voucher-ticket d-flex shadow-sm">
-                <!-- Left Ticket Stub -->
-                <div class="ticket-left text-center">
-                    <span class="badge bg-warning text-dark font-monospace mb-2">ƯU ĐÃI</span>
-                    <span class="display-6 fw-bold" th:text="${v.discountPercent} + '%'">10%</span>
-                    <small class="text-white-50 mt-1">GIẢM GIÁ</small>
-                </div>
-
-                <!-- Right Ticket Details -->
-                <div class="ticket-right">
-                    <div>
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <h5 class="fw-bold text-dark mb-0" th:text="${v.name}">Tên Voucher</h5>
-                            <span class="badge bg-dark font-monospace fs-6 px-2 py-1" th:text="${v.code}">CHAOBANMOI</span>
-                        </div>
-
-                        <div class="small text-muted mb-2">
-                            <span>Đơn tối thiểu: </span>
-                            <strong class="text-dark" th:text="${v.minOrderAmount != null ? #numbers.formatDecimal(v.minOrderAmount, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}">0 đ</strong>
-                            <span th:if="${v.maxDiscountAmount != null}" class="ms-2">
-                                (Tối đa: <strong class="text-danger" th:text="${#numbers.formatDecimal(v.maxDiscountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>)
-                            </span>
-                        </div>
-
-                        <div class="small text-muted mb-3">
-                            <i class="bi bi-clock me-1"></i>Hạn dùng:
-                            <span class="text-dark fw-semibold" th:text="${#temporals.format(v.endDate, 'dd/MM/yyyy')}"></span>
-                            <span class="badge bg-light text-secondary border ms-2" th:text="'Còn: ' + (${v.usageLimit} - ${v.usedCount}) + ' lượt'"></span>
-                        </div>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 bg-white">
+                <div class="row g-0 h-100">
+                    <!-- Left Ticket Stub -->
+                    <div class="col-4 d-flex flex-column justify-content-center align-items-center text-center p-3 text-white"
+                         style="background: linear-gradient(135deg, #15803d, #198754); border-right: 2px dashed #bbf7d0;">
+                        <span class="badge bg-warning text-dark font-monospace mb-2" style="font-size: 0.65rem;">ƯU ĐÃI</span>
+                        <div class="display-6 fw-bold" th:text="${v.discountPercent} + '%'">10%</div>
+                        <small class="text-white-50 mt-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">GIẢM GIÁ</small>
                     </div>
 
-                    <!-- Action Button: Thu thập / Đã thu thập / Dùng ngay -->
-                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                        <small class="text-success"><i class="bi bi-shield-check me-1"></i>Chính hãng Fruit Store</small>
+                    <!-- Right Ticket Details -->
+                    <div class="col-8 p-3 p-md-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold text-dark mb-0" th:text="${v.name}">Tên Voucher</h6>
+                                <span class="badge bg-dark font-monospace fs-6 px-2 py-1" th:text="${v.code}">CHAOBANMOI</span>
+                            </div>
 
-                        <!-- If already collected -->
-                        <div th:if="${#lists.contains(collectedVoucherIds, v.id)}">
-                            <span class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3 rounded-pill">
-                                <i class="bi bi-check2-circle me-1"></i>Đã Trong Ví
-                            </span>
-                            <a th:href="@{/cart}" class="btn btn-outline-success btn-sm rounded-pill ms-2 px-3">
-                                Dùng ngay
-                            </a>
+                            <div class="small text-muted mb-1">
+                                <span>Đơn tối thiểu: </span>
+                                <strong class="text-dark" th:text="${v.minOrderAmount != null ? #numbers.formatDecimal(v.minOrderAmount, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}">0 đ</strong>
+                                <span th:if="${v.maxDiscountAmount != null}" class="ms-1">
+                                    (Tối đa: <strong class="text-danger" th:text="${#numbers.formatDecimal(v.maxDiscountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>)
+                                </span>
+                            </div>
+
+                            <div class="small text-muted mb-3">
+                                <i class="bi bi-clock me-1"></i>Hạn dùng:
+                                <span class="text-dark fw-semibold" th:text="${#temporals.format(v.endDate, 'dd/MM/yyyy')}"></span>
+                                <span class="badge bg-light text-secondary border ms-2" th:text="'Còn: ' + (${v.usageLimit} - ${v.usedCount}) + ' lượt'"></span>
+                            </div>
                         </div>
 
-                        <!-- If NOT yet collected -->
-                        <div th:unless="${#lists.contains(collectedVoucherIds, v.id)}">
-                            <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm btn-collect-voucher"
-                                    th:data-voucher-id="${v.id}"
-                                    th:data-voucher-code="${v.code}">
-                                <i class="bi bi-plus-circle me-1"></i>Thu Thập Voucher
-                            </button>
+                        <!-- Action Button: Thu thập / Đã thu thập / Dùng ngay -->
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <small class="text-success"><i class="bi bi-shield-check me-1"></i>Chính hãng Fruit Store</small>
+
+                            <!-- If already collected -->
+                            <div th:if="${#lists.contains(collectedVoucherIds, v.id)}" class="d-flex align-items-center">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3 rounded-pill">
+                                    <i class="bi bi-check2-circle me-1"></i>Đã Trong Ví
+                                </span>
+                                <a th:href="@{/cart}" class="btn btn-outline-success btn-sm ms-2 px-3">
+                                    Dùng ngay
+                                </a>
+                            </div>
+
+                            <!-- If NOT yet collected -->
+                            <div th:unless="${#lists.contains(collectedVoucherIds, v.id)}">
+                                <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm btn-collect-voucher"
+                                        th:data-voucher-id="${v.id}"
+                                        th:data-voucher-code="${v.code}">
+                                    <i class="bi bi-plus-circle me-1"></i>Thu Thập Voucher
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -181,14 +152,14 @@
     </div>
 
     <!-- Quick Call to Action -->
-    <div class="card border-0 rounded-4 p-4 text-center text-white" style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);">
+    <div class="card border-0 rounded-4 p-4 p-md-5 text-center text-white" style="background: linear-gradient(135deg, #15803d 0%, #0f5132 100%);">
         <h4 class="fw-bold mb-2">Hoa Quả Tươi Sạch - Giao Siêu Tốc 2 Giờ</h4>
-        <p class="text-light mb-3">Lựa chọn hoa quả nhập khẩu thượng hạng hoặc tự tay thiết kế giỏ quà gửi tặng người thân ngay hôm nay!</p>
+        <p class="text-light mb-4 opacity-90">Lựa chọn hoa quả nhập khẩu thượng hạng hoặc tự tay thiết kế giỏ quà gửi tặng người thân ngay hôm nay!</p>
         <div class="d-flex justify-content-center gap-3">
-            <a th:href="@{/catalog}" class="btn btn-light rounded-pill px-4 fw-semibold text-success shadow-sm">
+            <a th:href="@{/catalog}" class="btn btn-light px-4 fw-semibold text-success shadow-sm">
                 <i class="bi bi-bag-plus me-1"></i>Mua Sắm Ngay
             </a>
-            <a th:href="@{/custom-basket}" class="btn btn-outline-light rounded-pill px-4 fw-semibold">
+            <a th:href="@{/custom-basket}" class="btn btn-outline-light px-4 fw-semibold">
                 <i class="bi bi-gift-fill me-1"></i>Tự Tạo Giỏ Quà
             </a>
         </div>
@@ -204,7 +175,6 @@
         const toastMessage = document.getElementById('toastMessage');
         const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
 
-        // Get CSRF token from meta tags if available
         const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
 
@@ -238,12 +208,11 @@
                         toastMessage.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>' + body.message;
                         toast.show();
 
-                        // Replace button with "Đã trong ví" + "Dùng ngay"
                         this.parentElement.innerHTML = `
                             <span class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3 rounded-pill">
                                 <i class="bi bi-check2-circle me-1"></i>Đã Trong Ví
                             </span>
-                            <a href="/cart" class="btn btn-outline-success btn-sm rounded-pill ms-2 px-3">
+                            <a href="/cart" class="btn btn-outline-success btn-sm ms-2 px-3">
                                 Dùng ngay
                             </a>
                         `;
@@ -275,4 +244,3 @@
 </th:block>
 </body>
 </html>
-

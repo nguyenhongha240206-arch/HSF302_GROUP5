@@ -19,7 +19,7 @@
                     <i class="bi bi-clock-history me-1"></i>Quét Voucher Hết Hạn
                 </button>
             </form>
-            <a th:href="@{/admin/vouchers/new}" class="btn btn-primary rounded-pill px-4 shadow-xs">
+            <a th:href="@{/admin/vouchers/new}" class="btn btn-success rounded-pill px-4 shadow-sm fw-semibold">
                 <i class="bi bi-plus-lg me-1"></i>Thêm Voucher
             </a>
         </div>
@@ -32,7 +32,7 @@
                 <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo mã hoặc tên voucher...">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm Kiếm</button>
+                <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">Tìm Kiếm</button>
                 <a th:href="@{/admin/vouchers}" class="btn btn-outline-secondary rounded-pill px-3">Làm Mới</a>
             </div>
         </form>
@@ -83,7 +83,7 @@
                             </form>
                         </td>
                         <td class="text-end">
-                            <a th:href="@{/admin/vouchers/edit/{id}(id=${v.id})}" class="btn btn-outline-primary btn-sm rounded-pill me-1">
+                            <a th:href="@{/admin/vouchers/edit/{id}(id=${v.id})}" class="btn btn-outline-success btn-sm rounded-pill me-1" title="Chỉnh sửa">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                             <form th:action="@{/admin/vouchers/delete/{id}(id=${v.id})}" method="post" class="d-inline"
