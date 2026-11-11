@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 <head>
-    <title>Ví Voucher Của Tôi - Fruit Store (UC-15)</title>
+    <title>Ví Voucher Của Tôi - Fruit Store</title>
     <style>
         .wallet-card {
             border: 1px solid #e0e0e0;
@@ -17,9 +17,14 @@
             transform: translateY(-2px);
         }
         .wallet-card.used {
-            border-left-color: #9e9e9e;
+            border-left-color: #6c757d;
+            opacity: 0.85;
+            background: #f8f9fa;
+        }
+        .wallet-card.expired {
+            border-left-color: #dc3545;
             opacity: 0.75;
-            background: #fafafa;
+            background: #fff5f5;
         }
     </style>
 </head>
@@ -30,7 +35,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/}" class="text-success text-decoration-none">Trang chủ</a></li>
             <li class="breadcrumb-item"><a th:href="@{/profile}" class="text-success text-decoration-none">Tài khoản</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Ví Voucher Cá Nhân (UC-15)</li>
+            <li class="breadcrumb-item active" aria-current="page">Ví Voucher Cá Nhân</li>
         </ol>
     </nav>
 
@@ -47,7 +52,7 @@
         </a>
     </div>
 
-    <!-- Navigation Tabs -->
+    <!-- Navigation Tabs (Tách riêng: Sẵn sàng sử dụng | Đã sử dụng | Đã hết hạn) -->
     <ul class="nav nav-pills mb-4 gap-2" id="voucherTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active rounded-pill px-4 fw-semibold" id="available-tab" data-bs-toggle="pill" data-bs-target="#available-pane" type="button" role="tab">
@@ -57,15 +62,21 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill px-4 fw-semibold text-muted" id="used-tab" data-bs-toggle="pill" data-bs-target="#used-pane" type="button" role="tab">
-                <i class="bi bi-clock-history me-1"></i>Đã Dùng / Hết Hạn
-                <span class="badge bg-secondary ms-1" th:text="${usedOrExpiredVouchers.size()}">0</span>
+                <i class="bi bi-bag-check-fill me-1"></i>Đã Sử Dụng
+                <span class="badge bg-secondary ms-1" th:text="${usedVouchers.size()}">0</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 fw-semibold text-muted" id="expired-tab" data-bs-toggle="pill" data-bs-target="#expired-pane" type="button" role="tab">
+                <i class="bi bi-clock-history me-1"></i>Đã Hết Hạn
+                <span class="badge bg-danger ms-1" th:text="${expiredVouchers.size()}">0</span>
             </button>
         </li>
     </ul>
 
     <!-- Tabs Content -->
     <div class="tab-content" id="voucherTabContent">
-        <!-- Tab 1: Available Vouchers -->
+        <!-- Tab 1: Sẵn Sàng Sử Dụng -->
         <div class="tab-pane fade show active" id="available-pane" role="tabpanel">
             <div th:if="${#lists.isEmpty(availableVouchers)}" class="card border-0 shadow-sm rounded-4 p-5 text-center">
                 <div class="display-4 text-muted mb-3"><i class="bi bi-ticket-perforated"></i></div>
@@ -106,23 +117,50 @@
             </div>
         </div>
 
-        <!-- Tab 2: Used or Expired Vouchers -->
+        <!-- Tab 2: Đã Sử Dụng (Tách riêng) -->
         <div class="tab-pane fade" id="used-pane" role="tabpanel">
-            <div th:if="${#lists.isEmpty(usedOrExpiredVouchers)}" class="text-center py-5 text-muted">
-                <i class="bi bi-check2-all fs-1 d-block mb-2"></i>Chưa có voucher nào trong lịch sử
+            <div th:if="${#lists.isEmpty(usedVouchers)}" class="text-center py-5 text-muted">
+                <i class="bi bi-bag-check fs-1 d-block mb-2"></i>Bạn chưa sử dụng mã voucher nào
             </div>
 
-            <div class="row g-3" th:unless="${#lists.isEmpty(usedOrExpiredVouchers)}">
-                <div class="col-md-6" th:each="uv : ${usedOrExpiredVouchers}">
+            <div class="row g-3" th:unless="${#lists.isEmpty(usedVouchers)}">
+                <div class="col-md-6" th:each="uv : ${usedVouchers}">
                     <div class="wallet-card used p-4 h-100">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="badge bg-secondary font-monospace fs-6 px-3 py-2" th:text="${uv.voucher.code}">CODE</span>
-                            <span th:if="${uv.isUsed}" class="badge bg-dark">Đã sử dụng</span>
-                            <span th:unless="${uv.isUsed}" class="badge bg-warning text-dark">Hết hạn</span>
+                            <span class="badge bg-dark"><i class="bi bi-check2-circle me-1"></i>Đã sử dụng</span>
                         </div>
                         <h6 class="fw-bold text-secondary mb-1" th:text="${uv.voucher.name}">Tên ưu đãi</h6>
-                        <div class="small text-muted mb-2" th:if="${uv.usedAt != null}">
-                            Thời gian sử dụng: <span th:text="${#temporals.format(uv.usedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        <div class="small text-muted mb-2">
+                            Mức giảm: <strong th:text="'-' + ${uv.voucher.discountPercent} + '%'"></strong>
+                        </div>
+                        <div class="small text-muted pt-2 border-top" th:if="${uv.usedAt != null}">
+                            <i class="bi bi-clock me-1"></i>Thời gian sử dụng: <span class="fw-semibold" th:text="${#temporals.format(uv.usedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Đã Hết Hạn (Tách riêng) -->
+        <div class="tab-pane fade" id="expired-pane" role="tabpanel">
+            <div th:if="${#lists.isEmpty(expiredVouchers)}" class="text-center py-5 text-muted">
+                <i class="bi bi-shield-check fs-1 d-block mb-2 text-success"></i>Không có voucher nào bị hết hạn trong ví
+            </div>
+
+            <div class="row g-3" th:unless="${#lists.isEmpty(expiredVouchers)}">
+                <div class="col-md-6" th:each="uv : ${expiredVouchers}">
+                    <div class="wallet-card expired p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-danger-subtle text-danger font-monospace fs-6 px-3 py-2 border border-danger-subtle" th:text="${uv.voucher.code}">CODE</span>
+                            <span class="badge bg-danger"><i class="bi bi-exclamation-circle me-1"></i>Hết hạn</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1" th:text="${uv.voucher.name}">Tên ưu đãi</h6>
+                        <div class="small text-muted mb-2">
+                            Đã kết thúc vào ngày: <strong class="text-danger" th:text="${#temporals.format(uv.voucher.endDate, 'dd/MM/yyyy')}"></strong>
+                        </div>
+                        <div class="small text-muted pt-2 border-top">
+                            <i class="bi bi-info-circle me-1"></i>Mã khuyến mãi này không còn khả dụng trên hệ thống.
                         </div>
                     </div>
                 </div>
@@ -132,4 +170,3 @@
 </div>
 </body>
 </html>
-

@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 <head>
-    <title>Giỏ Hàng Mua Sắm (UC-11 & UC-12)</title>
+    <title>Giỏ Hàng Mua Sắm - Fruit Store</title>
 </head>
 <body>
 <div layout:fragment="content" class="py-2">
@@ -93,9 +93,15 @@
                                 <td class="text-center">
                                     <form th:action="@{/cart/update}" method="post" class="d-flex justify-content-center align-items-center">
                                         <input type="hidden" name="itemId" th:value="${item.itemId}">
-                                        <div class="input-group input-group-sm" style="width: 100px;">
+                                        <div class="input-group input-group-sm" style="width: 110px;">
+                                            <button type="button" class="btn btn-outline-secondary px-2"
+                                                    th:onclick="'stepQuantity(this, -1, ' + ${item.quantity} + ')'">-</button>
                                             <input type="number" name="quantity" th:value="${item.quantity}" min="1"
-                                                   class="form-control form-control-sm text-center" onchange="this.form.submit()">
+                                                   th:data-original="${item.quantity}"
+                                                   class="form-control form-control-sm text-center px-1"
+                                                   onchange="handleQuantityChange(this)">
+                                            <button type="button" class="btn btn-outline-secondary px-2"
+                                                    th:onclick="'stepQuantity(this, 1, ' + ${item.quantity} + ')'">+</button>
                                         </div>
                                     </form>
                                 </td>
@@ -134,7 +140,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="badge bg-warning text-dark font-monospace mb-1">
-                                <i class="bi bi-stars me-1"></i>Đề xuất tiết kiệm nhất (UC-15)
+                                <i class="bi bi-stars me-1"></i>Đề xuất tiết kiệm nhất
                             </span>
                             <div class="fw-bold text-dark small" th:text="${bestVoucher.name}">Tên voucher</div>
                             <div class="text-success fw-bold small" th:text="'Giảm ngay: -' + ${#numbers.formatDecimal(bestDiscountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
@@ -148,9 +154,9 @@
                     </div>
                 </div>
 
-                <!-- Voucher Form (UC-12) -->
+                <!-- Voucher Form -->
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold"><i class="bi bi-ticket-perforated-fill text-danger me-1"></i>Mã Giảm Giá / Voucher (UC-12)</label>
+                    <label class="form-label small fw-semibold"><i class="bi bi-ticket-perforated-fill text-danger me-1"></i>Mã Giảm Giá / Voucher</label>
 
                     <form th:if="${cart.voucherCode == null}" th:action="@{/cart/voucher/apply}" method="post" class="input-group">
                         <input type="text" name="voucherCode" id="inputVoucherCode" class="form-control form-control-sm text-uppercase font-monospace"
@@ -253,6 +259,38 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function handleQuantityChange(input) {
+            var val = parseInt(input.value, 10);
+            var original = parseInt(input.getAttribute('data-original'), 10) || 1;
+            if (isNaN(val) || val <= 0) {
+                if (confirm('Bạn có chắc muốn xóa món này khỏi giỏ hàng?')) {
+                    input.value = 0;
+                    input.form.submit();
+                } else {
+                    input.value = original;
+                }
+            } else {
+                input.form.submit();
+            }
+        }
+
+        function stepQuantity(btn, delta, original) {
+            var input = btn.closest('.input-group').querySelector('input[name="quantity"]');
+            var current = parseInt(input.value, 10) || 0;
+            var nextVal = current + delta;
+            if (nextVal <= 0) {
+                if (confirm('Bạn có chắc muốn xóa món này khỏi giỏ hàng?')) {
+                    input.value = 0;
+                    input.form.submit();
+                }
+                return;
+            }
+            input.value = nextVal;
+            input.form.submit();
+        }
+    </script>
 </div>
 </body>
 </html>

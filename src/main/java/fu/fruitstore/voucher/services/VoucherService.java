@@ -17,6 +17,8 @@ public interface VoucherService {
     Voucher create(VoucherDto dto);
     Voucher update(Long id, VoucherDto dto);
     void delete(Long id);
+    void toggleActive(Long id);
+    boolean existsByCode(String code, Long excludeId);
     void incrementUsage(String code);
     void deactivateExpiredVouchers();
 }

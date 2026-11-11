@@ -27,8 +27,7 @@ public interface BannerRepository extends JpaRepository<Banner, Long> {
 
     @Query("SELECT b FROM Banner b WHERE " +
            "(:keyword IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(b.subtitle) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-           "ORDER BY b.displayOrder ASC, b.id DESC")
+           "OR LOWER(b.subtitle) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Banner> searchBanners(@Param("keyword") String keyword, Pageable pageable);
 
     List<Banner> findByActiveTrueAndEndDateBefore(LocalDate date);

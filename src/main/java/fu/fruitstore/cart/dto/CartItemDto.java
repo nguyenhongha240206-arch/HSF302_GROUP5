@@ -1,5 +1,6 @@
 package fu.fruitstore.cart.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CartItemDto {
     private String itemId; // Unique identifier in cart (e.g., P_1 or BASKET_xxxx)
     private Long productId; // Null for custom basket

@@ -84,17 +84,32 @@ public class PromotionController {
     public String myVouchers(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         String email = userDetails.getUsername();
         List<UserVoucher> allVouchers = userVoucherService.getMyAllVouchers(email);
+        java.time.LocalDate today = java.time.LocalDate.now();
 
+        // 1. Nhánh: Sẵn sàng sử dụng (Chưa dùng, còn hạn, còn lượt và đang hoạt động)
         List<UserVoucher> availableVouchers = allVouchers.stream()
-                .filter(uv -> !uv.isUsed() && uv.getVoucher().isValid(BigDecimal.ONE))
+                .filter(uv -> !uv.isUsed() 
+                        && uv.getVoucher().isActive() 
+                        && !today.isAfter(uv.getVoucher().getEndDate())
+                        && uv.getVoucher().getUsedCount() < uv.getVoucher().getUsageLimit())
                 .collect(Collectors.toList());
 
-        List<UserVoucher> usedOrExpiredVouchers = allVouchers.stream()
-                .filter(uv -> uv.isUsed() || !uv.getVoucher().isValid(BigDecimal.ONE))
+        // 2. Nhánh: Đã sử dụng (Đã áp dụng vào đơn hàng thành công)
+        List<UserVoucher> usedVouchers = allVouchers.stream()
+                .filter(UserVoucher::isUsed)
+                .collect(Collectors.toList());
+
+        // 3. Nhánh: Đã hết hạn (Chưa dùng nhưng đã quá hạn hoặc hết lượt hệ thống)
+        List<UserVoucher> expiredVouchers = allVouchers.stream()
+                .filter(uv -> !uv.isUsed() 
+                        && (today.isAfter(uv.getVoucher().getEndDate()) 
+                            || !uv.getVoucher().isActive() 
+                            || uv.getVoucher().getUsedCount() >= uv.getVoucher().getUsageLimit()))
                 .collect(Collectors.toList());
 
         model.addAttribute("availableVouchers", availableVouchers);
-        model.addAttribute("usedOrExpiredVouchers", usedOrExpiredVouchers);
+        model.addAttribute("usedVouchers", usedVouchers);
+        model.addAttribute("expiredVouchers", expiredVouchers);
         return "store/my-vouchers";
     }
 

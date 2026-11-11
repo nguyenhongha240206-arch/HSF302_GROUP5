@@ -16,11 +16,11 @@ public class PromotionScheduler {
     private final BannerService bannerService;
 
     /**
-     * Tự động quét và đóng các mã voucher đã hết hạn hoặc hết lượt (UC-13)
+     * Tự động quét và đóng các mã voucher đã hết hạn (endDate chạm mốc hiện tại) hoặc hết lượt (UC-13)
      * và tự động tắt các banner sự kiện khuyến mãi đã kết thúc thời gian chạy (UC-14).
-     * Chạy định kỳ mỗi 30 phút.
+     * Chạy định kỳ mỗi phút một lần.
      */
-    @Scheduled(fixedRate = 1800000)
+    @Scheduled(fixedRate = 60000)
     public void scanAndCloseExpiredPromotions() {
         try {
             voucherService.deactivateExpiredVouchers();

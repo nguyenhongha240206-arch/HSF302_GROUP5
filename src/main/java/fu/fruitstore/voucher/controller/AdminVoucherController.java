@@ -46,7 +46,27 @@ public class AdminVoucherController {
     @PostMapping("/save")
     public String saveVoucher(@Valid @ModelAttribute("voucherDto") VoucherDto dto,
                              BindingResult bindingResult,
+                             Model model,
                              RedirectAttributes redirectAttributes) {
+        java.time.LocalDate today = java.time.LocalDate.now();
+
+        // 1. Kiểm tra ngày bắt đầu: không tính các ngày trước đó, chỉ chấp nhận từ ngày hiện tại về sau
+        if (dto.getStartDate() != null && dto.getStartDate().isBefore(today)) {
+            bindingResult.rejectValue("startDate", "past.startDate", "Ngày bắt đầu phải từ ngày hiện tại trở đi, không tính các ngày trước đó!");
+        }
+
+        // 2. Kiểm tra ngày kết thúc sau ngày bắt đầu
+        if (dto.getEndDate() != null && dto.getStartDate() != null && dto.getEndDate().isBefore(dto.getStartDate())) {
+            bindingResult.rejectValue("endDate", "error.endDate", "Ngày kết thúc không thể trước ngày bắt đầu!");
+        }
+
+        // 3. Kiểm tra trùng mã code: báo lỗi "Mã khuyến mãi này đã tồn tại trên hệ thống."
+        if (dto.getCode() != null && !dto.getCode().isBlank()) {
+            if (voucherService.existsByCode(dto.getCode().trim(), dto.getId())) {
+                bindingResult.rejectValue("code", "duplicate.code", "Mã khuyến mãi này đã tồn tại trên hệ thống.");
+            }
+        }
+
         if (bindingResult.hasErrors()) {
             return "admin/vouchers/form";
         }
@@ -61,9 +81,23 @@ public class AdminVoucherController {
             }
             return "redirect:/admin/vouchers";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/vouchers/new";
+            model.addAttribute("errorMessage", e.getMessage());
+            return "admin/vouchers/form";
         }
+    }
+
+    @PostMapping("/{id}/toggle")
+    public String toggleActive(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        voucherService.toggleActive(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật trạng thái kích hoạt voucher thành công!");
+        return "redirect:/admin/vouchers";
+    }
+
+    @PostMapping("/scan-expired")
+    public String scanExpiredVouchers(RedirectAttributes redirectAttributes) {
+        voucherService.deactivateExpiredVouchers();
+        redirectAttributes.addFlashAttribute("successMessage", "Đã quét và đóng các voucher chạm mốc hết hạn hoặc hết lượt dùng!");
+        return "redirect:/admin/vouchers";
     }
 
     @GetMapping("/edit/{id}")

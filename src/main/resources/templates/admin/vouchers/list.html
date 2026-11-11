@@ -12,9 +12,17 @@
             <h3 class="fw-bold mb-1 text-dark">Voucher Khuyến Mãi</h3>
             <p class="text-muted small mb-0">Quản lý mã giảm giá, mức giảm, thời hạn và số lượt sử dụng</p>
         </div>
-        <a th:href="@{/admin/vouchers/new}" class="btn btn-primary rounded-pill px-4">
-            <i class="bi bi-plus-lg me-1"></i>Thêm Voucher
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            <form th:action="@{/admin/vouchers/scan-expired}" method="post" class="d-inline m-0">
+                <button type="submit" class="btn btn-outline-warning rounded-pill px-3 shadow-xs"
+                        title="Tự động quét và vô hiệu hóa các voucher có endDate chạm mốc hiện tại hoặc hết lượt dùng">
+                    <i class="bi bi-clock-history me-1"></i>Quét Voucher Hết Hạn
+                </button>
+            </form>
+            <a th:href="@{/admin/vouchers/new}" class="btn btn-primary rounded-pill px-4 shadow-xs">
+                <i class="bi bi-plus-lg me-1"></i>Thêm Voucher
+            </a>
+        </div>
     </div>
 
     <!-- Search box -->
@@ -65,8 +73,14 @@
                             <span class="fw-bold" th:text="${v.usedCount} + ' / ' + ${v.usageLimit}">10 / 100</span>
                         </td>
                         <td>
-                            <span th:if="${v.active}" class="badge bg-success">Đang mở</span>
-                            <span th:unless="${v.active}" class="badge bg-secondary">Đã khóa</span>
+                            <form th:action="@{/admin/vouchers/{id}/toggle(id=${v.id})}" method="post" class="d-inline m-0">
+                                <button type="submit" class="btn btn-sm rounded-pill d-inline-flex align-items-center gap-1 border"
+                                        th:classappend="${v.active} ? 'btn-success text-white' : 'btn-light text-muted'"
+                                        th:title="${v.active} ? 'Nhấp để tạm khóa voucher' : 'Nhấp để kích hoạt voucher'">
+                                    <i class="bi" th:classappend="${v.active} ? 'bi-toggle-on text-white fs-6' : 'bi-toggle-off text-muted fs-6'"></i>
+                                    <span class="fw-semibold small" th:text="${v.active} ? 'Đang hoạt động' : 'Tạm khóa'">Đang hoạt động</span>
+                                </button>
+                            </form>
                         </td>
                         <td class="text-end">
                             <a th:href="@{/admin/vouchers/edit/{id}(id=${v.id})}" class="btn btn-outline-primary btn-sm rounded-pill me-1">

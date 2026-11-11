@@ -3,14 +3,14 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/admin-layout}">
 <head>
-    <title>Quản Lý Banner & Khuyến Mãi (UC-14)</title>
+    <title>Quản Lý Banner & Khuyến Mãi</title>
 </head>
 <body>
 <div layout:fragment="content">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-1 text-dark">
-                <i class="bi bi-images text-success me-2"></i>Banner & Sự Kiện Khuyến Mãi (UC-14)
+                <i class="bi bi-images text-success me-2"></i>Banner & Sự Kiện Khuyến Mãi
             </h3>
             <p class="text-muted small mb-0">Quản lý banner sự kiện hoa quả theo mùa, thiết lập vị trí hiển thị, thời hạn chạy và liên kết điều hướng</p>
         </div>
@@ -43,8 +43,7 @@
                     <tr>
                         <th style="width: 120px;">Ảnh Banner</th>
                         <th>Tiêu Đề & Phụ Đề</th>
-                        <th>Vị Trí & Thứ Tự</th>
-                        <th>Liên Kết Đích</th>
+                        <th style="width: 100px;">Thứ Tự</th>
                         <th>Thời Hạn Áp Dụng</th>
                         <th>Trạng Thái</th>
                         <th class="text-end" style="width: 170px;">Thao Tác</th>
@@ -52,7 +51,7 @@
                 </thead>
                 <tbody>
                     <tr th:if="${bannerPage.empty}">
-                        <td colspan="7" class="text-center py-4 text-muted">
+                        <td colspan="6" class="text-center py-4 text-muted">
                             <i class="bi bi-inbox fs-2 d-block mb-2"></i>Chưa có banner nào trong hệ thống
                         </td>
                     </tr>
@@ -65,11 +64,9 @@
                             <small class="text-muted text-truncate d-inline-block" style="max-width: 320px;" th:text="${b.subtitle}">Phụ đề mô tả sự kiện</small>
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border" th:text="${b.position}">HERO_SLIDER</span>
-                            <div class="small text-muted mt-1">Thứ tự: <strong th:text="${b.displayOrder}">1</strong></div>
-                        </td>
-                        <td>
-                            <a th:href="${b.targetUrl}" target="_blank" class="small text-decoration-none font-monospace text-truncate d-inline-block" style="max-width: 150px;" th:text="${b.targetUrl}">/catalog</a>
+                            <span class="badge bg-light text-dark border px-2 py-1">
+                                #<strong th:text="${b.displayOrder}">1</strong>
+                            </span>
                         </td>
                         <td>
                             <div class="small fw-semibold text-dark">
