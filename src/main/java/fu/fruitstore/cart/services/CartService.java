@@ -13,4 +13,5 @@ public interface CartService {
     void applyVoucher(HttpSession session, String voucherCode);
     void removeVoucher(HttpSession session);
     void clearCart(HttpSession session);
+    void restoreCartForUser(String email, HttpSession session);
 }

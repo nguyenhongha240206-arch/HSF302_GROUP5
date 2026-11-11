@@ -1,10 +1,15 @@
 package fu.fruitstore.cart.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fu.fruitstore.auth.entity.User;
+import fu.fruitstore.auth.repository.UserRepository;
 import fu.fruitstore.cart.dto.BasketPackagingStyle;
 import fu.fruitstore.cart.dto.CartDto;
 import fu.fruitstore.cart.dto.CartItemDto;
 import fu.fruitstore.cart.dto.CustomBasketRequestDto;
 import fu.fruitstore.cart.dto.CustomFruitSelectionDto;
+import fu.fruitstore.cart.entity.UserCart;
+import fu.fruitstore.cart.repository.UserCartRepository;
 import fu.fruitstore.product.entity.Product;
 import fu.fruitstore.product.services.ProductService;
 import fu.fruitstore.shared.exception.BadRequestException;
@@ -12,10 +17,15 @@ import fu.fruitstore.voucher.entity.Voucher;
 import fu.fruitstore.voucher.services.VoucherService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,13 +39,94 @@ public class CartServiceImpl implements CartService {
 
     private final ProductService productService;
     private final VoucherService voucherService;
+    private final UserCartRepository userCartRepository;
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
+
+    private User getCurrentAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+        return userRepository.findByEmail(auth.getName()).orElse(null);
+    }
+
+    private void persistCartToDb(CartDto cart) {
+        User user = getCurrentAuthenticatedUser();
+        if (user == null) {
+            return;
+        }
+        try {
+            if (cart == null || cart.getItems().isEmpty()) {
+                userCartRepository.deleteByUserId(user.getId());
+            } else {
+                String json = objectMapper.writeValueAsString(cart);
+                UserCart userCart = userCartRepository.findByUserId(user.getId())
+                        .orElseGet(() -> UserCart.builder().user(user).build());
+                userCart.setCartDataJson(json);
+                userCart.setUpdatedAt(LocalDateTime.now());
+                userCartRepository.save(userCart);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private CartDto loadCartFromDb(User user) {
+        if (user == null) {
+            return null;
+        }
+        try {
+            Optional<UserCart> userCartOpt = userCartRepository.findByUserId(user.getId());
+            if (userCartOpt.isPresent()) {
+                CartDto cart = objectMapper.readValue(userCartOpt.get().getCartDataJson(), CartDto.class);
+                if (cart != null && !cart.getItems().isEmpty()) {
+                    recalculateCart(cart);
+                    return cart;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public void restoreCartForUser(String email, HttpSession session) {
+        if (email == null || email.isBlank() || session == null) {
+            return;
+        }
+        userRepository.findByEmail(email).ifPresent(user -> {
+            CartDto sessionCart = (CartDto) session.getAttribute(CART_SESSION_KEY);
+            if (sessionCart != null && !sessionCart.getItems().isEmpty()) {
+                persistCartToDb(sessionCart);
+            } else {
+                CartDto dbCart = loadCartFromDb(user);
+                if (dbCart != null && !dbCart.getItems().isEmpty()) {
+                    session.setAttribute(CART_SESSION_KEY, dbCart);
+                }
+            }
+        });
+    }
 
     @Override
     public CartDto getCart(HttpSession session) {
         CartDto cart = (CartDto) session.getAttribute(CART_SESSION_KEY);
-        if (cart == null) {
-            cart = new CartDto();
-            session.setAttribute(CART_SESSION_KEY, cart);
+        User user = getCurrentAuthenticatedUser();
+
+        if (cart == null || cart.getItems().isEmpty()) {
+            if (user != null) {
+                CartDto dbCart = loadCartFromDb(user);
+                if (dbCart != null && !dbCart.getItems().isEmpty()) {
+                    session.setAttribute(CART_SESSION_KEY, dbCart);
+                    return dbCart;
+                }
+            }
+            if (cart == null) {
+                cart = new CartDto();
+                session.setAttribute(CART_SESSION_KEY, cart);
+            }
+        } else if (user != null) {
+            persistCartToDb(cart);
         }
         return cart;
     }
@@ -85,6 +176,7 @@ public class CartServiceImpl implements CartService {
         }
 
         recalculateCart(cart);
+        persistCartToDb(cart);
     }
 
     @Override
@@ -145,6 +237,7 @@ public class CartServiceImpl implements CartService {
         CartDto cart = getCart(session);
         cart.getItems().add(customBasketItem);
         recalculateCart(cart);
+        persistCartToDb(cart);
     }
 
     @Override
@@ -171,6 +264,7 @@ public class CartServiceImpl implements CartService {
         }
 
         recalculateCart(cart);
+        persistCartToDb(cart);
     }
 
     @Override
@@ -178,6 +272,7 @@ public class CartServiceImpl implements CartService {
         CartDto cart = getCart(session);
         cart.getItems().removeIf(item -> itemId.equals(item.getItemId()));
         recalculateCart(cart);
+        persistCartToDb(cart);
     }
 
     @Override
@@ -213,6 +308,7 @@ public class CartServiceImpl implements CartService {
         BigDecimal discount = voucher.calculateDiscount(totalAmount);
         cart.setVoucherCode(cleanCode);
         cart.setDiscountAmount(discount);
+        persistCartToDb(cart);
     }
 
     @Override
@@ -220,11 +316,17 @@ public class CartServiceImpl implements CartService {
         CartDto cart = getCart(session);
         cart.setVoucherCode(null);
         cart.setDiscountAmount(BigDecimal.ZERO);
+        persistCartToDb(cart);
     }
 
     @Override
+    @Transactional
     public void clearCart(HttpSession session) {
         session.removeAttribute(CART_SESSION_KEY);
+        User user = getCurrentAuthenticatedUser();
+        if (user != null) {
+            userCartRepository.deleteByUserId(user.getId());
+        }
     }
 
     private void recalculateCart(CartDto cart) {

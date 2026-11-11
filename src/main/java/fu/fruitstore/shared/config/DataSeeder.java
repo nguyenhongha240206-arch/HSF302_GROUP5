@@ -9,6 +9,10 @@ import fu.fruitstore.category.repository.CategoryRepository;
 import fu.fruitstore.product.entity.Product;
 import fu.fruitstore.product.entity.ProductType;
 import fu.fruitstore.product.repository.ProductRepository;
+import fu.fruitstore.promotion.entity.Banner;
+import fu.fruitstore.promotion.entity.UserVoucher;
+import fu.fruitstore.promotion.repository.BannerRepository;
+import fu.fruitstore.promotion.repository.UserVoucherRepository;
 import fu.fruitstore.review.entity.Review;
 import fu.fruitstore.review.repository.ReviewRepository;
 import fu.fruitstore.voucher.entity.Voucher;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +42,8 @@ public class DataSeeder implements CommandLineRunner {
     private final ProductRepository productRepository;
     private final VoucherRepository voucherRepository;
     private final ReviewRepository reviewRepository;
+    private final BannerRepository bannerRepository;
+    private final UserVoucherRepository userVoucherRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -147,7 +154,7 @@ public class DataSeeder implements CommandLineRunner {
         seedProduct("FRUIT_MUSCAT_JP", "Nho mẫu đơn Shine Muscat Nhật",
                 "Nho mẫu đơn Shine Muscat chuẩn hàng bay xách tay, quả to bóng mịn, không hạt, thơm hương sữa ngào ngạt.",
                 "850000", "950000", 30, "hộp", "Nhật Bản",
-                "https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1599997131597-4a39e8026197?auto=format&fit=crop&w=600&q=80",
                 ProductType.FRUIT, catImport, true);
 
         seedProduct("FRUIT_FINGER_AU", "Nho ngón tay Midnight Beauty Úc",
@@ -171,7 +178,7 @@ public class DataSeeder implements CommandLineRunner {
         seedProduct("FRUIT_CHERRY_US", "Cherry đỏ Mỹ Size 8.5 chuẩn bay",
                 "Cherry Washington đỏ thẫm cuống xanh tươi rói, quả chắc nịch, thịt ngọt đậm giòn tan đẳng cấp trái cây thượng hạng.",
                 "490000", "560000", 40, "hộp", "Mỹ",
-                "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&w=600&q=80",
                 ProductType.FRUIT, catImport, true);
 
         seedProduct("FRUIT_STRAW_KR", "Dâu tây Hàn Quốc Seolhyang cao cấp",
@@ -214,38 +221,38 @@ public class DataSeeder implements CommandLineRunner {
         seedProduct("FRUIT_SAURIENG_RI6", "Sầu riêng Ri6 cơm vàng hạt lép Đắk Lắk",
                 "Sầu riêng Ri6 chín cây tự nhiên, cơm vàng óng ả dày cùi béo ngậy hạt lép, hương thơm quyến rũ nức mũi.",
                 "160000", "185000", 35, "kg", "Việt Nam",
-                "https://images.unsplash.com/photo-1587132137056-bfbf0166836e?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1519544442-93857b48665e?auto=format&fit=crop&w=600&q=80",
                 ProductType.FRUIT, catLocal, true);
 
         seedProduct("FRUIT_DUALUOI_HL", "Dưa lưới Huỳnh Long ruột cam ngọt mát",
                 "Dưa lưới trồng nhà màng công nghệ cao, vân lưới dày đều đẹp, ruột cam giòn ngọt lịm hương thơm mát.",
                 "95000", "115000", 55, "kg", "Việt Nam",
-                "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1571575173700-afb9492e6a50?auto=format&fit=crop&w=600&q=80",
                 ProductType.FRUIT, catLocal, false);
 
         seedProduct("FRUIT_MANGCUT_LT", "Măng cụt Lái Thiêu chuẩn VietGAP",
                 "Nữ hoàng trái cây nhiệt đới Lái Thiêu vỏ mềm mỏng, múi trắng nõn mọng nước, vị chua ngọt thanh tao.",
                 "125000", "150000", 40, "kg", "Việt Nam",
-                "https://images.unsplash.com/photo-1546548970-71785318a17b?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1558877398-9655d929c409?auto=format&fit=crop&w=600&q=80",
                 ProductType.FRUIT, catLocal, false);
 
         seedProduct("FRUIT_THANHLONG_BT", "Thanh long ruột đỏ Bình Thuận xuất khẩu",
                 "Thanh long ruột đỏ đậm tự nhiên, ngọt đậm thơm ngon, giàu chất xơ và chất chống oxy hóa tự nhiên.",
                 "45000", "55000", 80, "kg", "Việt Nam",
-                "https://images.unsplash.com/photo-1527324688151-0e627063f2b1?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1783749895074-d83f23284d1f?auto=format&fit=crop&w=600&q=80",
                 ProductType.FRUIT, catLocal, false);
 
         // Giỏ quà trái cây cao cấp
         seedProduct("GIFT_NGUPHUC_01", "Giỏ Trái Cây Ngũ Phúc Đoàn Viên",
                 "Thiết kế giỏ mây tre đan cao cấp, kết hợp Táo Envy, Nho mẫu đơn, Cam Cara, Lê Hàn Quốc và Kiwi vàng. Kèm hoa lá tươi, ruy băng sang trọng.",
                 "1250000", "1500000", 15, "giỏ", "Việt Nam / Nhập khẩu",
-                "https://images.unsplash.com/photo-1543083477-4f785aeafaa9?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1573345233040-ab5e890bf231?auto=format&fit=crop&w=600&q=80",
                 ProductType.GIFT_BASKET, catGift, true);
 
         seedProduct("GIFT_VIP_BIZ", "Hộp Quà Trái Cây Doanh Nghiệp VIP",
                 "Hộp quà nắp kính ép nhũ sang trọng, tuyển chọn Cherry Mỹ, Dâu tây Hàn Quốc, Nho xanh không hạt. Đẳng cấp quà biếu đối tác.",
                 "1850000", "2100000", 8, "hộp", "Nhập khẩu",
-                "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1633185297874-932faf3f19d0?auto=format&fit=crop&w=600&q=80",
                 ProductType.GIFT_BASKET, catGift, true);
 
         seedProduct("GIFT_DAMNGO_02", "Giỏ Quà Hoa Quả Dạm Ngõ Thắm Duyên",
@@ -264,25 +271,25 @@ public class DataSeeder implements CommandLineRunner {
         seedProduct("DRIED_XOAI_DEO", "Xoài sấy dẻo xuất khẩu loại 1",
                 "Xoài cát sấy dẻo công nghệ lạnh, không chất bảo quản, giữ nguyên vị chua ngọt tự nhiên dẻo thơm.",
                 "75000", "90000", 150, "gói", "Việt Nam",
-                "https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1784043436919-28fd8e17ff3c?auto=format&fit=crop&w=600&q=80",
                 ProductType.DRIED_FRUIT, catDried, false);
 
         seedProduct("DRIED_MIT_DALAT", "Mít sấy giòn nguyên miếng Dalat",
                 "Mít nghệ tươi sấy chân không giòn rụm, màu vàng óng tự nhiên, không đường hóa học, thơm lừng vị mít chín.",
                 "60000", "75000", 130, "gói", "Việt Nam",
-                "https://images.unsplash.com/photo-1601039641847-7857b994d704?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1763140877786-5dc3287a6629?auto=format&fit=crop&w=600&q=80",
                 ProductType.DRIED_FRUIT, catDried, false);
 
         seedProduct("DRIED_STRAW_FREEZE", "Dâu tây sấy thăng hoa giữ trọn vitamin",
                 "Dâu tây Đà Lạt sấy thăng hoa công nghệ Nhật Bản, giữ nguyên hình dáng quả, vị chua ngọt giòn xốp tan trong miệng.",
                 "115000", "135000", 80, "hộp", "Việt Nam",
-                "https://images.unsplash.com/photo-1518492104633-130d0cc84637?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1543528176-61b239494933?auto=format&fit=crop&w=600&q=80",
                 ProductType.DRIED_FRUIT, catDried, false);
 
         seedProduct("DRIED_MACCA_DL", "Hạt macca sấy nứt vỏ Đắk Lắk VIP",
                 "Hạt macca loại 1 nứt vỏ tự nhiên kèm dụng cụ tách, nhân trắng ngà béo ngậy ngọt bùi dinh dưỡng cho cả gia đình.",
                 "140000", "165000", 90, "hộp", "Việt Nam",
-                "https://images.unsplash.com/photo-1509358271058-acd22cc93898?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1579293675541-10fcb3725a19?auto=format&fit=crop&w=600&q=80",
                 ProductType.DRIED_FRUIT, catDried, false);
 
         // 5. Vouchers
@@ -312,6 +319,65 @@ public class DataSeeder implements CommandLineRunner {
                             .comment("Giỏ quà rất sang trọng và đẹp mắt, trái cây đều quả và tươi rói. Đem đi biếu sinh nhật ai cũng khen!")
                             .build())
             );
+        }
+
+        // 7. Banners (Module 3 - HaNH UC-14)
+        if (bannerRepository.count() == 0) {
+            bannerRepository.save(Banner.builder()
+                    .title("Lễ Hội Hoa Quả Mùa Hè - Tươi Ngon Giòn Ngọt")
+                    .subtitle("Chiết khấu lên tới 25% cho tất cả các dòng Cherry Mỹ, Nho mẫu đơn & Táo Envy New Zealand đạt chuẩn GlobalGAP.")
+                    .imageUrl("https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=1200&q=80")
+                    .targetUrl("/catalog")
+                    .position("HERO_SLIDER")
+                    .displayOrder(1)
+                    .startDate(LocalDate.now().minusDays(5))
+                    .endDate(LocalDate.now().plusMonths(2))
+                    .active(true)
+                    .build());
+
+            bannerRepository.save(Banner.builder()
+                    .title("Thiết Kế Giỏ Quà Hoa Quả Độc Quyền Theo Yêu Cầu")
+                    .subtitle("Tự tay chọn mẫu giỏ mây tre đan, phối các loại trái cây thượng hạng, tặng kèm nơ lụa & thiệp mừng cá nhân hóa.")
+                    .imageUrl("https://images.unsplash.com/photo-1546548970-71785318a17b?auto=format&fit=crop&w=1200&q=80")
+                    .targetUrl("/custom-basket")
+                    .position("HERO_SLIDER")
+                    .displayOrder(2)
+                    .startDate(LocalDate.now().minusDays(5))
+                    .endDate(LocalDate.now().plusMonths(3))
+                    .active(true)
+                    .build());
+
+            bannerRepository.save(Banner.builder()
+                    .title("Đặc Sản Trái Cây Ba Miền Chuẩn VietGAP")
+                    .subtitle("Sầu riêng Ri6 chín cây, Bơ sáp 034 Đắk Lắk, Xoài cát Hòa Lộc thu hái trực tiếp từ nhà vườn uy tín.")
+                    .imageUrl("https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=1200&q=80")
+                    .targetUrl("/catalog?categoryId=2")
+                    .position("HERO_SLIDER")
+                    .displayOrder(3)
+                    .startDate(LocalDate.now().minusDays(5))
+                    .endDate(LocalDate.now().plusMonths(2))
+                    .active(true)
+                    .build());
+        }
+
+        // 8. Ví Voucher Khách Hàng (Module 3 - HaNH UC-15)
+        if (userVoucherRepository.count() == 0) {
+            voucherRepository.findByCodeIgnoreCaseAndActiveTrue("CHAOBANMOI").ifPresent(v -> {
+                userVoucherRepository.save(UserVoucher.builder()
+                        .user(customer)
+                        .voucher(v)
+                        .collectedAt(LocalDateTime.now())
+                        .isUsed(false)
+                        .build());
+            });
+            voucherRepository.findByCodeIgnoreCaseAndActiveTrue("TRIAN50K").ifPresent(v -> {
+                userVoucherRepository.save(UserVoucher.builder()
+                        .user(customer)
+                        .voucher(v)
+                        .collectedAt(LocalDateTime.now().minusDays(1))
+                        .isUsed(false)
+                        .build());
+            });
         }
 
         log.info(">>> Khởi tạo dữ liệu mẫu hoàn tất thành công! Tổng số sản phẩm hiện có: {}", productRepository.count());

@@ -119,25 +119,45 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional
+    public void toggleActive(Long id) {
+        Voucher voucher = getById(id);
+        voucher.setActive(!voucher.isActive());
+        voucherRepository.save(voucher);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByCode(String code, Long excludeId) {
+        if (code == null || code.isBlank()) {
+            return false;
+        }
+        String cleanCode = code.trim();
+        if (excludeId == null) {
+            return voucherRepository.existsByCodeIgnoreCase(cleanCode);
+        } else {
+            return voucherRepository.existsByCodeIgnoreCaseAndIdNot(cleanCode, excludeId);
+        }
+    }
+
+    @Override
+    @Transactional
     public void incrementUsage(String code) {
         voucherRepository.findByCodeIgnoreCaseAndActiveTrue(code).ifPresent(v -> {
             v.setUsedCount(v.getUsedCount() + 1);
             voucherRepository.save(v);
         });
     }
+
     @Override
     @Transactional
-    public void decrementUsage(String code) {
-        if (code == null || code.isBlank()) {
-            return;
-        }
-
-        voucherRepository.findByCodeIgnoreCase(code).ifPresent(v -> {
-            if (v.getUsedCount() > 0) {
-                v.setUsedCount(v.getUsedCount() - 1);
-                voucherRepository.save(v);
+    public void deactivateExpiredVouchers() {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        List<Voucher> expiredVouchers = voucherRepository.findExpiredOrMaxedVouchers(today);
+        if (!expiredVouchers.isEmpty()) {
+            for (Voucher v : expiredVouchers) {
+                v.setActive(false);
             }
-        });
+            voucherRepository.saveAll(expiredVouchers);
+        }
     }
 }
-

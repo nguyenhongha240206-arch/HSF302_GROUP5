@@ -7,8 +7,50 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- Hero Banner -->
-    <div class="hero-section">
+    <!-- Dynamic Hero Banner Carousel (UC-14 & UC-15) -->
+    <div th:if="${not #lists.isEmpty(banners)}" class="mb-5">
+        <div id="homeHeroCarousel" class="carousel slide shadow rounded-4 overflow-hidden" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button th:each="b, iterStat : ${banners}" type="button" data-bs-target="#homeHeroCarousel"
+                        th:data-bs-slide-to="${iterStat.index}" th:classappend="${iterStat.first} ? 'active'"
+                        th:aria-current="${iterStat.first} ? 'true' : 'false'"></button>
+            </div>
+            <div class="carousel-inner">
+                <div th:each="b, iterStat : ${banners}" class="carousel-item" th:classappend="${iterStat.first} ? 'active'" data-bs-interval="4500">
+                    <div class="position-relative" style="height: 400px; background-color: #1a1a1a;">
+                        <img th:src="${b.imageUrl}" class="d-block w-100 h-100" style="object-fit: cover; opacity: 0.85;" th:alt="${b.title}">
+                        <div class="carousel-caption d-flex flex-column justify-content-center align-items-start text-start p-4 p-md-5"
+                             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2 fw-semibold">
+                                <i class="bi bi-stars me-1"></i>Sự Kiện Hoa Quả Theo Mùa
+                            </span>
+                            <h2 class="display-6 fw-bold text-white mb-2" style="max-width: 650px;" th:text="${b.title}">Tiêu đề banner</h2>
+                            <p class="lead text-light mb-4" style="max-width: 550px;" th:text="${b.subtitle}">Phụ đề banner</p>
+                            <div class="d-flex gap-2">
+                                <a th:href="${b.targetUrl != null ? b.targetUrl : '/catalog'}" class="btn btn-success btn-lg rounded-pill px-4 shadow">
+                                    Khám Phá Ngay <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                                <a th:href="@{/promotions}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                                    <i class="bi bi-ticket-perforated me-1"></i>Kho Ưu Đãi
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Trước</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Sau</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Fallback Hero Section if no banners -->
+    <div th:if="${#lists.isEmpty(banners)}" class="hero-section">
         <div class="row align-items-center">
             <div class="col-lg-7">
                 <span class="badge bg-success bg-opacity-75 text-white px-3 py-2 rounded-pill mb-3">
@@ -36,7 +78,12 @@
 
     <!-- Active Voucher Codes Bar -->
     <div th:if="${not #lists.isEmpty(activeVouchers)}" class="row g-3 mb-5">
-        <div class="col-12"><h5 class="fw-bold text-success mb-2"><i class="bi bi-tag-fill me-2"></i>Mã Giảm Giá Đang Diễn Ra</h5></div>
+        <div class="col-12 d-flex justify-content-between align-items-center mb-1">
+            <h5 class="fw-bold text-success mb-0"><i class="bi bi-tag-fill me-2"></i>Mã Giảm Giá Đang Diễn Ra</h5>
+            <a th:href="@{/promotions}" class="text-success text-decoration-none fw-semibold small">
+                Thu thập vào ví <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
         <div class="col-md-4" th:each="v : ${activeVouchers}">
             <div class="voucher-card d-flex justify-content-between align-items-center">
                 <div>

@@ -232,8 +232,8 @@
                     <p class="mb-1"><strong>Người nhận:</strong> <span th:text="${order.receiverName}"></span></p>
                     <p class="mb-1"><strong>Số điện thoại:</strong> <span th:text="${order.receiverPhone}"></span></p>
                     <p class="mb-1"><strong>Địa chỉ nhận:</strong> <span th:text="${order.shippingAddress}"></span></p>
-                    <p class="mb-1" th:if="${order.deliveryTimeSlot != null}"><strong>Khung giờ giao (UC-11):</strong> <span class="badge bg-primary" th:text="${order.deliveryTimeSlot}"></span></p>
-                    <p class="mb-1" th:if="${order.packagingRequirement != null}"><strong>Yêu cầu đóng gói (UC-11):</strong> <span class="text-success fw-semibold" th:text="${order.packagingRequirement}"></span></p>
+                    <p class="mb-1" th:if="${order.deliveryTimeSlot != null}"><strong>Khung giờ giao:</strong> <span class="badge bg-primary" th:text="${order.deliveryTimeSlot}"></span></p>
+                    <p class="mb-1" th:if="${order.packagingRequirement != null}"><strong>Yêu cầu đóng gói:</strong> <span class="text-success fw-semibold" th:text="${order.packagingRequirement}"></span></p>
                     <p class="mb-0" th:if="${order.note != null && !order.note.isBlank()}"><strong>Ghi chú:</strong> <span th:text="${order.note}"></span></p>
                 </div>
             </div>

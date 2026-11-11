@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin-layout}">
+<head>
+    <title>Quản Lý Banner & Khuyến Mãi</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-images text-success me-2"></i>Banner & Sự Kiện Khuyến Mãi
+            </h3>
+            <p class="text-muted small mb-0">Quản lý banner sự kiện hoa quả theo mùa, thiết lập vị trí hiển thị, thời hạn chạy và liên kết điều hướng</p>
+        </div>
+        <a th:href="@{/admin/banners/new}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i>Thêm Banner Mới
+        </a>
+    </div>
+
+    <!-- Search box -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+        <form th:action="@{/admin/banners}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="keyword" th:value="${keyword}" class="form-control border-start-0" placeholder="Tìm theo tiêu đề hoặc phụ đề banner...">
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm Kiếm</button>
+                <a th:href="@{/admin/banners}" class="btn btn-outline-secondary rounded-pill px-3">Làm Mới</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Banners Table Card -->
+    <div class="admin-table-card p-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Ảnh Banner</th>
+                        <th>Tiêu Đề & Phụ Đề</th>
+                        <th style="width: 100px;">Thứ Tự</th>
+                        <th>Thời Hạn Áp Dụng</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-end" style="width: 170px;">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${bannerPage.empty}">
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>Chưa có banner nào trong hệ thống
+                        </td>
+                    </tr>
+                    <tr th:each="b : ${bannerPage.content}">
+                        <td>
+                            <img th:src="${b.imageUrl}" class="rounded-3 shadow-sm" width="110" height="60" style="object-fit: cover;" alt="Banner Preview">
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${b.title}">Tiêu đề banner</div>
+                            <small class="text-muted text-truncate d-inline-block" style="max-width: 320px;" th:text="${b.subtitle}">Phụ đề mô tả sự kiện</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-2 py-1">
+                                #<strong th:text="${b.displayOrder}">1</strong>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small fw-semibold text-dark">
+                                <span th:text="${#temporals.format(b.startDate, 'dd/MM/yyyy')}"></span>
+                                <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                                <span th:text="${#temporals.format(b.endDate, 'dd/MM/yyyy')}"></span>
+                            </div>
+                            <div class="mt-1">
+                                <span th:if="${b.currentlyRunning}" class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-play-circle me-1"></i>Đang trong kỳ
+                                </span>
+                                <span th:unless="${b.currentlyRunning}" class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                    <i class="bi bi-clock-history me-1"></i>Ngoài kỳ hạn
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/banners/{id}/toggle(id=${b.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm rounded-pill px-3"
+                                        th:classappend="${b.active ? 'btn-success' : 'btn-secondary'}"
+                                        th:title="${b.active ? 'Bấm để tắt hiển thị' : 'Bấm để bật hiển thị'}">
+                                    <i th:class="${b.active ? 'bi bi-eye-fill me-1' : 'bi bi-eye-slash me-1'}"></i>
+                                    <span th:text="${b.active ? 'Hiển thị' : 'Ẩn'}"></span>
+                                </button>
+                            </form>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/admin/banners/edit/{id}(id=${b.id})}" class="btn btn-outline-primary btn-sm rounded-pill me-1" title="Chỉnh sửa">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <form th:action="@{/admin/banners/{id}/delete(id=${b.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Bạn có chắc muốn xóa banner này khỏi hệ thống?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" title="Xóa banner">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${bannerPage.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+            <span class="small text-muted" th:text="'Trang ' + (${bannerPage.number} + 1) + ' / ' + ${bannerPage.totalPages}"></span>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" th:classappend="${bannerPage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/banners(page=${bannerPage.number - 1}, keyword=${keyword})}">Trước</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, bannerPage.totalPages - 1)}"
+                    th:classappend="${i == bannerPage.number} ? 'active'">
+                    <a class="page-link" th:href="@{/admin/banners(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${bannerPage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/banners(page=${bannerPage.number + 1}, keyword=${keyword})}">Sau</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

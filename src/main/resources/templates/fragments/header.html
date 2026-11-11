@@ -33,6 +33,11 @@
                     <a class="nav-link" th:href="@{/catalog(productType='GIFT_BASKET')}">Giỏ quà mẫu</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-warning-emphasis fw-semibold" th:href="@{/promotions}">
+                        <i class="bi bi-tag-fill text-warning me-1"></i>Khuyến Mãi
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" th:href="@{/about}">Giới thiệu</a>
                 </li>
                 <li class="nav-item">
@@ -53,10 +58,13 @@
 
             <!-- Actions (Cart & Auth) -->
             <div class="d-flex align-items-center gap-2">
-                <!-- Cart -->
-                <a th:href="@{/cart}" class="btn btn-outline-success position-relative rounded-pill px-3 py-1" id="cartNavButton" title="Xem giỏ hàng">
-                    <i class="bi bi-cart3 fs-5 align-middle"></i>
-                    <span class="ms-1 d-none d-md-inline font-weight-bold">Giỏ hàng</span>
+                <!-- Cart (Icon-only) -->
+                <a th:href="@{/cart}" 
+                   class="btn btn-outline-success position-relative rounded-circle d-inline-flex align-items-center justify-content-center p-0 me-2" 
+                   id="cartNavButton" 
+                   title="Xem giỏ hàng"
+                   style="width: 40px; height: 40px; min-width: 40px;">
+                    <i class="bi bi-cart3 fs-5"></i>
                     <span id="cartBadge" 
                           class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm"
                           th:text="${session.SHOPPING_CART != null ? session.SHOPPING_CART.totalQuantity : 0}"
@@ -93,6 +101,11 @@
                         <li>
                             <a class="dropdown-item" th:href="@{/orders/history}">
                                 <i class="bi bi-bag-check me-2"></i>Lịch sử đơn hàng
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/account/vouchers}">
+                                <i class="bi bi-wallet2 me-2 text-success"></i>Ví Voucher của tôi
                             </a>
                         </li>
                         <li>

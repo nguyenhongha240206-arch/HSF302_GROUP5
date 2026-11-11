@@ -38,7 +38,7 @@ public class BasketPackagingStyle {
                 .name("Hộp Da Nắp Kính Hoàng Gia VIP")
                 .material("Khung gỗ bọc da cao cấp, nắp kính trong suốt")
                 .price(new BigDecimal("150000"))
-                .imageUrl("https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=400&q=80")
+                .imageUrl("https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=400&q=80")
                 .description("Sang trọng, đẳng cấp thượng lưu, chuyên dụng làm quà biếu đối tác, doanh nghiệp.")
                 .capacity("Sức chứa: 4 - 7 kg hoa quả")
                 .build(),
@@ -47,7 +47,7 @@ public class BasketPackagingStyle {
                 .name("Khay Gỗ Thông Mộc Tự Nhiên")
                 .material("Gỗ thông tự nhiên nguyên khối")
                 .price(new BigDecimal("100000"))
-                .imageUrl("https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=400&q=80")
+                .imageUrl("https://images.unsplash.com/photo-1591871937573-74dbba515c4c?auto=format&fit=crop&w=400&q=80")
                 .description("Phong cách Bắc Âu tinh tế, tối giản, bề mặt láng mịn tôn vinh vẻ đẹp tự nhiên của trái cây.")
                 .capacity("Sức chứa: 3 - 5 kg hoa quả")
                 .build(),
@@ -56,7 +56,7 @@ public class BasketPackagingStyle {
                 .name("Hộp Quà Giấy Mỹ Thuật Eco")
                 .material("Carton lạnh bồi giấy mỹ thuật ép kim")
                 .price(new BigDecimal("50000"))
-                .imageUrl("https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=400&q=80")
+                .imageUrl("https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=400&q=80")
                 .description("Gọn gàng, hiện đại, màu sắc trang nhã, quai xách lụa mềm mại.")
                 .capacity("Sức chứa: 2 - 4 kg hoa quả")
                 .build()

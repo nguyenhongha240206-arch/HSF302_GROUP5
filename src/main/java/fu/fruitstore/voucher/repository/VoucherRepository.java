@@ -18,12 +18,16 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
 
     boolean existsByCodeIgnoreCase(String code);
 
+    boolean existsByCodeIgnoreCaseAndIdNot(String code, Long id);
+
     List<Voucher> findByActiveTrue();
 
     @Query("SELECT v FROM Voucher v WHERE " +
            "(:keyword IS NULL OR LOWER(v.code) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(v.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Voucher> searchVouchers(@Param("keyword") String keyword, Pageable pageable);
 
-    Optional<Voucher> findByCodeIgnoreCase(String code);
-}
+    List<Voucher> findByActiveTrueAndEndDateBefore(java.time.LocalDate date);
 
+    @Query("SELECT v FROM Voucher v WHERE v.active = true AND (v.endDate <= :today OR v.usedCount >= v.usageLimit)")
+    List<Voucher> findExpiredOrMaxedVouchers(@Param("today") java.time.LocalDate today);
+}

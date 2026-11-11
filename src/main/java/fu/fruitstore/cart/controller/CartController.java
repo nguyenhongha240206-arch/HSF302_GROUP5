@@ -2,18 +2,23 @@ package fu.fruitstore.cart.controller;
 
 import fu.fruitstore.cart.dto.CartDto;
 import fu.fruitstore.cart.services.CartService;
+import fu.fruitstore.promotion.entity.UserVoucher;
+import fu.fruitstore.promotion.services.UserVoucherService;
+import fu.fruitstore.voucher.entity.Voucher;
 import fu.fruitstore.voucher.services.VoucherService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Controller
 @RequestMapping("/cart")
@@ -22,12 +27,29 @@ public class CartController {
 
     private final CartService cartService;
     private final VoucherService voucherService;
+    private final UserVoucherService userVoucherService;
 
     @GetMapping
-    public String viewCart(HttpSession session, Model model) {
+    public String viewCart(@AuthenticationPrincipal UserDetails userDetails,
+                           HttpSession session, Model model) {
         CartDto cart = cartService.getCart(session);
         model.addAttribute("cart", cart);
-        model.addAttribute("availableVouchers", voucherService.getActiveVouchers());
+
+        List<Voucher> publicVouchers = voucherService.getActiveVouchers();
+        model.addAttribute("availableVouchers", publicVouchers);
+
+        if (userDetails != null) {
+            List<UserVoucher> myVouchers = userVoucherService.getMyActiveVouchers(userDetails.getUsername());
+            model.addAttribute("myWalletVouchers", myVouchers);
+
+            // Tự động tìm voucher tốt nhất trong ví của khách hàng
+            Optional<Voucher> best = userVoucherService.findBestVoucherForOrder(userDetails.getUsername(), cart.getTotalAmount());
+            best.ifPresent(v -> {
+                model.addAttribute("bestVoucher", v);
+                model.addAttribute("bestDiscountAmount", v.calculateDiscount(cart.getTotalAmount()));
+            });
+        }
+
         return "store/cart";
     }
 
@@ -137,5 +159,48 @@ public class CartController {
         cartService.removeVoucher(session);
         redirectAttributes.addFlashAttribute("successMessage", "Đã hủy áp dụng mã giảm giá!");
         return "redirect:/cart";
+    }
+
+    /**
+     * UC-12: REST API Áp dụng Voucher trả về JSON cập nhật trực tiếp trên UI giỏ hàng
+     */
+    @PostMapping("/voucher/api/apply")
+    @ResponseBody
+    public ResponseEntity<?> applyVoucherAjax(@RequestParam("voucherCode") String voucherCode,
+                                              HttpSession session) {
+        try {
+            cartService.applyVoucher(session, voucherCode);
+            CartDto cart = cartService.getCart(session);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Áp dụng voucher '" + voucherCode.trim().toUpperCase() + "' thành công!");
+            response.put("voucherCode", cart.getVoucherCode());
+            response.put("totalAmount", cart.getTotalAmount());
+            response.put("discountAmount", cart.getDiscountAmount());
+            response.put("finalAmount", cart.getFinalAmount());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * UC-12: REST API Hủy áp dụng Voucher
+     */
+    @PostMapping("/voucher/api/remove")
+    @ResponseBody
+    public ResponseEntity<?> removeVoucherAjax(HttpSession session) {
+        cartService.removeVoucher(session);
+        CartDto cart = cartService.getCart(session);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Đã hủy mã giảm giá!");
+        response.put("totalAmount", cart.getTotalAmount());
+        response.put("discountAmount", BigDecimal.ZERO);
+        response.put("finalAmount", cart.getFinalAmount());
+        return ResponseEntity.ok(response);
     }
 }
