@@ -22,18 +22,14 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
-            <!-- Profile Header Card -->
+            <!-- Profile Header Card (Đã loại bỏ ảnh đại diện theo yêu cầu) -->
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                    <div class="d-flex align-items-center">
-                        <img th:src="${user.avatarUrl != null && !user.avatarUrl.isEmpty() ? user.avatarUrl : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}"
-                             alt="Avatar" class="rounded-circle me-3 border shadow-sm" width="80" height="80" style="object-fit: cover;">
+                    <div>
+                        <h4 class="fw-bold mb-1" th:text="${user.fullName}">Tên Người Dùng</h4>
+                        <p class="text-muted small mb-2"><i class="bi bi-envelope me-1"></i><span th:text="${user.email}">user@example.com</span></p>
                         <div>
-                            <h4 class="fw-bold mb-1" th:text="${user.fullName}">Tên Người Dùng</h4>
-                            <p class="text-muted small mb-1"><i class="bi bi-envelope me-1"></i><span th:text="${user.email}">user@example.com</span></p>
-                            <div>
-                                <span class="badge bg-success" th:each="r : ${user.roles}" th:text="${r.name} + ' '">ROLE_CUSTOMER</span>
-                            </div>
+                            <span class="badge bg-success" th:each="r : ${user.roles}" th:text="${r.name} + ' '">ROLE_CUSTOMER</span>
                         </div>
                     </div>
                     <div>
@@ -97,21 +93,41 @@
                                     <div class="invalid-feedback" th:errors="*{fullName}"></div>
                                 </div>
 
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold">Số điện thoại liên hệ</label>
-                                        <input type="text" th:field="*{phoneNumber}" class="form-control" placeholder="09xxxxxxxx">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold">Ảnh đại diện (URL)</label>
-                                        <input type="text" th:field="*{avatarUrl}" class="form-control" placeholder="https://...">
-                                    </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Số điện thoại liên hệ</label>
+                                    <input type="text" th:field="*{phoneNumber}" id="phoneNumberInput" class="form-control" placeholder="09xxxxxxxx">
+                                    <small class="text-muted">Số điện thoại liên hệ chính của bạn.</small>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Địa chỉ giao hàng chính</label>
-                                    <textarea th:field="*{address}" class="form-control" rows="3" placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..."></textarea>
-                                    <small class="text-muted">Bạn cũng có thể quản lý nhiều địa chỉ chi tiết hơn trong tab Sổ địa chỉ.</small>
+                                    <div th:if="${#lists.isEmpty(addresses)}" class="alert alert-warning py-3 rounded-3 mb-0">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                            <div>
+                                                <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                                                Bạn chưa có địa chỉ nhận hàng nào trong Sổ địa chỉ.
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-success rounded-pill"
+                                                    onclick="const tabBtn = document.getElementById('addresses-tab'); if(tabBtn){ bootstrap.Tab.getOrCreateInstance(tabBtn).show(); }">
+                                                <i class="bi bi-plus-lg me-1"></i>Thêm địa chỉ ngay
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div th:unless="${#lists.isEmpty(addresses)}">
+                                        <select th:field="*{selectedAddressId}" id="selectedAddressSelect" class="form-select">
+                                            <option value="">-- Chọn địa chỉ nhận hàng từ Sổ địa chỉ --</option>
+                                            <option th:each="addr : ${addresses}"
+                                                    th:value="${addr.id}"
+                                                    th:data-phone="${addr.phoneNumber}"
+                                                    th:selected="${addr.default or (profileDto.selectedAddressId != null and addr.id == profileDto.selectedAddressId)}"
+                                                    th:text="${addr.recipientName + ' (' + addr.phoneNumber + ') - ' + addr.detailedAddress + (addr.default ? ' [Mặc định]' : '')}">
+                                            </option>
+                                        </select>
+                                        <small class="text-muted d-block mt-2">
+                                            <i class="bi bi-info-circle me-1"></i>Địa chỉ được chọn sẽ tự động đặt làm mặc định và đồng bộ số điện thoại nhận hàng. Để thêm hoặc điều chỉnh chi tiết, vui lòng chuyển sang tab <b>Sổ Địa Chỉ</b>.
+                                        </small>
+                                    </div>
                                 </div>
 
                                 <div class="text-end mt-4">
@@ -183,7 +199,7 @@
 
                             <div th:unless="${#lists.isEmpty(addresses)}" class="row g-3">
                                 <div class="col-md-6" th:each="addr : ${addresses}">
-                                    <div class="card h-100 rounded-3 border p-3 position-relative"
+                                    <div class="card h-100 rounded-3 border p-3 position-relative shadow-sm"
                                          th:classappend="${addr.default ? 'border-success bg-light' : 'bg-white'}">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div>
@@ -192,6 +208,10 @@
                                                     <i class="bi bi-check-circle-fill me-1"></i>Mặc định
                                                 </span>
                                             </div>
+                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#editAddressModal-' + ${addr.id}">
+                                                <i class="bi bi-pencil-square me-1"></i>Sửa
+                                            </button>
                                         </div>
 
                                         <p class="text-muted small mb-1">
@@ -209,12 +229,56 @@
                                             </form>
                                             <form th:action="@{/profile/addresses/{id}/delete(id=${addr.id})}" method="post"
                                                   onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?');">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="Xóa địa chỉ">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
                                         </div>
                                     </div>
+
+                                    <!-- Modal Xem & Chỉnh sửa Địa chỉ -->
+                                    <div class="modal fade" th:id="'editAddressModal-' + ${addr.id}" tabindex="-1" aria-labelledby="'modalLabel-' + ${addr.id}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content rounded-4 border-0 shadow">
+                                                <div class="modal-header bg-light rounded-top-4 border-0 px-4 py-3">
+                                                    <h5 class="modal-title fw-bold text-dark" th:id="'modalLabel-' + ${addr.id}">
+                                                        <i class="bi bi-pencil-square text-success me-2"></i>Xem & Chỉnh Sửa Địa Chỉ
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form th:action="@{/profile/addresses/{id}/update(id=${addr.id})}" method="post">
+                                                    <div class="modal-body px-4 py-3">
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Tên người nhận <span class="text-danger">*</span></label>
+                                                            <input type="text" name="recipientName" th:value="${addr.recipientName}" class="form-control" placeholder="Nguyễn Văn A" required>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Số điện thoại nhận hàng <span class="text-danger">*</span></label>
+                                                            <input type="text" name="phoneNumber" th:value="${addr.phoneNumber}" class="form-control" pattern="^(0[35789])[0-9]{8}$" placeholder="09xxxxxxxx" required>
+                                                            <small class="text-muted">Định dạng số điện thoại Việt Nam (VD: 0912345678).</small>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Địa chỉ chi tiết <span class="text-danger">*</span></label>
+                                                            <textarea name="detailedAddress" th:text="${addr.detailedAddress}" class="form-control" rows="3" placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/TP" required></textarea>
+                                                        </div>
+                                                        <div class="mb-2 form-check">
+                                                            <input type="checkbox" name="default" value="true" class="form-check-input" th:id="'modalDefaultCheck-' + ${addr.id}" th:checked="${addr.default}">
+                                                            <label class="form-check-label small" th:for="'modalDefaultCheck-' + ${addr.id}">
+                                                                Đặt làm địa chỉ nhận hàng mặc định
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                                                        <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
+                                                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">
+                                                            <i class="bi bi-save me-1"></i>Lưu Thay Đổi
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -270,5 +334,25 @@
         </div>
     </div>
 </div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const addressSelect = document.getElementById('selectedAddressSelect');
+            const phoneInput = document.getElementById('phoneNumberInput');
+
+            if (addressSelect && phoneInput) {
+                addressSelect.addEventListener('change', function () {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const phone = selectedOption.getAttribute('data-phone');
+                    if (phone) {
+                        phoneInput.value = phone;
+                    }
+                });
+            }
+        });
+    </script>
+</th:block>
+
 </body>
 </html>

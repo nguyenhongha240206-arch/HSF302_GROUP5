@@ -16,6 +16,5 @@ public class UserProfileDto {
     private String email;
     private String phoneNumber;
     private String address;
-    private String avatarUrl;
+    private Long selectedAddressId;
 }
-

@@ -22,4 +22,16 @@ public class AddressDto {
     private String detailedAddress;
 
     private boolean isDefault = false;
+
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
+    public void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
 }

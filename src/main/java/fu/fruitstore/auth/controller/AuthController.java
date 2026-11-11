@@ -5,6 +5,9 @@ import fu.fruitstore.auth.services.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,10 +21,24 @@ public class AuthController {
 
     private final UserService userService;
 
+    private String redirectIfAuthenticated() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            return isAdmin ? "redirect:/admin" : "redirect:/";
+        }
+        return null;
+    }
+
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
                             Model model) {
+        String redirect = redirectIfAuthenticated();
+        if (redirect != null) {
+            return redirect;
+        }
+
         if (error != null) {
             model.addAttribute("errorMessage", "Email/Số điện thoại hoặc mật khẩu không chính xác!");
         }
@@ -37,6 +54,11 @@ public class AuthController {
 
     @GetMapping("/register")
     public String registerPage(Model model, HttpSession session) {
+        String redirect = redirectIfAuthenticated();
+        if (redirect != null) {
+            return redirect;
+        }
+
         if (!model.containsAttribute("registerStep1Dto")) {
             RegisterStep1Dto dto = new RegisterStep1Dto();
             String savedEmail = (String) session.getAttribute("REG_EMAIL");
@@ -226,6 +248,11 @@ public class AuthController {
 
     @GetMapping("/forgot-password")
     public String forgotPasswordPage(Model model) {
+        String redirect = redirectIfAuthenticated();
+        if (redirect != null) {
+            return redirect;
+        }
+
         if (!model.containsAttribute("forgotPasswordDto")) {
             model.addAttribute("forgotPasswordDto", new ForgotPasswordDto());
         }

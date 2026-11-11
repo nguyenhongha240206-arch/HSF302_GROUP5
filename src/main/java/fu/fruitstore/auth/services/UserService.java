@@ -9,11 +9,12 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface UserService {
-    User register(RegisterDto dto);
+    // Registration with OTP
     void sendRegistrationOtp(RegisterStep1Dto dto);
     boolean verifyRegistrationOtp(String email, String otpCode);
     User completeRegistration(String fullName, String email, String phoneNumber, RegisterPasswordDto passwordDto);
 
+    // Profile & User Queries
     User findByEmail(String email);
     User findById(Long id);
     User updateProfile(String email, UserProfileDto dto);

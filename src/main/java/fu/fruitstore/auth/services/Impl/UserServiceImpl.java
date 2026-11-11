@@ -1,4 +1,4 @@
-package fu.fruitstore.auth.services;
+package fu.fruitstore.auth.services.Impl;
 
 import fu.fruitstore.auth.dto.*;
 import fu.fruitstore.auth.entity.PasswordResetOtp;
@@ -9,6 +9,8 @@ import fu.fruitstore.auth.repository.PasswordResetOtpRepository;
 import fu.fruitstore.auth.repository.RoleRepository;
 import fu.fruitstore.auth.repository.UserAddressRepository;
 import fu.fruitstore.auth.repository.UserRepository;
+import fu.fruitstore.auth.services.EmailService;
+import fu.fruitstore.auth.services.UserService;
 import fu.fruitstore.shared.exception.BadRequestException;
 import fu.fruitstore.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -35,40 +37,9 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    @Override
-    @Transactional
-    public User register(RegisterDto dto) {
-        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
-            throw new BadRequestException("Mật khẩu xác nhận không khớp!");
-        }
-
-        if (userRepository.existsByEmail(dto.getEmail().toLowerCase().trim())) {
-            throw new BadRequestException("Email đã được sử dụng bởi một tài khoản khác!");
-        }
-
-        if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank()) {
-            if (userRepository.existsByPhoneNumber(dto.getPhoneNumber().trim())) {
-                throw new BadRequestException("Số điện thoại đã được đăng ký bởi tài khoản khác!");
-            }
-        }
-
-        Role customerRole = roleRepository.findByName("ROLE_CUSTOMER")
-                .orElseGet(() -> roleRepository.save(Role.builder()
-                        .name("ROLE_CUSTOMER")
-                        .description("Khách hàng mua sắm")
-                        .build()));
-
-        User user = User.builder()
-                .fullName(dto.getFullName().trim())
-                .email(dto.getEmail().toLowerCase().trim())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .phoneNumber(dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : null)
-                .enabled(true)
-                .roles(new HashSet<>(Collections.singletonList(customerRole)))
-                .build();
-
-        return userRepository.save(user);
-    }
+    // ==========================================
+    // REGISTRATION WITH EMAIL OTP
+    // ==========================================
 
     @Override
     @Transactional
@@ -100,7 +71,7 @@ public class UserServiceImpl implements UserService {
                 .build();
         otpRepository.save(otp);
 
-        // Gửi OTP qua email (không sửa EmailService)
+        // Gửi OTP qua email
         emailService.sendOtpEmail(cleanEmail, otpCode);
     }
 
@@ -153,6 +124,10 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    // ==========================================
+    // USER QUERIES & PROFILE
+    // ==========================================
+
     @Override
     @Transactional(readOnly = true)
     public User findByEmail(String email) {
@@ -172,10 +147,17 @@ public class UserServiceImpl implements UserService {
     public User updateProfile(String email, UserProfileDto dto) {
         User user = findByEmail(email);
         user.setFullName(dto.getFullName().trim());
-        user.setPhoneNumber(dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : null);
-        user.setAddress(dto.getAddress() != null ? dto.getAddress().trim() : null);
-        if (dto.getAvatarUrl() != null && !dto.getAvatarUrl().isBlank()) {
-            user.setAvatarUrl(dto.getAvatarUrl().trim());
+
+        if (dto.getSelectedAddressId() != null) {
+            setDefaultAddress(user.getId(), dto.getSelectedAddressId());
+            user = findById(user.getId());
+        } else {
+            if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank()) {
+                user.setPhoneNumber(dto.getPhoneNumber().trim());
+            }
+            if (dto.getAddress() != null && !dto.getAddress().isBlank()) {
+                user.setAddress(dto.getAddress().trim());
+            }
         }
         return userRepository.save(user);
     }
@@ -343,6 +325,11 @@ public class UserServiceImpl implements UserService {
             userAddressRepository.resetDefaultAddressByUserId(userId);
             address.setDefault(true);
 
+            User user = address.getUser();
+            user.setAddress(dto.getDetailedAddress().trim());
+            user.setPhoneNumber(dto.getPhoneNumber().trim());
+            userRepository.save(user);
+        } else if (address.isDefault()) {
             User user = address.getUser();
             user.setAddress(dto.getDetailedAddress().trim());
             user.setPhoneNumber(dto.getPhoneNumber().trim());

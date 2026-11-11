@@ -33,6 +33,7 @@ public class ProfileController {
             return "redirect:/auth/login";
         }
         User user = userService.findByEmail(userDetails.getUsername());
+        List<UserAddress> addresses = userService.getUserAddresses(user.getId());
 
         if (!model.containsAttribute("profileDto")) {
             UserProfileDto dto = new UserProfileDto();
@@ -41,7 +42,17 @@ public class ProfileController {
             dto.setEmail(user.getEmail());
             dto.setPhoneNumber(user.getPhoneNumber());
             dto.setAddress(user.getAddress());
-            dto.setAvatarUrl(user.getAvatarUrl());
+
+            // Pre-select default address if available
+            addresses.stream()
+                    .filter(UserAddress::isDefault)
+                    .findFirst()
+                    .ifPresent(a -> dto.setSelectedAddressId(a.getId()));
+
+            if (dto.getSelectedAddressId() == null && !addresses.isEmpty()) {
+                dto.setSelectedAddressId(addresses.get(0).getId());
+            }
+
             model.addAttribute("profileDto", dto);
         }
 
@@ -53,7 +64,6 @@ public class ProfileController {
             model.addAttribute("newAddressDto", new AddressDto());
         }
 
-        List<UserAddress> addresses = userService.getUserAddresses(user.getId());
         model.addAttribute("addresses", addresses);
         model.addAttribute("user", user);
         model.addAttribute("activeTab", activeTab);
@@ -128,6 +138,35 @@ public class ProfileController {
             User user = userService.findByEmail(userDetails.getUsername());
             userService.addAddress(user.getId(), dto);
             redirectAttributes.addFlashAttribute("successMessage", "Thêm địa chỉ giao hàng mới thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/profile?tab=addresses";
+    }
+
+    @PostMapping("/addresses/{id}/update")
+    public String updateAddress(@AuthenticationPrincipal UserDetails userDetails,
+                                @PathVariable("id") Long addressId,
+                                @Valid @ModelAttribute AddressDto dto,
+                                BindingResult bindingResult,
+                                RedirectAttributes redirectAttributes) {
+        if (userDetails == null) {
+            return "redirect:/auth/login";
+        }
+
+        if (bindingResult.hasErrors()) {
+            String errorMsg = bindingResult.getFieldErrors().stream()
+                    .map(e -> e.getDefaultMessage())
+                    .reduce((a, b) -> a + "; " + b)
+                    .orElse("Thông tin địa chỉ không hợp lệ!");
+            redirectAttributes.addFlashAttribute("errorMessage", errorMsg);
+            return "redirect:/profile?tab=addresses";
+        }
+
+        try {
+            User user = userService.findByEmail(userDetails.getUsername());
+            userService.updateAddress(user.getId(), addressId, dto);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật địa chỉ nhận hàng thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
